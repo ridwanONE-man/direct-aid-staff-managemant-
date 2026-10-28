@@ -711,9 +711,6 @@ export const EmployeeProfile: React.FC = () => {
             </div>
           </div>
         )}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Edit Profile Modal Dialog */}
