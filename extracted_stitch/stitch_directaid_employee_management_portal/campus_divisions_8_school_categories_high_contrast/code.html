@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface": "#faf8ff", "inverse-primary": "#7cd8b8", "secondary-fixed": "#b0f0d7", "on-surface": "#131b2e", "on-primary": "#ffffff", "on-primary-container": "#a8ffdf", "tertiary-fixed": "#d8e2ff", "on-secondary-fixed-variant": "#09513f", "secondary": "#2a6956", "error": "#ba1a1a", "surface-container-lowest": "#ffffff", "primary-fixed-dim": "#7cd8b8", "on-tertiary-fixed": "#001a42", "on-error": "#ffffff", "on-secondary": "#ffffff", "primary-container": "#0d7a5f", "tertiary-container": "#0867da", "surface-container-high": "#e2e7ff", "outline": "#6e7a74", "inverse-on-surface": "#eef0ff", "error-container": "#ffdad6", "surface-container-highest": "#dae2fd", "surface-container-low": "#f2f3ff", "surface-container": "#eaedff", "surface-tint": "#006c53", "background": "#faf8ff", "surface-bright": "#faf8ff", "on-error-container": "#93000a", "on-primary-fixed": "#002117", "secondary-container": "#adedd4", "outline-variant": "#bdc9c2", "on-secondary-container": "#2f6d5a", "inverse-surface": "#283044", "on-background": "#131b2e", "surface-dim": "#d2d9f4", "on-primary-fixed-variant": "#00513e", "secondary-fixed-dim": "#94d3bb", "on-tertiary-container": "#e8edff", "surface-variant": "#dae2fd", "on-tertiary": "#ffffff", "tertiary": "#0050ad", "primary-fixed": "#98f4d3", "primary": "#005f49", "on-surface-variant": "#3e4944", "on-tertiary-fixed-variant": "#004395", "tertiary-fixed-dim": "#adc6ff", "on-secondary-fixed": "#002117" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "margin": "2rem", "space-lg": "1.5rem", "gutter": "1.25rem", "space-sm": "0.5rem", "space-xs": "0.25rem", "space-xl": "2.5rem", "space-md": "1rem" }, "fontFamily": { "body-md": ["Inter"], "label-md": ["Inter"], "label-sm": ["Inter"], "headline-sm": ["Plus Jakarta Sans"], "body-sm": ["Inter"], "label-lg": ["Inter"], "body-lg": ["Inter"], "headline-lg": ["Plus Jakarta Sans"], "headline-xl": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"] }, "fontSize": { "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "500" }], "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "600" }], "headline-sm": ["16px", { "lineHeight": "24px", "fontWeight": "600" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-lg": ["24px", { "lineHeight": "32px", "fontWeight": "700" }], "headline-xl": ["32px", { "lineHeight": "40px", "fontWeight": "700" }], "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }] } } } };</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-64 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between"><div class="flex flex-col"><div class="h-16 px-space-md flex items-center gap-space-sm bg-surface-container-lowest"><img alt="DirectAid Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UQlAxJYwYE5RokhGalF3AzL9dWeu0LHwpeiiQbvrvAETyjpX_x-e402l1XvrR00jazmH4kBmX6z85Lu5Th6xTxoSrC0DTr8rDVwO_kPM4F-FzjW12yAmWwsQYm1y7_bp_Qo8M2YSCH5TCJ48e3UUS9LGWwKqwD7pNw3_41c81fyKIT9M_M6xIuV-bXzULFef9WPfHhcqCtQGwAWn0QnXjtOsXvYE7-AMMltn1Z8FH0GQ"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-primary tracking-tight font-bold">DirectAid</span><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Somaliland Portal</span></div></div><div class="px-space-md pt-space-md pb-space-xs"><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Workforce Core</span></div><nav class="px-space-sm space-y-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a class="flex items-center gap-space-sm px-space-sm py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span class="font-label-lg text-label-lg">Dashboard</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="staff-directory" href="#"><span class="material-symbols-outlined text-[20px]">badge</span><span class="font-label-lg text-label-lg">All Staff Directory</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="campus-divisions" href="#"><span class="material-symbols-outlined text-[20px]">domain</span><span class="font-label-lg text-label-lg">Campus Divisions</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="contracts-hr-records" href="#"><span class="material-symbols-outlined text-[20px]">assignment_turned_in</span><span class="font-label-lg text-label-lg">Contracts &amp; HR</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="reports-verification" href="#"><span class="material-symbols-outlined text-[20px]">verified</span><span class="font-label-lg text-label-lg">Reports &amp; Audit</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span class="font-label-lg text-label-lg">Settings</span></a></nav></div><div class="p-space-md space-y-space-sm bg-surface-container-low"><div class="flex flex-col gap-space-xs"><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Active Regional Scope</span><div class="flex items-center justify-between p-space-xs rounded-lg bg-surface-container-lowest"><button class="flex-1 py-space-xs text-center font-label-sm text-label-sm rounded-DEFAULT bg-primary text-on-primary transition-colors" type="button">Hargeisa</button><button class="flex-1 py-space-xs text-center font-label-sm text-label-sm rounded-DEFAULT text-on-surface-variant hover:text-on-surface transition-colors" type="button">Gabiley</button></div></div><div class="pt-space-xs flex items-center justify-between"><a class="flex items-center gap-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="support-desk" href="#"><span class="material-symbols-outlined text-[18px]">help_center</span><span class="font-label-sm text-label-sm">IT &amp; HR Support</span></a><span class="font-label-sm text-label-sm text-on-surface-variant">v2.4-SOM</span></div></div></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 px-space-lg flex items-center justify-between"><div class="flex items-center gap-space-md"><div class="hidden lg:flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant"><span class="hover:text-on-surface cursor-pointer">DirectAid Somaliland</span><span class="material-symbols-outlined text-[16px]">chevron_right</span><span class="text-on-surface font-semibold">Human Resources Roster</span></div><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-3 text-on-surface-variant text-[20px]">search</span><input class="w-72 xl:w-96 pl-10 pr-4 py-space-xs font-body-sm text-body-sm bg-surface-container-low rounded-lg text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Search staff by name, ID, role or phone..." type="text"/></div></div><div class="flex items-center gap-space-md"><div class="hidden sm:flex items-center gap-space-xs bg-surface-container px-space-sm py-space-xs rounded-full"><span class="w-2 h-2 rounded-full bg-secondary"></span><select class="bg-transparent font-label-sm text-label-sm text-on-surface font-semibold focus:outline-none cursor-pointer"><option value="all">All Campuses (Combined)</option><option value="hargeisa">Hargeisa Primary &amp; Secondary</option><option value="gabiley">Gabiley Regional Campus</option></select></div><button aria-label="Notifications" class="relative p-space-xs rounded-lg hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-error font-label-sm text-[10px] font-bold text-on-error">4</span></button><div class="h-6 w-[1px] bg-surface-container-highest"></div><div class="flex items-center gap-space-sm"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSNmK_61nosJsl9M_EhS0mugXfolJUrIUPvad0m2h5EQCj9dB6UfAlfJe_8GTc-vkKj7rWRQ8qD5bBqENLLbJmYJsEUQIm1pf618iLShfrPAxYJJyuBRLAktpoaNeREYf-opOa2GkS8lJLZJsLKchjlagyR4JX4eELrx1zRTUwZFEzL65cN01MM-WsUk9CKsWd7RnIS6287JG5lpHWUVMrs1HKbpCvQrdJr4XVmCq_"/><div class="hidden md:flex flex-col"><span class="font-label-md text-label-md font-semibold text-on-surface leading-tight">Dr. Fathia Omar</span><span class="font-label-sm text-label-sm text-on-surface-variant leading-tight">Regional HR Director - Somaliland</span></div></div></div></header><main class="relative pt-16 min-h-screen bg-surface"><div class="flex flex-col w-full">
+<div class="px-margin py-space-lg max-w-[1600px] mx-auto w-full space-y-space-xl">
+<!-- Header Section -->
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-lg">
+<div class="space-y-space-xs max-w-3xl">
+<div class="inline-flex items-center gap-space-xs bg-secondary-container/50 px-space-sm py-1 rounded-full text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-secondary-container">Institutional Governance Matrix</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight">Campus Divisions &amp; Category Hub</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Organizational academic staffing breakdown across 8 operational units in Hargeisa and Gabiley.</p>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container-low transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">file_download</span>
+<span class="font-label-lg text-label-lg">Export Division Census</span>
+</button>
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-lg bg-primary-container text-on-primary shadow-sm hover:bg-primary transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span class="font-label-lg text-label-lg">Deploy Personnel</span>
+</button>
+</div>
+</div>
+<!-- Key Metrics 4-Col Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Stat 1 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between space-y-space-md relative overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Active Facilities</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">domain</span>
+</div>
+</div>
+<div>
+<div class="font-headline-xl text-headline-xl text-on-surface tracking-tight">8 Units</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-1 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary inline-block"></span>
+<span>100% Operational • 4 Hargeisa / 4 Gabiley</span>
+</div>
+</div>
+</div>
+<!-- Stat 2 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between space-y-space-md relative overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Operating Personnel</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+</div>
+</div>
+<div>
+<div class="font-headline-xl text-headline-xl text-on-surface tracking-tight">348 Staff</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-1 flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm text-primary">+6 onboarding</span>
+<span>• Term 1 Quota Met</span>
+</div>
+</div>
+</div>
+<!-- Stat 3 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between space-y-space-md relative overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Regional Distribution</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[20px]">pie_chart</span>
+</div>
+</div>
+<div>
+<div class="font-headline-xl text-headline-xl text-on-surface tracking-tight">198 / 150</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-1 flex items-center gap-1.5">
+<span>57% Hargeisa • 43% Gabiley</span>
+</div>
+</div>
+</div>
+<!-- Stat 4 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between space-y-space-md relative overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Shift Attendance</span>
+<div class="w-8 h-8 rounded-lg bg-secondary-container/40 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">how_to_reg</span>
+</div>
+</div>
+<div>
+<div class="font-headline-xl text-headline-xl text-on-surface tracking-tight">98.2% <span class="font-body-md text-body-md text-on-surface-variant font-normal">Today</span></div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-1 flex items-center gap-1.5">
+<span>342 Clocked • 6 Authorized Absences</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Filter Control Strip -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-space-md">
+<div class="flex flex-wrap items-center gap-space-sm flex-1">
+<!-- Campus Filter -->
+<div class="relative min-w-[190px]">
+<select class="w-full h-9 pl-3 pr-8 rounded-lg bg-surface-container-low font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none cursor-pointer" id="filterLocation">
+<option value="all">City Campus: All Locations</option>
+<option value="Hargeisa">Hargeisa Only (4)</option>
+<option value="Gabiley">Gabiley Only (4)</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-2 text-[18px] text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+<!-- Academic Tier -->
+<div class="relative min-w-[210px]">
+<select class="w-full h-9 pl-3 pr-8 rounded-lg bg-surface-container-low font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none cursor-pointer" id="filterTier">
+<option value="all">Academic Tier: All Academic Tiers</option>
+<option value="Secondary">Secondary Schools</option>
+<option value="Primary">Primary Schools</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-2 text-[18px] text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+<!-- Division Stream -->
+<div class="relative min-w-[180px]">
+<select class="w-full h-9 pl-3 pr-8 rounded-lg bg-surface-container-low font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none cursor-pointer" id="filterStream">
+<option value="all">Division Stream: All Streams</option>
+<option value="Boys">Boys Divisions</option>
+<option value="Girls">Girls Divisions</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-2 text-[18px] text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+<!-- Search Bar -->
+<div class="relative flex-1 min-w-[260px]">
+<span class="material-symbols-outlined absolute left-3 top-2 text-[18px] text-on-surface-variant">search</span>
+<input class="w-full h-9 pl-9 pr-3 rounded-lg bg-surface-container-low font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20" id="searchInput" placeholder="Search division or principal (e.g. Sahra Duale, Gabiley...)" type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-space-md text-on-surface-variant shrink-0 border-t xl:border-t-0 pt-space-xs xl:pt-0">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-label-sm text-label-sm">8 of 8 Units Active</span>
+</div>
+<div class="hidden sm:block text-outline-variant">•</div>
+<span class="font-body-sm text-body-sm hidden sm:inline">DirectAid Ministry-accredited educational complexes</span>
+<div class="hidden sm:block text-outline-variant">•</div>
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">cloud_done</span> Roster synchronized with Kuwait HQ portal
+        </span>
+</div>
+</div>
+<!-- 8 School Divisions Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-gutter" id="divisionsGrid">
+<!-- Card 1 -->
+<div class="division-card bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group" data-campus="Hargeisa" data-principal="Sheikh Omer Goth" data-stream="Boys" data-tier="Secondary">
+<div class="space-y-space-md">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="space-y-1">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-container/50 font-label-sm text-label-sm text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Hargeisa
+                </span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
+                  Secondary
+                </span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface pt-1 group-hover:text-primary transition-colors">Boys Secondary Campus</h2>
+<p class="font-label-sm text-label-sm text-outline tracking-wider">CODE: HAR-SEC-B</p>
+</div>
+<div class="text-right shrink-0">
+<span class="font-headline-md text-headline-md font-bold text-on-surface leading-none">48</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant uppercase">Staff</span>
+</div>
+</div>
+<!-- Principal Info -->
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[20px]">school</span>
+</div>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-outline block leading-none">Principal</span>
+<p class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Sheikh Omer Goth</p>
+<span class="font-body-sm text-body-sm text-on-surface-variant">2 Vice Principals assisting</span>
+</div>
+</div>
+<!-- Department Headcount Mini Metrics -->
+<div class="grid grid-cols-2 gap-space-xs pt-1">
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Teaching Faculty</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">28</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Campus Safety</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">6</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Env. Services</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">8</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Ops &amp; Admin</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">3</span>
+</div>
+</div>
+<!-- Teaching/Support Ratio Bar -->
+<div class="space-y-1">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-on-surface font-semibold">58% Teaching</span>
+<span class="text-on-surface-variant">42% Support</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden flex">
+<div class="bg-primary h-full" style="width: 58%"></div>
+<div class="bg-secondary-fixed-dim h-full" style="width: 42%"></div>
+</div>
+</div>
+</div>
+<div class="pt-space-md mt-space-md border-t border-surface-container flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Term: <strong>680 Students</strong></span>
+<a class="inline-flex items-center gap-1 font-label-md text-label-md text-primary font-semibold hover:gap-1.5 transition-all" href="#">
+<span>View Staff Roster</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="division-card bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group" data-campus="Hargeisa" data-principal="Mrs. Sahra Duale" data-stream="Girls" data-tier="Secondary">
+<div class="space-y-space-md">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="space-y-1">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-container/50 font-label-sm text-label-sm text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Hargeisa
+                </span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
+                  Secondary
+                </span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface pt-1 group-hover:text-primary transition-colors">Girls Secondary Campus</h2>
+<p class="font-label-sm text-label-sm text-outline tracking-wider">CODE: HAR-SEC-G</p>
+</div>
+<div class="text-right shrink-0">
+<span class="font-headline-md text-headline-md font-bold text-on-surface leading-none">54</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant uppercase">Staff</span>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[20px]">school</span>
+</div>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-outline block leading-none">Principal</span>
+<p class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Mrs. Sahra Duale</p>
+<span class="font-body-sm text-body-sm text-on-surface-variant">2 Vice Principals assisting</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-space-xs pt-1">
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Teaching Faculty</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">30</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Campus Safety</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">7</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Env. Services</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">9</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Ops &amp; Admin</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">5</span>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-on-surface font-semibold">56% Teaching</span>
+<span class="text-on-surface-variant">44% Support</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden flex">
+<div class="bg-primary h-full" style="width: 56%"></div>
+<div class="bg-secondary-fixed-dim h-full" style="width: 44%"></div>
+</div>
+</div>
+</div>
+<div class="pt-space-md mt-space-md border-t border-surface-container flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Term: <strong>740 Students</strong></span>
+<a class="inline-flex items-center gap-1 font-label-md text-label-md text-primary font-semibold hover:gap-1.5 transition-all" href="#">
+<span>View Staff Roster</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="division-card bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group" data-campus="Gabiley" data-principal="Mr. Hassan Warsame" data-stream="Boys" data-tier="Secondary">
+<div class="space-y-space-md">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="space-y-1">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-tertiary-fixed font-label-sm text-label-sm text-on-tertiary-fixed-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Gabiley
+                </span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
+                  Secondary
+                </span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface pt-1 group-hover:text-primary transition-colors">Boys Secondary Campus</h2>
+<p class="font-label-sm text-label-sm text-outline tracking-wider">CODE: GAB-SEC-B</p>
+</div>
+<div class="text-right shrink-0">
+<span class="font-headline-md text-headline-md font-bold text-on-surface leading-none">37</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant uppercase">Staff</span>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[20px]">school</span>
+</div>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-outline block leading-none">Principal</span>
+<p class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Mr. Hassan Warsame</p>
+<span class="font-body-sm text-body-sm text-on-surface-variant">1 Vice Principal assisting</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-space-xs pt-1">
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Teaching Faculty</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">22</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Campus Safety</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">5</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Env. Services</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">6</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Ops &amp; Logistics</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">2</span>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-on-surface font-semibold">59% Teaching</span>
+<span class="text-on-surface-variant">41% Support</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden flex">
+<div class="bg-primary h-full" style="width: 59%"></div>
+<div class="bg-secondary-fixed-dim h-full" style="width: 41%"></div>
+</div>
+</div>
+</div>
+<div class="pt-space-md mt-space-md border-t border-surface-container flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Term: <strong>480 Students</strong></span>
+<a class="inline-flex items-center gap-1 font-label-md text-label-md text-primary font-semibold hover:gap-1.5 transition-all" href="#">
+<span>View Staff Roster</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="division-card bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group" data-campus="Gabiley" data-principal="Mrs. Fatima Barkhad" data-stream="Girls" data-tier="Secondary">
+<div class="space-y-space-md">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="space-y-1">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-tertiary-fixed font-label-sm text-label-sm text-on-tertiary-fixed-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Gabiley
+                </span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
+                  Secondary
+                </span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface pt-1 group-hover:text-primary transition-colors">Girls Secondary Campus</h2>
+<p class="font-label-sm text-label-sm text-outline tracking-wider">CODE: GAB-SEC-G</p>
+</div>
+<div class="text-right shrink-0">
+<span class="font-headline-md text-headline-md font-bold text-on-surface leading-none">39</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant uppercase">Staff</span>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[20px]">school</span>
+</div>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-outline block leading-none">Principal</span>
+<p class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Mrs. Fatima Barkhad</p>
+<span class="font-body-sm text-body-sm text-on-surface-variant">1 Vice Principal assisting</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-space-xs pt-1">
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Teaching Faculty</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">24</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Campus Safety</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">5</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Env. Services</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">6</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Ops &amp; Logistics</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">2</span>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-on-surface font-semibold">61% Teaching</span>
+<span class="text-on-surface-variant">39% Support</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden flex">
+<div class="bg-primary h-full" style="width: 61%"></div>
+<div class="bg-secondary-fixed-dim h-full" style="width: 39%"></div>
+</div>
+</div>
+</div>
+<div class="pt-space-md mt-space-md border-t border-surface-container flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Term: <strong>510 Students</strong></span>
+<a class="inline-flex items-center gap-1 font-label-md text-label-md text-primary font-semibold hover:gap-1.5 transition-all" href="#">
+<span>View Staff Roster</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="division-card bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group" data-campus="Hargeisa" data-principal="Mr. Rashid Abdi" data-stream="Boys" data-tier="Primary">
+<div class="space-y-space-md">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="space-y-1">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-container/50 font-label-sm text-label-sm text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Hargeisa
+                </span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
+                  Primary
+                </span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface pt-1 group-hover:text-primary transition-colors">Boys Primary Campus</h2>
+<p class="font-label-sm text-label-sm text-outline tracking-wider">CODE: HAR-PRI-B</p>
+</div>
+<div class="text-right shrink-0">
+<span class="font-headline-md text-headline-md font-bold text-on-surface leading-none">46</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant uppercase">Staff</span>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[20px]">school</span>
+</div>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-outline block leading-none">Principal</span>
+<p class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Mr. Rashid Abdi</p>
+<span class="font-body-sm text-body-sm text-on-surface-variant">2 Vice Principals assisting</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-space-xs pt-1">
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Teaching Faculty</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">26</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Campus Safety</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">6</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Env. Services</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">8</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Ops &amp; Admin</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">3</span>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-on-surface font-semibold">56% Teaching</span>
+<span class="text-on-surface-variant">44% Support</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden flex">
+<div class="bg-primary h-full" style="width: 56%"></div>
+<div class="bg-secondary-fixed-dim h-full" style="width: 44%"></div>
+</div>
+</div>
+</div>
+<div class="pt-space-md mt-space-md border-t border-surface-container flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Term: <strong>610 Students</strong></span>
+<a class="inline-flex items-center gap-1 font-label-md text-label-md text-primary font-semibold hover:gap-1.5 transition-all" href="#">
+<span>View Staff Roster</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Card 6 -->
+<div class="division-card bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group" data-campus="Hargeisa" data-principal="Mrs. Kaltun Bihi" data-stream="Girls" data-tier="Primary">
+<div class="space-y-space-md">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="space-y-1">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-container/50 font-label-sm text-label-sm text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Hargeisa
+                </span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
+                  Primary
+                </span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface pt-1 group-hover:text-primary transition-colors">Girls Primary Campus</h2>
+<p class="font-label-sm text-label-sm text-outline tracking-wider">CODE: HAR-PRI-G</p>
+</div>
+<div class="text-right shrink-0">
+<span class="font-headline-md text-headline-md font-bold text-on-surface leading-none">50</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant uppercase">Staff</span>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[20px]">school</span>
+</div>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-outline block leading-none">Principal</span>
+<p class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Mrs. Kaltun Bihi</p>
+<span class="font-body-sm text-body-sm text-on-surface-variant">2 Vice Principals assisting</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-space-xs pt-1">
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Teaching Faculty</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">28</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Campus Safety</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">6</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Env. Services</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">10</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Ops &amp; Administration</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">3</span>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-on-surface font-semibold">56% Teaching</span>
+<span class="text-on-surface-variant">44% Support</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden flex">
+<div class="bg-primary h-full" style="width: 56%"></div>
+<div class="bg-secondary-fixed-dim h-full" style="width: 44%"></div>
+</div>
+</div>
+</div>
+<div class="pt-space-md mt-space-md border-t border-surface-container flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Term: <strong>690 Students</strong></span>
+<a class="inline-flex items-center gap-1 font-label-md text-label-md text-primary font-semibold hover:gap-1.5 transition-all" href="#">
+<span>View Staff Roster</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Card 7 -->
+<div class="division-card bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group" data-campus="Gabiley" data-principal="Mr. Jama Muse" data-stream="Boys" data-tier="Primary">
+<div class="space-y-space-md">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="space-y-1">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-tertiary-fixed font-label-sm text-label-sm text-on-tertiary-fixed-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Gabiley
+                </span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
+                  Primary
+                </span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface pt-1 group-hover:text-primary transition-colors">Boys Primary Campus</h2>
+<p class="font-label-sm text-label-sm text-outline tracking-wider">CODE: GAB-PRI-B</p>
+</div>
+<div class="text-right shrink-0">
+<span class="font-headline-md text-headline-md font-bold text-on-surface leading-none">35</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant uppercase">Staff</span>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[20px]">school</span>
+</div>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-outline block leading-none">Principal</span>
+<p class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Mr. Jama Muse</p>
+<span class="font-body-sm text-body-sm text-on-surface-variant">1 Vice Principal assisting</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-space-xs pt-1">
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Teaching Faculty</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">20</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Campus Safety</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">5</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Env. Services</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">6</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Ops &amp; Logistics</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">2</span>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-on-surface font-semibold">57% Teaching</span>
+<span class="text-on-surface-variant">43% Support</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden flex">
+<div class="bg-primary h-full" style="width: 57%"></div>
+<div class="bg-secondary-fixed-dim h-full" style="width: 43%"></div>
+</div>
+</div>
+</div>
+<div class="pt-space-md mt-space-md border-t border-surface-container flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Term: <strong>450 Students</strong></span>
+<a class="inline-flex items-center gap-1 font-label-md text-label-md text-primary font-semibold hover:gap-1.5 transition-all" href="#">
+<span>View Staff Roster</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Card 8 -->
+<div class="division-card bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group" data-campus="Gabiley" data-principal="Mrs. Maryan Aden" data-stream="Girls" data-tier="Primary">
+<div class="space-y-space-md">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="space-y-1">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-tertiary-fixed font-label-sm text-label-sm text-on-tertiary-fixed-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Gabiley
+                </span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
+                  Primary
+                </span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface pt-1 group-hover:text-primary transition-colors">Girls Primary Campus</h2>
+<p class="font-label-sm text-label-sm text-outline tracking-wider">CODE: GAB-PRI-G</p>
+</div>
+<div class="text-right shrink-0">
+<span class="font-headline-md text-headline-md font-bold text-on-surface leading-none">37</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant uppercase">Staff</span>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[20px]">school</span>
+</div>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-outline block leading-none">Principal</span>
+<p class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Mrs. Maryan Aden</p>
+<span class="font-body-sm text-body-sm text-on-surface-variant">1 Vice Principal assisting</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-space-xs pt-1">
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Teaching Faculty</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">22</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Campus Safety</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">5</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Env. Services</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">6</span>
+</div>
+<div class="bg-surface-container-low/60 p-2 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Ops &amp; Logistics</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">2</span>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-on-surface font-semibold">59% Teaching</span>
+<span class="text-on-surface-variant">41% Support</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden flex">
+<div class="bg-primary h-full" style="width: 59%"></div>
+<div class="bg-secondary-fixed-dim h-full" style="width: 41%"></div>
+</div>
+</div>
+</div>
+<div class="pt-space-md mt-space-md border-t border-surface-container flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Term: <strong>470 Students</strong></span>
+<a class="inline-flex items-center gap-1 font-label-md text-label-md text-primary font-semibold hover:gap-1.5 transition-all" href="#">
+<span>View Staff Roster</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Empty State (hidden by default) -->
+<div class="hidden bg-surface-container-lowest p-space-xl rounded-xl shadow-sm text-center" id="noResults">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant mb-2">search_off</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">No Campus Divisions Found</h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-sm mx-auto mt-1">Try resetting or broadening your filter criteria to inspect facilities.</p>
+</div>
+<!-- Force Composition Visual Section -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm space-y-space-lg">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm">
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-primary font-bold">Consolidated Staffing Analysis</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Total DirectAid Somaliland Force Composition</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Functional distribution across 348 educational and administrative staff members in all regional complexes.</p>
+</div>
+<div class="flex items-center gap-space-md font-label-sm text-label-sm">
+<span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-primary"></span> Academic (57.5%)</span>
+<span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-secondary"></span> Facilities (17.8%)</span>
+<span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-tertiary"></span> Campus Safety (13.2%)</span>
+<span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-surface-container-highest"></span> Leadership &amp; Logistics (11.5%)</span>
+</div>
+</div>
+<!-- Segmented Bar Chart Breakdown -->
+<div class="space-y-2">
+<div class="h-4 w-full bg-surface-container-low rounded-full overflow-hidden flex shadow-inner">
+<div class="bg-primary h-full hover:opacity-90 transition-opacity" style="width: 57.5%" title="Academic Faculty: 57.5%"></div>
+<div class="bg-secondary h-full hover:opacity-90 transition-opacity" style="width: 17.8%" title="Facilities &amp; Sanitation: 17.8%"></div>
+<div class="bg-tertiary h-full hover:opacity-90 transition-opacity" style="width: 13.2%" title="Campus Safety: 13.2%"></div>
+<div class="bg-primary-container h-full hover:opacity-90 transition-opacity" style="width: 6.3%" title="Campus Leadership: 6.3%"></div>
+<div class="bg-surface-dim h-full hover:opacity-90 transition-opacity" style="width: 5.2%" title="Ops &amp; Logistics: 5.2%"></div>
+</div>
+</div>
+<!-- 5 Detail Breakdowns -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-md pt-space-xs">
+<!-- 1: Educational Faculty -->
+<div class="bg-surface-container-low/70 p-space-md rounded-xl flex flex-col justify-between space-y-space-sm hover:bg-surface-container-high/60 transition-colors">
+<div class="flex items-center justify-between">
+<span class="w-7 h-7 rounded-lg bg-primary-container text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">menu_book</span>
+</span>
+<span class="font-headline-md text-headline-md font-bold text-on-surface">200</span>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg font-semibold text-on-surface">Educational Faculty</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">114 Hargeisa • 86 Gabiley</p>
+<span class="inline-block mt-2 font-label-sm text-label-sm text-primary bg-surface-container-lowest px-2 py-0.5 rounded-full font-semibold">100% Teacher Certified</span>
+</div>
+</div>
+<!-- 2: Campus Safety -->
+<div class="bg-surface-container-low/70 p-space-md rounded-xl flex flex-col justify-between space-y-space-sm hover:bg-surface-container-high/60 transition-colors">
+<div class="flex items-center justify-between">
+<span class="w-7 h-7 rounded-lg bg-tertiary text-on-tertiary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">local_police</span>
+</span>
+<span class="font-headline-md text-headline-md font-bold text-on-surface">46</span>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg font-semibold text-on-surface">Campus Safety</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">25 Hargeisa • 21 Gabiley</p>
+<span class="inline-block mt-2 font-label-sm text-label-sm text-on-surface-variant bg-surface-container-lowest px-2 py-0.5 rounded-full font-semibold">24/7 Gate &amp; Grounds Guard</span>
+</div>
+</div>
+<!-- 3: Environmental Staff -->
+<div class="bg-surface-container-low/70 p-space-md rounded-xl flex flex-col justify-between space-y-space-sm hover:bg-surface-container-high/60 transition-colors">
+<div class="flex items-center justify-between">
+<span class="w-7 h-7 rounded-lg bg-secondary text-on-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">cleaning_services</span>
+</span>
+<span class="font-headline-md text-headline-md font-bold text-on-surface">62</span>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg font-semibold text-on-surface">Environmental Staff</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">35 Hargeisa • 27 Gabiley</p>
+<span class="inline-block mt-2 font-label-sm text-label-sm text-on-surface-variant bg-surface-container-lowest px-2 py-0.5 rounded-full font-semibold">Maintenance &amp; Sanitation</span>
+</div>
+</div>
+<!-- 4: Campus Leadership -->
+<div class="bg-surface-container-low/70 p-space-md rounded-xl flex flex-col justify-between space-y-space-sm hover:bg-surface-container-high/60 transition-colors">
+<div class="flex items-center justify-between">
+<span class="w-7 h-7 rounded-lg bg-primary-container text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+</span>
+<span class="font-headline-md text-headline-md font-bold text-on-surface">22</span>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg font-semibold text-on-surface">Campus Leadership</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">8 Principals • 14 V-Principals</p>
+<span class="inline-block mt-2 font-label-sm text-label-sm text-primary bg-surface-container-lowest px-2 py-0.5 rounded-full font-semibold">Academic Governance</span>
+</div>
+</div>
+<!-- 5: Ops & Logistics -->
+<div class="bg-surface-container-low/70 p-space-md rounded-xl flex flex-col justify-between space-y-space-sm hover:bg-surface-container-high/60 transition-colors">
+<div class="flex items-center justify-between">
+<span class="w-7 h-7 rounded-lg bg-surface-container-highest text-on-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">local_shipping</span>
+</span>
+<span class="font-headline-md text-headline-md font-bold text-on-surface">18</span>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg font-semibold text-on-surface">Ops &amp; Logistics</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">10 Hargeisa • 8 Gabiley</p>
+<span class="inline-block mt-2 font-label-sm text-label-sm text-on-surface-variant bg-surface-container-lowest px-2 py-0.5 rounded-full font-semibold">Supplies, Fleet, Kitchen</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (function initDivisionFilters() {
+    const filterLoc = document.getElementById('filterLocation');
+    const filterTier = document.getElementById('filterTier');
+    const filterStream = document.getElementById('filterStream');
+    const searchInput = document.getElementById('searchInput');
+    const cards = Array.from(document.querySelectorAll('.division-card'));
+    const noResults = document.getElementById('noResults');
+
+    function applyFilters() {
+      const selectedLoc = filterLoc ? filterLoc.value.toLowerCase() : 'all';
+      const selectedTier = filterTier ? filterTier.value.toLowerCase() : 'all';
+      const selectedStream = filterStream ? filterStream.value.toLowerCase() : 'all';
+      const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const campus = (card.getAttribute('data-campus') || '').toLowerCase();
+        const tier = (card.getAttribute('data-tier') || '').toLowerCase();
+        const stream = (card.getAttribute('data-stream') || '').toLowerCase();
+        const principal = (card.getAttribute('data-principal') || '').toLowerCase();
+        const title = (card.querySelector('h2')?.textContent || '').toLowerCase();
+
+        const matchLoc = (selectedLoc === 'all') || (campus === selectedLoc);
+        const matchTier = (selectedTier === 'all') || (tier === selectedTier);
+        const matchStream = (selectedStream === 'all') || (stream === selectedStream);
+        const matchQuery = !query || principal.includes(query) || campus.includes(query) || title.includes(query);
+
+        if (matchLoc && matchTier && matchStream && matchQuery) {
+          card.classList.remove('hidden');
+          visibleCount++;
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+
+      if (noResults) {
+        if (visibleCount === 0) {
+          noResults.classList.remove('hidden');
+        } else {
+          noResults.classList.add('hidden');
+        }
+      }
+    }
+
+    if (filterLoc) filterLoc.addEventListener('change', applyFilters);
+    if (filterTier) filterTier.addEventListener('change', applyFilters);
+    if (filterStream) filterStream.addEventListener('change', applyFilters);
+    if (searchInput) searchInput.addEventListener('input', applyFilters);
+  })();
+</script></main></div></body></html>

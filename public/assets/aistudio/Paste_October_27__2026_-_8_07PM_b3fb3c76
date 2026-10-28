@@ -1,0 +1,770 @@
+# MASTER PROMPT: REDESIGN AND ADVANCE THE DIRECTAID EMPLOYEE MANAGEMENT PORTAL
+
+## 1. Your Role
+
+Act as a senior UI/UX designer, frontend architect, full-stack developer, accessibility specialist, and enterprise HR software consultant.
+
+Your task is to analyze, redesign, improve, and modernize the existing DirectAid Employee Management Portal using the uploaded ZIP file as the source of truth.
+
+The organization is DirectAid. The portal will manage employees working in primary schools, secondary schools, and other organizational departments in Hargeisa and Gabiley, Somaliland.
+
+The employees include principals, deputy principals, teachers, security guards, cleaners, drivers, secretaries, administrative officers, finance staff, support workers, and other authorized employees.
+
+The objective is to create a professional, attractive, reliable, secure, easy-to-use employee management website suitable for real organizational use.
+
+## 2. CRITICAL RULE: PRESERVE THE EXISTING PROJECT
+
+Before changing any code, extract and inspect the entire uploaded ZIP file.
+
+Existing project:
+directaid_employee_management_portal.zip
+
+The existing HTML screen directories include:
+
+1. directaid_portal_executive_dashboard
+2. staff_directory_employee_records
+3. employee_account_document_profile
+4. campus_divisions_8_school_categories_high_contrast
+5. contracts_hr_operations_hub
+6. reports_compliance_audit_center
+
+There is also a DirectAid logo image asset.
+
+These existing pages and their functionality are the foundation of the project.
+
+MANDATORY REQUIREMENTS:
+
+- Do not delete existing pages.
+- Do not rename or remove existing routes without a compelling technical reason.
+- Do not remove existing functions, buttons, forms, links, reports, profile sections, tables, filters, or workflows.
+- Do not replace the entire project with a generic dashboard template.
+- Do not create a completely different application that ignores the uploaded files.
+- Do not break existing navigation or page relationships.
+- Do not replace working features with nonfunctional visual mockups.
+- Do not invent backend integrations that do not exist.
+- Preserve existing working behavior while improving the interface and implementation.
+- If a feature is currently only a static mockup, document that limitation and implement it when the available stack and requirements permit.
+- If the project already has a backend, reuse it instead of creating an incompatible replacement.
+- Keep existing filenames, routes, data models, and public interfaces compatible wherever possible.
+- Back up the original project before making substantial changes.
+
+First, produce a short audit of the existing architecture, technologies, page structure, interactions, assets, and functionality. Then implement the redesign.
+
+The final result must be a complete, runnable project, not just a screenshot or a collection of disconnected HTML pages.
+
+## 3. Branding and Visual Identity
+
+Create a modern DirectAid-branded HR management portal.
+
+The design must use the official DirectAid logo supplied in the uploaded ZIP. Inspect the actual image and use the correct asset. Do not invent a replacement logo when the official asset is available.
+
+Proposed color palette:
+
+- Primary brand green: #147D4A
+- Bright accent green: #35B86B
+- Light green surface: #DDF5E5
+- Main page background: #F5F8F6
+- Primary text: #24352B
+- Secondary text: #66756B
+- Borders: #E2EAE4
+- White surfaces: #FFFFFF
+
+Treat these as proposed design tokens. Adjust the primary green to match the official logo if necessary.
+
+Use green for primary actions, selected navigation, progress indicators, brand elements, and positive statuses.
+
+Use semantic colors consistently:
+- Green for active, approved, or completed.
+- Amber for pending, expiring, or requiring attention.
+- Red for expired, rejected, or critical issues.
+- Blue for informational states.
+
+Do not communicate status through color alone. Include readable status labels and accessible indicators.
+
+Visual direction:
+
+- Premium enterprise HR SaaS design.
+- Clean, modern, spacious interface.
+- Professional typography such as Inter or an equivalent available font.
+- Consistent spacing, alignment, and component sizing.
+- Rounded cards with subtle borders and restrained shadows.
+- Beautiful employee avatars and initials fallbacks.
+- Modern line icons using the project's existing icon system or Lucide.
+- Clear page headings, descriptions, breadcrumbs, and actions.
+- Attractive empty states, loading states, success messages, and error messages.
+- Smooth and restrained animations.
+- Consistent components across all pages.
+- No excessive gradients, oversized headings, distracting effects, or unnecessary decoration.
+
+The final interface should look like a polished product used by an established international organization.
+
+## 4. Advanced Animated Cards and Microinteractions
+
+Improve existing dashboard and category cards with tasteful motion.
+
+Requirements:
+
+- Cards should lift slightly on hover.
+- Use subtle transitions for shadows, borders, and background colors.
+- Add small entrance animations when the page loads.
+- Animate dashboard counters when genuine data becomes available.
+- Use subtle progress-bar animations.
+- Add smooth transitions when filters change.
+- Provide a clear visual response when a user selects a card.
+- Add hover feedback to buttons, icons, and interactive table rows.
+- Use skeleton loading placeholders while real data loads.
+- Respect the operating system's reduced-motion accessibility preference.
+
+Use approximately 180–300 ms for ordinary transitions.
+
+Do not make cards continuously bounce, rotate, flash, or move unnecessarily.
+
+Cards must remain readable and usable on mobile devices and with keyboard navigation.
+
+Use cards to communicate useful information or provide shortcuts, not merely for decoration.
+
+## 5. Application Layout and Navigation
+
+Create a consistent application shell for all existing pages.
+
+Desktop layout:
+
+- Collapsible left sidebar.
+- DirectAid logo and portal name in the sidebar.
+- Main navigation with icons and labels.
+- Top header containing the page title or breadcrumb, search, notifications, and authenticated user menu.
+- Main content area with consistent spacing.
+- Responsive page layouts.
+
+The sidebar should support collapsed and expanded modes without breaking the page.
+
+Suggested navigation:
+
+1. Dashboard
+2. Staff Directory
+3. School Divisions
+4. Employee Accounts
+5. Contracts and HR Operations
+6. Reports and Compliance
+7. Notifications, if supported by the existing architecture
+8. Settings, if supported by the existing architecture
+
+Keep existing page destinations and existing navigation functions. Additional navigation items must only be introduced when their pages or functions are implemented.
+
+Provide:
+- Clear active-page indicators.
+- Breadcrumb navigation where useful.
+- Accessible dropdown menus.
+- Confirmation dialogs for destructive operations.
+- A responsive mobile navigation drawer.
+- Consistent page titles and primary actions.
+- Search and notification controls that work rather than merely look interactive.
+
+## 6. The Eight Employee Categories
+
+The system must have exactly eight primary school-staff divisions based on school level, gender division, and location.
+
+Use the following canonical categories:
+
+1. Boys Secondary Staff — Hargeisa
+2. Girls Secondary Staff — Hargeisa
+3. Boys Secondary Staff — Gabiley
+4. Girls Secondary Staff — Gabiley
+5. Boys Primary Staff — Hargeisa
+6. Girls Primary Staff — Hargeisa
+7. Boys Primary Staff — Gabiley
+8. Girls Primary Staff — Gabiley
+
+Use the correct term "Primary", not "Premiry".
+
+Display these divisions as attractive, consistent cards on the dashboard and the School Divisions page.
+
+Each card should include:
+
+- Division name.
+- City or location.
+- Total number of employees.
+- Number of active employees.
+- Optional pending HR tasks or contract alerts, when supported by real data.
+- A clear View Staff action.
+- A subtle icon or illustration.
+- A restrained hover animation.
+
+Clicking a division card must open the corresponding staff list, with the relevant filters applied.
+
+The eight categories must not be hardcoded in multiple unrelated places. Define them centrally in the application's data model or configuration.
+
+Every employee assigned to one of these divisions should have a consistent division identifier.
+
+If an employee is not assigned to one of the eight school divisions, allow an authorized administrator to place them in an appropriate additional organizational unit only if the business rules permit it. Do not silently classify other office employees as teachers or force every employee into a school division.
+
+## 7. Employee Roles and Job Titles
+
+An employee's school division and their job role are two different concepts.
+
+Division determines where the employee belongs.
+
+Role or job title determines the work they perform.
+
+Support job titles including:
+
+- Principal
+- Deputy Principal
+- Teacher
+- Security Guard
+- Cleaner
+- Driver
+- Secretary
+- Administrative Officer
+- Human Resources Officer
+- Finance Officer
+- IT Support Officer
+- Maintenance Worker
+- Other
+
+Provide an "Other" option with a custom job-title field.
+
+Authorized administrators should be able to create and manage additional job titles without modifying application code.
+
+Avoid confusing employment job titles with application permissions.
+
+For example, a teacher's employment title does not automatically grant administrative privileges in the website.
+
+An employee may have one primary division and job title, with optional additional assignments if the organization's rules require them.
+
+## 8. Executive Dashboard
+
+Redesign the existing Executive Dashboard without removing its established content.
+
+At the top, display:
+
+"Welcome back, [User Name]"
+
+Subtitle:
+
+"Manage DirectAid employees, school divisions, employment records, and HR operations from one place."
+
+Add a professional summary area with useful quick actions.
+
+Dashboard statistic cards should include:
+
+- Total Employees
+- Active Employees
+- Employees by Division
+- Contracts Expiring Soon
+- Missing Required Documents
+- Pending HR Actions
+
+Only display metrics supported by actual data. If a metric is unavailable, provide a meaningful empty state instead of invented numbers.
+
+Use animated counters when the underlying data has loaded.
+
+Below the summary cards, display:
+
+A. School Division Overview
+Show all eight school divisions in a consistent card grid.
+
+B. Employee Distribution
+Show employee distribution by school level, gender division, location, and job title.
+
+C. HR Attention Required
+Display genuine alerts for contracts approaching expiry, missing mandatory documents, or incomplete employee profiles.
+
+D. Recent Activity
+Display recent authorized changes, such as employee profile updates, new assignments, contract uploads, and status changes.
+
+E. Quick Actions
+Include actions such as:
+- Add Employee
+- View Staff Directory
+- Manage Divisions
+- Review Contracts
+- Generate Report
+
+Each action must open the appropriate page or workflow.
+
+Make the dashboard useful at a glance without overcrowding it.
+
+## 9. Staff Directory and Employee Records
+
+Preserve and modernize the existing Staff Directory page.
+
+Provide a professional employee table with:
+
+- Employee ID
+- Employee name and avatar
+- Job title
+- School division
+- City
+- Phone or email, subject to permissions
+- Employment status
+- Contract status, where available
+- Date of employment, where available
+- Actions
+
+Provide functional search across appropriate employee fields.
+
+Add filters for:
+
+- School level: Primary or Secondary
+- Gender division: Boys or Girls
+- Location: Hargeisa or Gabiley
+- Job title
+- Employment status
+- Contract status
+- Division
+
+The directory should support:
+
+- Sorting columns.
+- Pagination or efficient incremental loading.
+- Clear active filter chips.
+- Reset filters.
+- Empty search results.
+- Loading and error states.
+- Opening employee profiles.
+- Authorized employee creation, editing, deactivation, or archival.
+- Exporting permitted employee data when implemented.
+
+Use a responsive table on desktop and a well-organized card or compact list view on small screens.
+
+Do not expose sensitive information such as national identification numbers, private documents, or personal contact details to unauthorized users.
+
+Do not make an entire row trigger multiple competing actions. Provide clear, accessible action controls.
+
+## 10. Employee Accounts and Profiles
+
+Preserve the existing Employee Account and Document Profile page and its sections.
+
+Each employee must have a unique employee record and, where applicable, a linked individual login account.
+
+Organize the employee profile into clear tabs or sections:
+
+A. Overview
+
+- Employee ID.
+- Profile photograph.
+- Full name.
+- Employment job title.
+- School division.
+- Location.
+- Employment status.
+- Work contact information.
+
+B. Personal Information
+
+- Full legal name.
+- Email address.
+- Phone number.
+- Residential area.
+- City.
+- Other organization-approved personal fields.
+
+C. Employment Assignment
+
+- Employee ID.
+- Job title.
+- School level and division.
+- Work location.
+- Department.
+- Employment start date.
+- Employment type.
+- Employment status.
+- Supervisor or reporting manager, if applicable.
+
+D. Qualifications and Credentials
+
+- Highest qualification.
+- Field of study.
+- Institution.
+- Graduation year.
+- Professional qualifications.
+- Teaching qualifications, where applicable.
+- Other relevant certificates.
+
+E. Employment Contract
+
+- Contract reference.
+- Contract type.
+- Start date.
+- Expiry date, when applicable.
+- Renewal status.
+- Employment terms.
+- Authorized contract document.
+
+F. Digital Documents Vault
+
+Allow authorized uploads of:
+
+- CV or résumé.
+- Employment contract.
+- Academic certificates.
+- Professional certificates.
+- Identification documents, where legally required.
+- Appointment letters.
+- Other approved documents.
+
+G. Profile Completeness
+
+Display a profile completion indicator based on genuinely required fields and documents.
+
+Clearly indicate missing required information.
+
+Allow authorized users to edit employee information and view the history of changes.
+
+Show success and error messages after save operations.
+
+Do not display all sensitive documents directly in a public directory. Documents must be available only to authorized users.
+
+## 11. Employee Account Creation and Access
+
+Provide a secure employee onboarding workflow.
+
+An authorized administrator should be able to:
+
+1. Create an employee record.
+2. Enter the employee's basic details.
+3. Select the school division.
+4. Select the job title.
+5. Record employment details.
+6. Upload required documents.
+7. Create or invite the employee's individual account.
+8. Send an invitation or account activation instructions.
+9. Track onboarding completion.
+
+Prevent duplicate employee IDs and duplicate account associations.
+
+Prefer invitation-based account activation and a secure password-reset process.
+
+Never store plaintext passwords.
+
+Do not allow an administrator to see an employee's existing password.
+
+An employee account must be linked to the correct employee record through a stable unique identifier.
+
+If the existing application does not have a backend or authentication provider, implement the required architecture only after auditing the current stack and documenting the necessary setup.
+
+## 12. User Roles and Authorization
+
+Support role-based access control.
+
+Suggested application permission roles:
+
+- Super Administrator
+- HR Administrator
+- Division Manager
+- Employee
+
+These are application access roles and are separate from employment job titles.
+
+Super Administrator:
+- Manage authorized system settings.
+- Manage application access roles.
+- Manage divisions and job-title configuration.
+- Manage employees and HR records.
+- Access organization-wide reporting when authorized.
+
+HR Administrator:
+- Create and update employee records.
+- Manage employment documents and contracts.
+- Review onboarding and document completeness.
+- Generate authorized HR reports.
+
+Division Manager:
+- View employees assigned to their permitted division.
+- Access approved employment information.
+- Perform specifically authorized employee-management tasks.
+
+Employee:
+- View their own profile.
+- View their own permitted employment records.
+- Update approved personal fields.
+- Upload permitted documents.
+- View their own contract information when allowed.
+- Track their own onboarding status.
+
+Implement authorization in the backend or trusted server-side layer, not just by hiding buttons in the frontend.
+
+An employee must never gain administrative privileges simply by changing a URL, editing browser state, or modifying a request.
+
+Follow the organization's actual authorization policy when assigning final permissions.
+
+## 13. Contracts and HR Operations Hub
+
+Preserve the existing Contracts and HR Operations Hub and all its useful sections.
+
+Modernize the contract lifecycle view with:
+
+- Active contracts.
+- Contracts expiring soon.
+- Expired contracts.
+- Pending renewals.
+- Draft contracts, if supported.
+- Recently issued contracts.
+
+Provide filters for employee, division, contract status, and expiry period.
+
+Add a visual expiry timeline or clearly organized status cards.
+
+Authorized users should be able to:
+
+- View contract details.
+- Upload or replace an authorized contract document.
+- Record contract dates.
+- Initiate renewal workflows.
+- Update renewal status.
+- Record relevant HR notes.
+- View contract history.
+
+Create configurable reminders for upcoming expiry dates, subject to the system's notification capabilities.
+
+Do not automatically renew, terminate, or modify contracts without an authorized action.
+
+Preserve existing benefits, entitlements, and HR audit sections.
+
+Restrict payroll and benefits information to appropriately authorized users.
+
+## 14. Reports and Compliance Audit Center
+
+Preserve the existing Reports and Compliance Audit Center and its current report categories.
+
+Improve the interface for:
+
+- Annual staff census.
+- Quarterly HR audits.
+- Attendance and security-shift verification, if data is available.
+- Payroll and remuneration reports, where authorized.
+- Staff-to-student ratio verification, where supporting data exists.
+- Missing-document reports.
+- Contract-expiry reports.
+- Active compliance remediation items.
+- Audit certification and report history.
+
+Provide useful date, division, location, role, and status filters where appropriate.
+
+Add charts and summary cards based on real data.
+
+Support CSV, Excel, or PDF export only where implemented and permitted by the user's access role.
+
+Provide clear reporting-period labels, generation timestamps, and appropriate source information.
+
+Do not invent report results or claim regulatory compliance without verified supporting information.
+
+Sensitive financial and personal information must be excluded from reports unless explicitly required and authorized.
+
+## 15. Notifications and Activity History
+
+Where the existing architecture supports notifications, improve the notification experience.
+
+Provide clear notifications for:
+
+- New employee onboarding.
+- Missing required documents.
+- Contract expiry approaching.
+- Contract renewal status changes.
+- Employee profile updates.
+- Authorized assignment changes.
+- Important HR announcements.
+
+Notifications should link to the relevant record when the user has permission to access it.
+
+Allow read/unread states and a clear way to review notification history.
+
+Record important administrative actions in an audit log, including the actor, timestamp, action, affected record, and permitted change details.
+
+Do not store passwords, access tokens, or unnecessary sensitive document contents in logs.
+
+If email, SMS, or push notifications require external services, identify the integration and configuration requirements rather than pretending delivery works without them.
+
+## 16. Search and Usability
+
+Provide a consistent, fast, accessible search experience.
+
+Users should be able to find employees by permitted fields, including:
+
+- Employee ID.
+- Full name.
+- Job title.
+- Division.
+- Work location.
+
+Make search results useful and easy to navigate.
+
+Retain filters when appropriate while moving between a list and an employee profile.
+
+Add contextual actions, tooltips, helpful empty states, clear validation messages, and confirmation dialogs for destructive operations.
+
+Use understandable language instead of unnecessary technical terminology.
+
+The interface should be usable by administrators who are not technical experts.
+
+## 17. Responsive Design
+
+The website must work well on:
+
+- Desktop computers.
+- Laptops.
+- Tablets.
+- Mobile phones.
+
+On smaller screens:
+
+- Collapse the sidebar into a navigation drawer.
+- Keep primary actions easy to reach.
+- Use responsive card grids.
+- Make tables horizontally manageable or switch to compact employee cards.
+- Ensure forms fit the screen.
+- Prevent overlapping menus and dialogs.
+- Keep document upload controls accessible.
+- Ensure touch targets are sufficiently large.
+
+Avoid horizontal overflow and broken layouts.
+
+## 18. Accessibility and Performance
+
+Follow modern accessibility practices.
+
+Requirements:
+
+- Keyboard-accessible navigation and controls.
+- Visible focus indicators.
+- Appropriate labels for inputs.
+- Accessible dialog behavior.
+- Sufficient text contrast.
+- Meaningful alternative text for images.
+- Status indicators that do not rely only on color.
+- Reduced-motion support.
+- Clear error messages and field validation.
+
+Optimize performance by avoiding unnecessary rerenders, oversized assets, duplicate dependencies, and excessive animations.
+
+Use reusable components and a consistent design-token system.
+
+## 19. Data Security and Privacy
+
+This portal will store employee personal information and confidential employment documents.
+
+Implement appropriate security practices:
+
+- Secure authentication.
+- Server-side authorization.
+- Least-privilege access.
+- Protected document storage.
+- File-type and file-size validation.
+- Secure access to uploaded files.
+- Input validation and output escaping.
+- Protection against common web application vulnerabilities.
+- Safe handling of session expiration.
+- Audit logging for important actions.
+- Backups and an appropriate recovery strategy.
+- Clear rules for retention and deletion of employee records.
+
+Do not expose private documents through public URLs.
+
+Do not put secrets or private API keys in frontend code.
+
+If Firebase is already used, verify Firebase Authentication, Firestore security rules, and Storage access policies. If a different backend exists, follow its established architecture.
+
+Do not migrate databases, remove dependencies, or change authentication providers without explaining the impact and obtaining the required configuration.
+
+## 20. Technical Implementation Requirements
+
+First inspect the existing technologies, project structure, dependencies, and implementation.
+
+Keep the current technology stack if it is suitable.
+
+If the project is a collection of standalone HTML pages, determine the most appropriate way to introduce shared styling and navigation without breaking existing behavior.
+
+Use reusable components where appropriate.
+
+Centralize:
+
+- Brand colors and design tokens.
+- Typography.
+- Spacing.
+- Buttons.
+- Form controls.
+- Cards.
+- Tables.
+- Status badges.
+- Modal dialogs.
+- Notifications.
+- Employee division definitions.
+- Job-title configuration.
+
+Do not duplicate the same interface code across all pages unnecessarily.
+
+Keep business logic separate from presentation where practical.
+
+Preserve data models and API contracts unless changes are necessary and documented.
+
+Do not use mock employee records as if they were actual production data.
+
+Use clearly identified demo data only when needed for previews or development.
+
+## 21. Functional Testing
+
+After implementation, verify that all six existing pages still work.
+
+Test:
+
+- Dashboard navigation.
+- Division-card navigation.
+- Employee search and filters.
+- Employee profile navigation.
+- Employee creation and editing, where supported.
+- Document upload and access permissions.
+- Account activation and login.
+- Contract status and renewal workflows.
+- Report filters and exports.
+- Notifications and activity history, where implemented.
+- Responsive layouts.
+- Keyboard navigation.
+- Validation and error handling.
+- Authorization restrictions.
+- Existing links and buttons.
+
+Every visible interactive element must either perform its intended action or be clearly identified as unavailable pending a required integration.
+
+Do not claim that a feature is functional unless it has been tested.
+
+Fix broken links, console errors, layout overflow, and obvious accessibility issues.
+
+## 22. Final Deliverables
+
+Provide the following:
+
+1. An audit of the original ZIP and its existing functionality.
+2. A summary of the existing technologies and architecture.
+3. A clear list of pages and features preserved.
+4. The redesigned interface for all six existing pages.
+5. The shared design system and reusable components.
+6. The eight school division categories.
+7. Improved employee directory and profile experiences.
+8. Functional interactions appropriate to the available backend.
+9. Secure handling of employee records and documents.
+10. Responsive desktop, tablet, and mobile layouts.
+11. A list of new features added.
+12. A list of any remaining backend integrations or configuration requirements.
+13. Testing results, including any failures or limitations.
+14. Setup instructions explaining how to install dependencies and run the project.
+15. The complete updated source code and a new ZIP package if the environment supports creating downloadable files.
+
+## 23. Final Acceptance Criteria
+
+The project is complete only when:
+
+- All six original pages remain available.
+- Existing working features and navigation are preserved.
+- The entire portal uses a consistent DirectAid green visual identity.
+- All eight school divisions are represented correctly.
+- Employees can be organized by division, location, and job title.
+- Employee records clearly organize personal, employment, qualification, contract, and document information.
+- Cards and interactions use polished, restrained animations.
+- The interface works on desktop and mobile.
+- Existing working functionality has not been silently removed.
+- Security and access controls are appropriate for confidential employee records.
+- Real functionality is distinguished from visual prototypes.
+- The updated project can be run using the provided instructions.
+
+Begin by inspecting the uploaded ZIP and identifying its actual implementation. Then redesign and improve the existing project incrementally. Prioritize preservation, consistency, usability, security, and quality over unnecessary rewrites.

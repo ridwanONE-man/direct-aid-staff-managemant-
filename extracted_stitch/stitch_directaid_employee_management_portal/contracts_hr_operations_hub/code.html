@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-secondary-fixed": "#002117", "secondary-fixed-dim": "#94d3bb", "primary-fixed-dim": "#7cd8b8", "surface-bright": "#faf8ff", "on-tertiary-container": "#e8edff", "surface-variant": "#dae2fd", "error": "#ba1a1a", "on-primary": "#ffffff", "inverse-surface": "#283044", "on-primary-fixed": "#002117", "on-primary-container": "#a8ffdf", "secondary-container": "#adedd4", "surface-container-highest": "#dae2fd", "surface": "#faf8ff", "primary": "#005f49", "on-secondary-fixed-variant": "#09513f", "primary-fixed": "#98f4d3", "outline-variant": "#bdc9c2", "on-secondary-container": "#2f6d5a", "tertiary-fixed-dim": "#adc6ff", "surface-container-low": "#f2f3ff", "surface-dim": "#d2d9f4", "background": "#faf8ff", "tertiary-fixed": "#d8e2ff", "on-tertiary-fixed-variant": "#004395", "primary-container": "#0d7a5f", "on-tertiary": "#ffffff", "surface-tint": "#006c53", "on-tertiary-fixed": "#001a42", "outline": "#6e7a74", "on-surface": "#131b2e", "surface-container-high": "#e2e7ff", "error-container": "#ffdad6", "on-error-container": "#93000a", "surface-container": "#eaedff", "on-background": "#131b2e", "secondary-fixed": "#b0f0d7", "on-primary-fixed-variant": "#00513e", "inverse-primary": "#7cd8b8", "tertiary": "#0050ad", "on-error": "#ffffff", "surface-container-lowest": "#ffffff", "on-surface-variant": "#3e4944", "secondary": "#2a6956", "inverse-on-surface": "#eef0ff", "tertiary-container": "#0867da", "on-secondary": "#ffffff" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "margin": "2rem", "space-xl": "2.5rem", "space-sm": "0.5rem", "gutter": "1.25rem", "space-md": "1rem", "space-lg": "1.5rem", "space-xs": "0.25rem" }, "fontFamily": { "body-lg": ["Inter"], "label-sm": ["Inter"], "body-sm": ["Inter"], "headline-lg": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "headline-xl": ["Plus Jakarta Sans"], "body-md": ["Inter"], "headline-md": ["Plus Jakarta Sans"], "label-lg": ["Inter"], "label-md": ["Inter"] }, "fontSize": { "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "600" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "headline-lg": ["24px", { "lineHeight": "32px", "fontWeight": "700" }], "headline-sm": ["16px", { "lineHeight": "24px", "fontWeight": "600" }], "headline-xl": ["32px", { "lineHeight": "40px", "fontWeight": "700" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }], "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "500" }] } } } }</script></head><body class="bg-surface font-body-md text-on-surface min-h-screen antialiased selection:bg-secondary-container selection:text-on-secondary-container"><aside class="fixed left-0 top-0 h-full w-[260px] bg-surface-container-lowest z-50 flex flex-col shadow-[0_1px_8px_rgba(0,0,0,0.04)] justify-between"><div class="flex flex-col"><div class="h-16 px-space-md flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="flex items-center justify-center p-space-xs"><img alt="DirectAid Logo" class="h-9 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1Wmh12Jcz71VLNikl66fNfI0FSj7_f643eETJws7Y7ula5HteZmTuMbSdSpg5oeuTTj2FbgK6FhvuLPjPCBKDN8ZJyQBcdBOTDEL9OIfnPszUtrmgQrKUNbogyTmMLNnWvEDUSDn5RGubgsxNVlTew1QEuVBfn3chlDbOnvDsQYVw6or1MZs1ftQRu2XeXgyz2Y_6k3blC9RKWydJcDs5YfvQlVYRWRQoVuJDgSKqqV4hqAZ7sdiai_hN6N"/></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-primary tracking-tight">DirectAid</span><span class="font-label-sm text-label-sm text-on-surface-variant font-normal">العون المباشر · Somaliland</span></div></div></div><div class="px-space-md pt-space-md pb-space-xs"><span class="font-label-sm text-label-sm tracking-wider uppercase text-on-surface-variant">Staff &amp; Operations</span></div><nav class="flex flex-col gap-space-xs px-space-md" data-active-classes="bg-primary-container text-on-primary font-bold shadow-sm"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span>Dashboard</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="all-staff-directory" href="#"><span class="material-symbols-outlined text-[20px]">badge</span><span>All Staff Directory</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="campus-divisions" href="#"><span class="material-symbols-outlined text-[20px]">apartment</span><span>Campus Divisions</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg transition-all bg-primary-container text-on-primary font-bold shadow-sm" data-path="contracts-and-hr" href="#"><span class="material-symbols-outlined text-[20px]">description</span><span>Contracts &amp; HR</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="reports-and-audit" href="#"><span class="material-symbols-outlined text-[20px]">analytics</span><span>Reports &amp; Audit</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="system-settings" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span>Settings</span></a></nav></div><div class="p-space-md flex flex-col gap-space-sm"><div class="p-space-md bg-surface-container-low rounded-xl flex flex-col gap-space-xs"><div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-secondary font-semibold uppercase">Branch Nodes</span><span class="font-label-sm text-label-sm text-on-surface-variant">Active</span></div><div class="flex items-center gap-space-xs pt-space-xs"><span class="w-2 h-2 rounded-full bg-primary-container inline-block"></span><span class="font-body-sm text-body-sm text-on-surface">Hargeisa: 5 Schools</span></div><div class="flex items-center gap-space-xs"><span class="w-2 h-2 rounded-full bg-tertiary-container inline-block"></span><span class="font-body-sm text-body-sm text-on-surface">Gabiley: 3 Schools</span></div></div><div class="flex items-center justify-between px-space-xs pt-space-xs"><span class="font-label-sm text-label-sm text-on-surface-variant">DirectAid v3.8 HQ</span><span class="font-label-sm text-label-sm text-primary font-semibold">NGO Portal</span></div></div></aside><div class="pl-[260px]"><header class="fixed top-0 left-[260px] right-0 h-16 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-margin"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-xs bg-surface-container-low rounded-lg p-space-xs"><button class="px-space-md py-space-xs rounded-lg font-label-sm text-label-sm text-on-primary bg-primary shadow-sm hover:bg-primary-container hover:text-on-primary-container transition-all flex items-center gap-space-xs" type="button"><span class="material-symbols-outlined text-[16px]">domain</span>All Campuses</button><button class="px-space-md py-space-xs rounded-lg font-label-sm text-label-sm text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all flex items-center gap-space-xs" type="button"><span class="w-2 h-2 rounded-full bg-primary-container inline-block"></span>Hargeisa</button><button class="px-space-md py-space-xs rounded-lg font-label-sm text-label-sm text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all flex items-center gap-space-xs" type="button"><span class="w-2 h-2 rounded-full bg-tertiary-container inline-block"></span>Gabiley</button></div><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-space-md text-outline text-[18px]">search</span><input class="w-96 pl-10 pr-space-md py-space-xs h-9 bg-surface-container-lowest text-on-surface rounded-lg font-body-sm text-body-sm shadow-sm placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Search staff name, civil ID, campus, role..." type="text"/></div></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs"><button aria-label="Notifications" class="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all relative" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span></button><button aria-label="School Quick Log" class="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" type="button"><span class="material-symbols-outlined text-[20px]">help_outline</span></button></div><div class="h-6 w-px bg-surface-container-high"></div><div class="flex items-center gap-space-sm pl-space-xs"><div class="flex flex-col text-right"><span class="font-label-md text-label-md text-on-surface">Dr. Maryan Farah</span><span class="font-label-sm text-label-sm text-secondary font-medium">HR Director · Somaliland</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="relative pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Interactive Modal: Issue New Contract -->
+<div class="fixed inset-0 z-50 hidden items-center justify-center bg-inverse-surface/40 backdrop-blur-sm transition-all duration-200" id="new-contract-modal">
+<div class="bg-surface-container-lowest w-full max-w-2xl rounded-xl shadow-2xl p-space-lg flex flex-col gap-space-md mx-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-lg bg-primary-container/10 text-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">post_add</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Issue Official Employment Contract</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">DirectAid NGO Somaliland Mission · Unified Civil Contract Standard</p>
+</div>
+</div>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-outline hover:bg-surface-container-high hover:text-on-surface" onclick="document.getElementById('new-contract-modal').classList.add('hidden')" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<form class="grid grid-cols-2 gap-space-md pt-space-xs" onsubmit="event.preventDefault(); document.getElementById('new-contract-modal').classList.add('hidden'); alert('DirectAid Employment Contract issued and forwarded to Regional HR Director Dr. Maryan Farah for electronic signing.');">
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-on-surface">Candidate Full Name</label>
+<input class="h-9 px-space-md rounded-lg bg-surface-container-low font-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="e.g. Hassan Ahmed Warsame" required="" type="text"/>
+</div>
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-on-surface">Staff Civil ID / Passport</label>
+<input class="h-9 px-space-md rounded-lg bg-surface-container-low font-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="SL-NID-948210" required="" type="text"/>
+</div>
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-on-surface">Target School Division</label>
+<select class="h-9 px-space-md rounded-lg bg-surface-container-low font-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20">
+<option>Hargeisa Boys Secondary (Campus Alpha)</option>
+<option>Hargeisa Girls Secondary (Campus Beta)</option>
+<option>Gabiley Boys Boarding School</option>
+<option>Gabiley Girls Primary &amp; Quranic</option>
+<option>Hargeisa Al-Nur Primary School</option>
+<option>Hargeisa Vocational Training Institute</option>
+<option>Gabiley Science &amp; Islamic Studies</option>
+<option>Regional Mission Operations HQ</option>
+</select>
+</div>
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-on-surface">Role Cadre &amp; Level</label>
+<select class="h-9 px-space-md rounded-lg bg-surface-container-low font-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20">
+<option>Secondary Subject Teacher (Grade 4)</option>
+<option>Primary Head Teacher (Grade 5)</option>
+<option>Campus Security Guard (Grade 1)</option>
+<option>Laboratory Technician (Grade 3)</option>
+<option>DirectAid Registered Nurse (Grade 4)</option>
+<option>Logistics &amp; Transport Operator (Grade 2)</option>
+</select>
+</div>
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-on-surface">Contract Term Category</label>
+<select class="h-9 px-space-md rounded-lg bg-surface-container-low font-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20">
+<option>2-Year Renewable Fixed-Term</option>
+<option>Permanent Tenured Academic</option>
+<option>6-Month Probationary Agreement</option>
+<option>1-Year Humanitarian Special Grant</option>
+</select>
+</div>
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-on-surface">Monthly Base Compensation (USD)</label>
+<input class="h-9 px-space-md rounded-lg bg-surface-container-low font-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20" type="number" value="540"/>
+</div>
+<div class="col-span-2 flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-on-surface">Mandatory DirectAid Kuwait Subsidized Allowances</label>
+<div class="grid grid-cols-3 gap-space-sm bg-surface-container-low/50 p-space-sm rounded-lg">
+<label class="flex items-center gap-space-xs font-body-sm text-body-sm cursor-pointer">
+<input checked="" class="accent-primary-container rounded" type="checkbox"/>
+<span>Medical Coverage (100%)</span>
+</label>
+<label class="flex items-center gap-space-xs font-body-sm text-body-sm cursor-pointer">
+<input checked="" class="accent-primary-container rounded" type="checkbox"/>
+<span>Gabiley Remote Stipend</span>
+</label>
+<label class="flex items-center gap-space-xs font-body-sm text-body-sm cursor-pointer">
+<input checked="" class="accent-primary-container rounded" type="checkbox"/>
+<span>Quarterly Gratuity Escrow</span>
+</label>
+</div>
+</div>
+<div class="col-span-2 flex items-center justify-end gap-space-sm pt-space-sm">
+<button class="px-space-md py-space-xs rounded-lg font-label-md text-label-md text-on-surface bg-surface-container-low hover:bg-surface-container-high transition-all" onclick="document.getElementById('new-contract-modal').classList.add('hidden')" type="button">Cancel</button>
+<button class="px-space-lg py-space-xs rounded-lg font-label-md text-label-md text-on-primary bg-primary-container hover:bg-primary transition-all shadow-sm flex items-center gap-space-xs" type="submit">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span>Issue &amp; Send For Signatures</span>
+</button>
+</div>
+</form>
+</div>
+</div>
+<div class="px-margin py-space-lg flex flex-col gap-space-lg max-w-[1600px] w-full mx-auto">
+<!-- Section 1: Header & Quick Actions Bar -->
+<div class="flex flex-col xl:flex-row xl:items-center justify-between gap-space-md pb-space-xs">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-space-sm">
+<span class="px-space-sm py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm uppercase tracking-wide">HR Central Registry</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span> Kuwait HQ Subsidized Mission
+          </span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight">Contracts &amp; HR Operations Hub</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-3xl">
+          Lifecycle management, contract renewals, salary scales, probation reviews, and staff performance for DirectAid educational compounds across Somaliland.
+        </p>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs">
+<button class="h-9 px-space-md rounded-lg font-label-md text-label-md text-on-primary bg-primary-container hover:bg-primary transition-all shadow-sm flex items-center gap-space-xs" onclick="document.getElementById('new-contract-modal').classList.remove('hidden'); document.getElementById('new-contract-modal').classList.add('flex')" type="button">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+<span>+ Issue New Employment Contract</span>
+</button>
+<button class="h-9 px-space-md rounded-lg font-label-md text-label-md text-error-container bg-error/10 hover:bg-error/20 text-error transition-all shadow-sm flex items-center gap-space-xs" type="button">
+<span class="material-symbols-outlined text-[18px]">history_edu</span>
+<span>Batch Renewals (14 Expiring)</span>
+</button>
+<button class="h-9 px-space-md rounded-lg font-label-md text-label-md text-on-surface bg-surface-container-lowest hover:bg-surface-container-low transition-all shadow-sm flex items-center gap-space-xs" type="button">
+<span class="material-symbols-outlined text-[18px]">table_view</span>
+<span>Export HR Payroll</span>
+</button>
+<button class="h-9 px-space-md rounded-lg font-label-md text-label-md text-on-surface bg-surface-container-lowest hover:bg-surface-container-low transition-all shadow-sm flex items-center gap-space-xs" type="button">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span>Generate Work Letter</span>
+</button>
+</div>
+</div>
+<!-- Section 2: Metric Summary Cards (4 KPIs) -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-gutter">
+<!-- KPI 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between pb-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Active Workforce Contracts</span>
+<div class="w-8 h-8 rounded-lg bg-primary-container/10 text-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 my-space-xs">
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-xl text-headline-xl text-on-surface">348</span>
+<span class="font-label-md text-label-md text-primary font-semibold">Active</span>
+</div>
+<div class="w-full bg-surface-container-low h-2 rounded-full overflow-hidden flex">
+<div class="bg-primary-container h-full" style="width: 85%" title="296 Permanent"></div>
+<div class="bg-tertiary-container h-full" style="width: 12%" title="42 1-Year Renewable"></div>
+<div class="bg-outline-variant h-full" style="width: 3%" title="10 Probationary"></div>
+</div>
+</div>
+<div class="pt-space-xs flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant">
+<span>296 Tenured</span>
+<span class="text-outline">·</span>
+<span>42 1-Yr Renewable</span>
+<span class="text-outline">·</span>
+<span>10 Probation</span>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between relative overflow-hidden hover:shadow-md transition-shadow">
+<div class="absolute -right-6 -bottom-6 w-24 h-24 bg-error-container/20 rounded-full blur-xl pointer-events-none"></div>
+<div class="flex items-center justify-between pb-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-error font-semibold">Expiring Soon (&lt;45 Days)</span>
+<div class="w-8 h-8 rounded-lg bg-error-container/30 text-error flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">notification_important</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 my-space-xs">
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-xl text-headline-xl text-error">14</span>
+<span class="font-label-sm text-label-sm px-space-xs py-0.5 rounded bg-error-container text-on-error-container font-semibold">Action Required</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface font-medium">Critical school staffing threshold</p>
+</div>
+<div class="pt-space-xs font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-error">timer</span>
+<span>9 Teachers, 3 Cleaners, 2 Campus Guards</span>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between pb-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Appraisal &amp; Performance</span>
+<div class="w-8 h-8 rounded-lg bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">fact_check</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 my-space-xs">
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-xl text-headline-xl text-on-surface">88.4%</span>
+<span class="font-label-md text-label-md text-secondary font-medium">Term 2 Cycle</span>
+</div>
+<div class="w-full bg-surface-container-low h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 88.4%"></div>
+</div>
+</div>
+<div class="pt-space-xs flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant">
+<span>308 / 348 Reviews Filed</span>
+<span class="text-primary font-semibold flex items-center"><span class="material-symbols-outlined text-[14px]">arrow_upward</span> +6.2% YoY</span>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between pb-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Monthly NGO Payroll</span>
+<div class="w-8 h-8 rounded-lg bg-tertiary-fixed text-tertiary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 my-space-xs">
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-xl text-headline-xl text-on-surface">$142,850</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/mo</span>
+</div>
+<p class="font-body-sm text-body-sm text-tertiary font-medium">Kuwait Headquarter Grant Escrow</p>
+</div>
+<div class="pt-space-xs flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant">
+<span>HGA: $98,400</span>
+<span class="text-outline">·</span>
+<span>GBL: $44,450</span>
+<span class="text-primary font-medium">Audited</span>
+</div>
+</div>
+</div>
+<!-- Section 3: Contract Expiry & Renewal Pipeline Tracker -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-xs">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-primary-container/10 text-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">view_kanban</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Contract Expiry &amp; Renewal Lifecycle Pipeline</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Tracking multi-tier approvals between School Principals and DirectAid Somaliland Country Director</p>
+</div>
+</div>
+<div class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+<span>Auto-alerting activated for Kuwait HR audit compliance</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Stage 1 -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-error"></span>
+<span class="font-label-md text-label-md text-on-surface">Due in &lt;15 Days</span>
+</div>
+<span class="px-space-xs py-0.5 rounded font-label-sm text-label-sm bg-error-container text-on-error-container font-semibold">4 Staff</span>
+</div>
+<p class="font-body-sm text-body-sm text-error font-medium">Critical: Work permit and salary gap risk</p>
+<div class="flex flex-col gap-space-xs pt-1">
+<div class="bg-surface-container-lowest p-space-sm rounded-lg shadow-sm flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface">Mukhtar Ali Obsiye</span>
+<span class="font-label-sm text-label-sm text-error font-semibold">12d Left</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Snr Physics · Hargeisa Boys Sec</span>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">$680/mo</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface">Principal Pushed</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-space-sm rounded-lg shadow-sm flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface">Sahra Awil Jama</span>
+<span class="font-label-sm text-label-sm text-error font-semibold">14d Left</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Chemistry Lead · Gabiley Boys</span>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">$620/mo</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-error/10 text-error">Docs Pending</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Stage 2 -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+<span class="font-label-md text-label-md text-on-surface">Due 16–45 Days</span>
+</div>
+<span class="px-space-xs py-0.5 rounded font-label-sm text-label-sm bg-secondary-container text-on-secondary-container font-semibold">10 Staff</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Campus Principals conducting evaluations</p>
+<div class="flex flex-col gap-space-xs pt-1">
+<div class="bg-surface-container-lowest p-space-sm rounded-lg shadow-sm flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface">Guled Farah Sharmarke</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">28d Left</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Security Lead · Gabiley Boarding</span>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">$350/mo</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface">Evaluation Done</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-space-sm rounded-lg shadow-sm flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface">Hodan Bile Duale</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">36d Left</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Quranic Studies · HGA Al-Nur</span>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">$480/mo</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface">Drafting Annex</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Stage 3 -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary-container"></span>
+<span class="font-label-md text-label-md text-on-surface">Awaiting Signature</span>
+</div>
+<span class="px-space-xs py-0.5 rounded font-label-sm text-label-sm bg-tertiary-fixed text-on-tertiary-fixed-variant font-semibold">8 Staff</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Pending Country Director final approval</p>
+<div class="flex flex-col gap-space-xs pt-1">
+<div class="bg-surface-container-lowest p-space-sm rounded-lg shadow-sm flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface">Amina Dualeh Egal</span>
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">2yr Ext</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Vice Principal · HGA Girls Sec</span>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">$820/mo</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-tertiary-fixed text-tertiary font-semibold">With Maryan F.</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-space-sm rounded-lg shadow-sm flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface">Abdirashid Nur Elmi</span>
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">2yr Ext</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Math Head · HGA Boys Sec</span>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">$710/mo</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-tertiary-fixed text-tertiary font-semibold">Approved HR</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Stage 4 -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-container"></span>
+<span class="font-label-md text-label-md text-on-surface">Renewed (Quarter)</span>
+</div>
+<span class="px-space-xs py-0.5 rounded font-label-sm text-label-sm bg-primary-fixed text-on-primary-fixed font-semibold">32 Staff</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Archived to Kuwait Escrow Ledger</p>
+<div class="flex flex-col gap-space-xs pt-1">
+<div class="bg-surface-container-lowest p-space-sm rounded-lg shadow-sm flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface">Deqa Mahamud Abdi</span>
+<span class="font-label-sm text-label-sm text-primary font-semibold">Active</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">ICT Instructor · Gabiley Girls</span>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">$590/mo</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-secondary-container text-on-secondary-container">Logged to HQ</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-space-sm rounded-lg shadow-sm flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface">Yusuf Gedi Samatar</span>
+<span class="font-label-sm text-label-sm text-primary font-semibold">Active</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Campus Driver · Hargeisa HQ</span>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">$380/mo</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-secondary-container text-on-secondary-container">Logged to HQ</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 4: Main Interactive Filter & Operations Roster -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm flex flex-col overflow-hidden">
+<!-- Filter Bar -->
+<div class="p-space-md flex flex-col gap-space-md bg-surface-container-lowest">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="relative flex-1 max-w-md">
+<span class="material-symbols-outlined absolute left-space-md top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+<input class="w-full pl-10 pr-space-md py-space-xs h-10 bg-surface-container-low text-on-surface rounded-lg font-body-sm text-body-sm placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20" id="rosterSearchInput" onkeyup="filterRoster()" placeholder="Search contract #, employee name, or staff ID..." type="text"/>
+</div>
+<!-- Multi-Dropdown Filters -->
+<div class="flex flex-wrap items-center gap-space-xs">
+<div class="flex items-center gap-1 bg-surface-container-low px-space-sm py-1 rounded-lg">
+<span class="material-symbols-outlined text-[18px] text-outline">apartment</span>
+<select class="bg-transparent font-label-md text-label-md text-on-surface focus:outline-none pr-space-xs cursor-pointer" id="filterCampus" onchange="filterRoster()">
+<option value="all">All 8 School Divisions</option>
+<option value="Hargeisa Boys Sec">Hargeisa Boys Secondary</option>
+<option value="Hargeisa Girls Sec">Hargeisa Girls Secondary</option>
+<option value="Gabiley Boys Sec">Gabiley Boys Secondary</option>
+<option value="Gabiley Girls Primary">Gabiley Girls Primary</option>
+<option value="Hargeisa Al-Nur">Hargeisa Al-Nur Primary</option>
+<option value="Hargeisa Vocational">Hargeisa Vocational</option>
+</select>
+</div>
+<div class="flex items-center gap-1 bg-surface-container-low px-space-sm py-1 rounded-lg">
+<span class="material-symbols-outlined text-[18px] text-outline">verified</span>
+<select class="bg-transparent font-label-md text-label-md text-on-surface focus:outline-none pr-space-xs cursor-pointer" id="filterStatus" onchange="filterRoster()">
+<option value="all">All Contract Statuses</option>
+<option value="Active">Active &amp; Approved</option>
+<option value="Expiring">Expiring (&lt;45 Days)</option>
+<option value="Probation">Probation Review</option>
+<option value="Pending">Pending Signatures</option>
+</select>
+</div>
+<div class="flex items-center gap-1 bg-surface-container-low px-space-sm py-1 rounded-lg">
+<span class="material-symbols-outlined text-[18px] text-outline">group</span>
+<select class="bg-transparent font-label-md text-label-md text-on-surface focus:outline-none pr-space-xs cursor-pointer" id="filterCadre" onchange="filterRoster()">
+<option value="all">All Cadres (All Roles)</option>
+<option value="Teacher">Teaching Cadre</option>
+<option value="Leadership">School Principals</option>
+<option value="Security">Security &amp; Logistics</option>
+<option value="Support">Support &amp; Facilities</option>
+</select>
+</div>
+<button class="h-9 px-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface text-label-sm font-label-sm flex items-center gap-1" onclick="resetFilters()" type="button">
+<span class="material-symbols-outlined text-[16px]">restart_alt</span>
+<span>Reset</span>
+</button>
+</div>
+</div>
+<!-- Bulk Selection Context Bar -->
+<div class="flex items-center justify-between px-space-md py-space-xs bg-surface-container-low/60 rounded-lg">
+<div class="flex items-center gap-space-md">
+<label class="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant cursor-pointer">
+<input class="accent-primary-container rounded" id="selectAllCheckbox" onchange="toggleSelectAll(this)" type="checkbox"/>
+<span>Select All (Showing 7 of 348)</span>
+</label>
+<span class="text-outline">|</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Selected: <strong class="text-on-surface" id="selectedCount">0</strong> staff members</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="h-7 px-space-sm rounded bg-surface-container-lowest hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center gap-1 shadow-sm" type="button">
+<span class="material-symbols-outlined text-[14px]">send</span> Batch DirectAid Endorsement
+            </button>
+<button class="h-7 px-space-sm rounded bg-surface-container-lowest hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center gap-1 shadow-sm" type="button">
+<span class="material-symbols-outlined text-[14px]">print</span> Print Renewal Packets
+            </button>
+</div>
+</div>
+</div>
+<!-- Data Table -->
+<div class="overflow-x-auto w-full">
+<table class="w-full text-left" id="rosterTable">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+<th class="py-space-sm px-space-md w-12 text-center">
+<span class="sr-only">Select</span>
+</th>
+<th class="py-space-sm px-space-md">Staff Identity &amp; Civil Code</th>
+<th class="py-space-sm px-space-md">Division &amp; Campus</th>
+<th class="py-space-sm px-space-md">Cadre &amp; Role Title</th>
+<th class="py-space-sm px-space-md">Contract Agreement</th>
+<th class="py-space-sm px-space-md">Tenure &amp; Expiry Window</th>
+<th class="py-space-sm px-space-md">Basic Scale</th>
+<th class="py-space-sm px-space-md">DirectAid Endorsement</th>
+<th class="py-space-sm px-space-md text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 font-body-sm text-body-sm text-on-surface">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/40 transition-colors staff-row" data-cadre="Teacher" data-campus="Hargeisa Boys Sec" data-status="Expiring">
+<td class="py-space-sm px-space-md text-center">
+<input class="row-checkbox accent-primary-container" onchange="updateSelectedCount()" type="checkbox"/>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-primary-container/15 text-primary-container font-headline-sm flex items-center justify-center font-bold">
+                    MO
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Ustadh Mukhtar Ali Obsiye</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">#DA-HGA-1044 · Somaliland</span>
+</div>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Hargeisa Boys Sec</span>
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span> Campus Alpha (Main)
+                  </span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface">Senior Physics Teacher</span>
+<span class="font-label-sm text-label-sm text-outline">Academic Grade 4 (Tenured)</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-medium">2-Yr Renewable</span>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-error font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">warning</span> Expiring 24 Nov 2024
+                  </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">12 days left · Urgent</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-label-md text-label-md font-semibold text-on-surface">
+                $680 <span class="text-outline font-normal">/mo</span>
+</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 px-space-xs py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">check</span> Principal Recom
+                </span>
+</td>
+<td class="py-space-sm px-space-md text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="px-space-xs py-1 rounded bg-primary-container text-on-primary hover:bg-primary font-label-sm text-label-sm transition-all shadow-sm" title="Fast Renew" type="button">Renew</button>
+<button class="w-8 h-8 rounded text-on-surface-variant hover:bg-surface-container-high flex items-center justify-center" title="View Dossier" type="button">
+<span class="material-symbols-outlined text-[18px]">folder_open</span>
+</button>
+<button class="w-8 h-8 rounded text-on-surface-variant hover:bg-surface-container-high flex items-center justify-center" title="Download Official Agreement" type="button">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/40 transition-colors staff-row" data-cadre="Leadership" data-campus="Hargeisa Girls Sec" data-status="Active">
+<td class="py-space-sm px-space-md text-center">
+<input class="row-checkbox accent-primary-container" onchange="updateSelectedCount()" type="checkbox"/>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-tertiary-fixed text-tertiary font-headline-sm flex items-center justify-center font-bold">
+                    AD
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Amina Dualeh Egal</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">#DA-HGA-1012 · Somaliland</span>
+</div>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Hargeisa Girls Sec</span>
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span> Campus Beta (Girls)
+                  </span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface">Vice Principal &amp; Dean of Academics</span>
+<span class="font-label-sm text-label-sm text-outline">Leadership Cadre (Grade 6)</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<span class="px-space-xs py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-medium">Permanent Tenured</span>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-primary font-medium">Valid Thru 31 Dec 2026</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Triennial Audit Oct 2026</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-label-md text-label-md font-semibold text-on-surface">
+                $820 <span class="text-outline font-normal">/mo</span>
+</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 px-space-xs py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">verified</span> HQ Endorsed
+                </span>
+</td>
+<td class="py-space-sm px-space-md text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="w-8 h-8 rounded text-on-surface-variant hover:bg-surface-container-high flex items-center justify-center" title="View Dossier" type="button">
+<span class="material-symbols-outlined text-[18px]">folder_open</span>
+</button>
+<button class="w-8 h-8 rounded text-on-surface-variant hover:bg-surface-container-high flex items-center justify-center" title="Download Official Agreement" type="button">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/40 transition-colors staff-row" data-cadre="Security" data-campus="Gabiley Boys Sec" data-status="Expiring">
+<td class="py-space-sm px-space-md text-center">
+<input class="row-checkbox accent-primary-container" onchange="updateSelectedCount()" type="checkbox"/>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-high text-on-surface-variant font-headline-sm flex items-center justify-center font-bold">
+                    GF
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Guled Farah Sharmarke</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">#DA-GBL-2005 · Somaliland</span>
+</div>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Gabiley Boys Sec</span>
+<span class="font-label-sm text-label-sm text-tertiary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-container"></span> Gabiley Center Complex
+                  </span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface">Campus Security Lead &amp; Safety Officer</span>
+<span class="font-label-sm text-label-sm text-outline">Operations Grade 2</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-medium">1-Yr Humanitarian</span>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-error font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> Expiring 10 Dec 2024
+                  </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">28 days left · Renewal Due</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-label-md text-label-md font-semibold text-on-surface">
+                $350 <span class="text-outline font-normal">/mo</span>
+</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 px-space-xs py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-medium">
+<span class="material-symbols-outlined text-[14px]">pending</span> Review Underway
+                </span>
+</td>
+<td class="py-space-sm px-space-md text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="px-space-xs py-1 rounded bg-primary-container text-on-primary hover:bg-primary font-label-sm text-label-sm transition-all shadow-sm" title="Fast Renew" type="button">Renew</button>
+<button class="w-8 h-8 rounded text-on-surface-variant hover:bg-surface-container-high flex items-center justify-center" title="View Dossier" type="button">
+<span class="material-symbols-outlined text-[18px]">folder_open</span>
+</button>
+<button class="w-8 h-8 rounded text-on-surface-variant hover:bg-surface-container-high flex items-center justify-center" title="Download Official Agreement" type="button">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low/40 transition-colors staff-row" data-cadre="Teacher" data-campus="Gabiley Girls Primary" data-status="Active">
+<td class="py-space-sm px-space-md text-center">
+<input class="row-checkbox accent-primary-container" onchange="updateSelectedCount()" type="checkbox"/>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-secondary-container text-on-secondary-container font-headline-sm flex items-center justify-center font-bold">
+                    DM
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Deqa Mahamud Abdi</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">#DA-SOM-0749 · Somaliland</span>
+</div>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Gabiley Girls Primary</span>
+<span class="font-label-sm text-label-sm text-tertiary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-container"></span> Gabiley Girls Division
+                  </span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface">Senior ICT &amp; Informatics Teacher</span>
+<span class="font-label-sm text-label-sm text-outline">Academic Grade 3</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-medium">2-Yr Renewable</span>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-primary font-medium">Valid Thru 15 Sep 2026</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Renewed Q3 2024</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-label-md text-label-md font-semibold text-on-surface">
+                $590 <span class="text-outline font-normal">/mo</span>
+</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 px-space-xs py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">done_all</span> Kuwait Certified
+                </span>
+</td>
+<td class="py-space-sm px-space-md text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="w-8 h-8 rounded text-on-surface-variant hover:bg-surface-container-high flex items-center justify-center" title="View Dossier" type="button">
+<span class="material-symbols-outlined text-[18px]">folder_open</span>
+</button>
+<button class="w-8 h-8 rounded text-on-surface-variant hover:bg-surface-container-high flex items-center justify-center" title="Download Official Agreement" type="button">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-low/40 transition-colors staff-row" data-cadre="Teacher" data-campus="Hargeisa Al-Nur" data-status="Probation">
+<td class="py-space-sm px-space-md text-center">
+<input class="row-checkbox accent-primary-container" onchange="updateSelectedCount()" type="checkbox"/>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-primary-fixed text-on-primary-fixed font-headline-sm flex items-center justify-center font-bold">
+                    FO
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Faduma Osman Warsame</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">#DA-HGA-3188 · Somaliland</span>
+</div>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Hargeisa Al-Nur</span>
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span> Al-Nur Primary Branch
+                  </span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface">Primary Mathematics Teacher</span>
+<span class="font-label-sm text-label-sm text-outline">Probationary Stage</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<span class="px-space-xs py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold">6-Mo Probation</span>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-error font-medium">Ends 18 Dec 2024</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Formal Review Meeting Set</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-label-md text-label-md font-semibold text-on-surface">
+                $420 <span class="text-outline font-normal">/mo</span>
+</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 px-space-xs py-0.5 rounded-full bg-error/10 text-error font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">rate_review</span> Needs Evaluation
+                </span>
+</td>
+<td class="py-space-sm px-space-md text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="px-space-xs py-1 rounded bg-secondary-container text-on-secondary-container hover:bg-secondary hover:text-on-secondary font-label-sm text-label-sm transition-all shadow-sm" title="Log Evaluation" type="button">Review</button>
+<button class="w-8 h-8 rounded text-on-surface-variant hover:bg-surface-container-high flex items-center justify-center" title="View Dossier" type="button">
+<span class="material-symbols-outlined text-[18px]">folder_open</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-surface-container-low/40 transition-colors staff-row" data-cadre="Support" data-campus="Hargeisa Vocational" data-status="Pending">
+<td class="py-space-sm px-space-md text-center">
+<input class="row-checkbox accent-primary-container" onchange="updateSelectedCount()" type="checkbox"/>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-high text-on-surface-variant font-headline-sm flex items-center justify-center font-bold">
+                    JA
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Jama Ali Daud</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">#DA-HGA-2419 · Somaliland</span>
+</div>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Hargeisa Vocational</span>
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span> Technical Institute
+                  </span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface">Mechanical Workshop Lead</span>
+<span class="font-label-sm text-label-sm text-outline">Vocational Cadre (Grade 3)</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-medium">2-Yr Extension</span>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-tertiary font-medium">Pending Kuwait Approval</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Current: Exp. 30 Dec 2024</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-label-md text-label-md font-semibold text-on-surface">
+                $510 <span class="text-outline font-normal">/mo</span>
+</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 px-space-xs py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">draw</span> Awaiting Signature
+                </span>
+</td>
+<td class="py-space-sm px-space-md text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="px-space-xs py-1 rounded bg-tertiary-container text-on-primary hover:bg-tertiary font-label-sm text-label-sm transition-all shadow-sm" title="Sign Contract" type="button">Sign</button>
+<button class="w-8 h-8 rounded text-on-surface-variant hover:bg-surface-container-high flex items-center justify-center" title="View Dossier" type="button">
+<span class="material-symbols-outlined text-[18px]">folder_open</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 7 -->
+<tr class="hover:bg-surface-container-low/40 transition-colors staff-row" data-cadre="Support" data-campus="Hargeisa Boys Sec" data-status="Active">
+<td class="py-space-sm px-space-md text-center">
+<input class="row-checkbox accent-primary-container" onchange="updateSelectedCount()" type="checkbox"/>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-secondary-fixed text-on-secondary-fixed font-headline-sm flex items-center justify-center font-bold">
+                    YG
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Yusuf Gedi Samatar</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">#DA-SOM-0914 · Somaliland</span>
+</div>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Hargeisa Boys Sec</span>
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span> Regional HQ Logistics
+                  </span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface">Head Bus &amp; Fleet Transport Operator</span>
+<span class="font-label-sm text-label-sm text-outline">Operations Grade 2</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<span class="px-space-xs py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-medium">Permanent Tenured</span>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-primary font-medium">Valid Thru 30 Jun 2027</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Annual Review Passed</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-label-md text-label-md font-semibold text-on-surface">
+                $380 <span class="text-outline font-normal">/mo</span>
+</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 px-space-xs py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Approved
+                </span>
+</td>
+<td class="py-space-sm px-space-md text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="w-8 h-8 rounded text-on-surface-variant hover:bg-surface-container-high flex items-center justify-center" title="View Dossier" type="button">
+<span class="material-symbols-outlined text-[18px]">folder_open</span>
+</button>
+<button class="w-8 h-8 rounded text-on-surface-variant hover:bg-surface-container-high flex items-center justify-center" title="Download Official Agreement" type="button">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="p-space-md bg-surface-container-low/40 flex flex-col sm:flex-row items-center justify-between gap-space-sm">
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+          Showing 1 to 7 of <strong>348 total workforce contracts</strong> across 8 campus facilities
+        </span>
+<div class="flex items-center gap-space-xs">
+<button class="h-8 px-space-sm rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container-high font-label-sm text-label-sm flex items-center gap-1 disabled:opacity-50" disabled="" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_left</span> Previous
+          </button>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 rounded bg-primary-container text-on-primary font-label-sm text-label-sm font-semibold" type="button">1</button>
+<button class="w-8 h-8 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container-high font-label-sm text-label-sm" type="button">2</button>
+<button class="w-8 h-8 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container-high font-label-sm text-label-sm" type="button">3</button>
+<span class="px-1 text-outline">...</span>
+<button class="w-8 h-8 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container-high font-label-sm text-label-sm" type="button">50</button>
+</div>
+<button class="h-8 px-space-sm rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container-high font-label-sm text-label-sm flex items-center gap-1" type="button">
+            Next <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Section 5: Operational Sub-Panels (2 Columns) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Left Sub-Panel: DirectAid HR Policy & Benefits Standard -->
+<div class="lg:col-span-7 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">policy</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">DirectAid NGO Staff Benefits &amp; Entitlements Standard</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Somaliland Regional Mission Code 2024–2025 · Kuwait HQ Oversight</p>
+</div>
+</div>
+<span class="font-label-sm text-label-sm px-space-xs py-0.5 rounded bg-surface-container-high text-on-surface font-semibold">Audited V4.2</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-space-md">
+<!-- Item 1 -->
+<div class="bg-surface-container-low p-space-md rounded-lg flex flex-col justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs text-primary font-label-md text-label-md font-semibold">
+<span class="material-symbols-outlined text-[18px]">medical_services</span>
+<span>Health Insurance</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              100% Comprehensive inpatient &amp; outpatient coverage with Hargeisa Group Hospital and Gabiley General.
+            </p>
+<span class="font-label-sm text-label-sm text-primary font-semibold">348 / 348 Enrolled</span>
+</div>
+<!-- Item 2 -->
+<div class="bg-surface-container-low p-space-md rounded-lg flex flex-col justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs text-tertiary font-label-md text-label-md font-semibold">
+<span class="material-symbols-outlined text-[18px]">cottage</span>
+<span>Gabiley Remote Subsidy</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              $85/month monthly housing &amp; travel allowance for teachers commuting between Hargeisa and Gabiley compounds.
+            </p>
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">112 Staff Receiving</span>
+</div>
+<!-- Item 3 -->
+<div class="bg-surface-container-low p-space-md rounded-lg flex flex-col justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs text-secondary font-label-md text-label-md font-semibold">
+<span class="material-symbols-outlined text-[18px]">savings</span>
+<span>End of Service Gratuity</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              1-month base salary escrow accrued per completed continuous year under Somaliland Labor Code &amp; Kuwait NGO regulations.
+            </p>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">$314,900 Fully Funded</span>
+</div>
+</div>
+<!-- Visual Progress Graphic for Performance Milestones -->
+<div class="bg-surface-container-low/60 p-space-md rounded-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Annual Staff Promotion Eligibility Status</span>
+<span class="font-body-sm text-body-sm text-primary font-semibold">48 Staff Eligible for Grade Uplift</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden flex">
+<div class="bg-primary-container h-full" style="width: 65%" title="Academic Evaluated"></div>
+<div class="bg-secondary h-full" style="width: 25%" title="Principal Approved"></div>
+<div class="bg-tertiary h-full" style="width: 10%" title="Pending Civil Ministry Endorsement"></div>
+</div>
+<div class="flex items-center justify-between pt-1 font-body-sm text-body-sm text-on-surface-variant">
+<span>65% Academic Certified</span>
+<span>25% Approved for Grade 4/5</span>
+<span>10% Gov Ministry Sync</span>
+</div>
+</div>
+</div>
+<!-- Right Sub-Panel: Recent HR Audit Log -->
+<div class="lg:col-span-5 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between gap-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high text-on-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">history</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Recent HR Operational Audit</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">DirectAid electronic signature ledger</p>
+</div>
+</div>
+<button class="font-label-sm text-label-sm text-primary hover:underline" type="button">Full Log</button>
+</div>
+<div class="flex flex-col gap-space-sm">
+<!-- Log 1 -->
+<div class="flex items-start gap-space-sm p-space-xs rounded-lg hover:bg-surface-container-low/50 transition-colors">
+<div class="w-7 h-7 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">done</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-semibold">2-Yr Renewal Sealed</span>
+<span class="font-label-sm text-label-sm text-outline">Today, 11:24 AM</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Dr. Maryan Farah cosigned Ustadh Guled H. (Gabiley Boys Sec)</p>
+</div>
+</div>
+<!-- Log 2 -->
+<div class="flex items-start gap-space-sm p-space-xs rounded-lg hover:bg-surface-container-low/50 transition-colors">
+<div class="w-7 h-7 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-semibold">New Hire Packet Dispatched</span>
+<span class="font-label-sm text-label-sm text-outline">Yesterday</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Science Lab Instructor (Hargeisa Girls) onboarded under Grade 3.</p>
+</div>
+</div>
+<!-- Log 3 -->
+<div class="flex items-start gap-space-sm p-space-xs rounded-lg hover:bg-surface-container-low/50 transition-colors">
+<div class="w-7 h-7 rounded-full bg-tertiary-fixed text-tertiary flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">payments</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-semibold">November Payroll Validated</span>
+<span class="font-label-sm text-label-sm text-outline">2 days ago</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Transferred $142,850 batch disbursement approval to Kuwait Treasury.</p>
+</div>
+</div>
+<!-- Log 4 -->
+<div class="flex items-start gap-space-sm p-space-xs rounded-lg hover:bg-surface-container-low/50 transition-colors">
+<div class="w-7 h-7 rounded-full bg-error-container text-on-error-container flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">notification_important</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-error font-semibold">Expiry Warning Sent (14 Staff)</span>
+<span class="font-label-sm text-label-sm text-outline">3 days ago</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Automated notification to Principals of HGA Boys and Gabiley Campuses.</p>
+</div>
+</div>
+</div>
+<div class="p-space-sm bg-surface-container-low rounded-lg flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span> Cloud Server Sync: Online
+          </span>
+<span class="text-primary font-semibold">Audit SHA-256 Validated</span>
+</div>
+</div>
+</div>
+</div>
+<script>
+    // Live Roster Search & Multi-Attribute Filtering
+    function filterRoster() {
+      const search = (document.getElementById('rosterSearchInput').value || '').toLowerCase();
+      const campus = document.getElementById('filterCampus').value;
+      const status = document.getElementById('filterStatus').value;
+      const cadre = document.getElementById('filterCadre').value;
+
+      const rows = document.querySelectorAll('.staff-row');
+      rows.forEach(row => {
+        const rowCampus = row.getAttribute('data-campus') || '';
+        const rowStatus = row.getAttribute('data-status') || '';
+        const rowCadre = row.getAttribute('data-cadre') || '';
+        const text = row.innerText.toLowerCase();
+
+        const matchesSearch = text.includes(search);
+        const matchesCampus = (campus === 'all') || (rowCampus === campus);
+        const matchesStatus = (status === 'all') || (rowStatus === status);
+        const matchesCadre = (cadre === 'all') || (rowCadre === cadre);
+
+        if (matchesSearch && matchesCampus && matchesStatus && matchesCadre) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    function resetFilters() {
+      document.getElementById('rosterSearchInput').value = '';
+      document.getElementById('filterCampus').value = 'all';
+      document.getElementById('filterStatus').value = 'all';
+      document.getElementById('filterCadre').value = 'all';
+      filterRoster();
+    }
+
+    function toggleSelectAll(masterCheckbox) {
+      const checkboxes = document.querySelectorAll('.row-checkbox');
+      checkboxes.forEach(cb => {
+        const row = cb.closest('tr');
+        if (row && row.style.display !== 'none') {
+          cb.checked = masterCheckbox.checked;
+        }
+      });
+      updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+      const checked = document.querySelectorAll('.row-checkbox:checked').length;
+      const countEl = document.getElementById('selectedCount');
+      if (countEl) countEl.textContent = checked;
+    }
+  </script>
+</div></main></div></body></html>

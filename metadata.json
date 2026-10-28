@@ -1,0 +1,6 @@
+{
+  "name": "DirectAid Employee Management Portal",
+  "description": "Comprehensive enterprise HR and staff operations portal for DirectAid primary and secondary school divisions, teachers, principles, securities, and operations staff in Hargeisa and Gabiley.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
