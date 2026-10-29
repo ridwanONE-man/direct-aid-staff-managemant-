@@ -83,6 +83,19 @@ const defaultFilters: DirectoryFilters = {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+// Bump to discard demo data previously persisted in the browser
+const DATA_VERSION = '2';
+try {
+  if (localStorage.getItem('directaid_data_version') !== DATA_VERSION) {
+    localStorage.removeItem('directaid_employees');
+    localStorage.removeItem('directaid_notifications');
+    localStorage.removeItem('directaid_compliance');
+    localStorage.setItem('directaid_data_version', DATA_VERSION);
+  }
+} catch (e) {
+  console.error('Failed to reset stored data:', e);
+}
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [employees, setEmployees] = useState<EmployeeRecord[]>(() => {
     const saved = localStorage.getItem('directaid_employees');

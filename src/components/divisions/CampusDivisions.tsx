@@ -31,7 +31,7 @@ export const CampusDivisions: React.FC = () => {
 
   const totalStudents = divisions.reduce((acc, d) => acc + d.studentCount, 0);
   const totalSchoolTeachers = employees.filter(e => e.jobTitle === 'Teacher').length;
-  const avgRatio = totalSchoolTeachers > 0 ? Math.round(totalStudents / totalSchoolTeachers) : 28;
+  const avgRatio = totalSchoolTeachers > 0 ? Math.round(totalStudents / totalSchoolTeachers) : 0;
 
   return (
     <div className="space-y-5">

@@ -267,18 +267,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {!isCollapsed ? (
           <div className="mx-3 mb-2 p-2.5 bg-white border border-[#E2EAE4] hover:border-[#C5E8D2] rounded-xl shadow-xs transition-all flex items-center gap-3 group">
             <div className="relative shrink-0">
-              <img
-                src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=150&auto=format&fit=crop&q=80"
-                alt="Dr. Fathia Omar"
-                className="w-10 h-10 rounded-xl object-cover border border-[#C5E8D2] shadow-2xs"
-              />
+              <div className="w-10 h-10 rounded-xl bg-[#EBF7EE] border border-[#C5E8D2] shadow-2xs flex items-center justify-center text-[#147D4A]">
+                <UserCheck className="w-5 h-5" />
+              </div>
               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
             </div>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold text-[#192C21] truncate">
-                  Dr. Fathia Omar
+                  HR Administrator
                 </h4>
                 <button
                   type="button"
@@ -290,7 +288,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </button>
               </div>
               <p className="text-[10px] text-[#6B7E72] truncate">
-                Regional HR Admin
+                DirectAid Staff Portal
               </p>
               <div className="flex items-center gap-1 mt-0.5">
                 <span className="text-[9px] font-bold text-[#147D4A] bg-[#EBF7EE] px-1.5 py-0.2 rounded-full">
@@ -302,17 +300,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ) : (
           <div className="flex justify-center mb-2 group relative">
             <div className="relative cursor-pointer" onClick={() => setIsCollapsed(false)}>
-              <img
-                src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=150&auto=format&fit=crop&q=80"
-                alt="Dr. Fathia Omar"
-                className="w-10 h-10 rounded-xl object-cover border border-[#C5E8D2] shadow-2xs"
-              />
+              <div className="w-10 h-10 rounded-xl bg-[#EBF7EE] border border-[#C5E8D2] shadow-2xs flex items-center justify-center text-[#147D4A]">
+                <UserCheck className="w-5 h-5" />
+              </div>
               <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white" />
             </div>
 
             {/* Collapsed Tooltip */}
             <div className="absolute left-full ml-2 px-2.5 py-1 bg-[#192C21] text-white text-xs rounded-lg shadow-md opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-opacity">
-              Dr. Fathia Omar (Admin)
+              HR Administrator
             </div>
           </div>
         )}
