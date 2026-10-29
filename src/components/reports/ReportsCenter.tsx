@@ -293,7 +293,7 @@ export const ReportsCenter: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-              {divisions.filter(d => d.id !== 'div-hq-admin-hrg').map((div) => {
+              {divisions.filter(d => d.level !== 'Central Operations').map((div) => {
                 const teachers = employees.filter(e => e.divisionId === div.id && e.jobTitle === 'Teacher').length;
                 const ratio = teachers > 0 ? Math.round(div.studentCount / teachers) : div.studentCount;
                 const isOptimal = ratio <= 32;

@@ -4,7 +4,7 @@ import { JobRole, DegreeLevel, EmploymentType, DocumentAttachment } from '../../
 import { X, UserPlus, Check, ArrowRight, ArrowLeft, Camera, FileText, ShieldCheck, GraduationCap } from 'lucide-react';
 
 export const AddEmployeeModal: React.FC = () => {
-  const { isAddEmployeeOpen, setIsAddEmployeeOpen, divisions, addEmployee, navigateToProfile } = useApp();
+  const { isAddEmployeeOpen, setIsAddEmployeeOpen, divisions, addEmployee, navigateToProfile, setActivePage } = useApp();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
@@ -63,6 +63,7 @@ export const AddEmployeeModal: React.FC = () => {
     e.preventDefault();
 
     const selectedDiv = divisions.find(d => d.id === divisionId) || divisions[0];
+    if (!selectedDiv) return;
 
     const endDate = new Date(new Date(startDate).getTime() + contractYears * 365 * 24 * 60 * 60 * 1000)
       .toISOString()
@@ -349,7 +350,15 @@ export const AddEmployeeModal: React.FC = () => {
             {step === 2 && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">School Division Assignment (The 8 Canonical Categories) *</label>
+                  <label className="block text-slate-700 font-semibold mb-1">School Division Assignment *</label>
+                {divisions.length === 0 && (
+                  <div className="p-3 mb-2 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-xs">
+                    No school divisions exist yet.{' '}
+                    <button type="button" onClick={() => { setIsAddEmployeeOpen(false); setActivePage('divisions'); }} className="font-bold underline">
+                      Create a division first
+                    </button>
+                  </div>
+                )}
                   <select
                     value={divisionId}
                     onChange={(e) => setDivisionId(e.target.value)}
@@ -625,7 +634,8 @@ export const AddEmployeeModal: React.FC = () => {
             ) : (
               <button
                 type="submit"
-                className="px-6 py-2 bg-[#147D4A] hover:bg-[#0E6139] text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-md"
+                disabled={divisions.length === 0}
+                className="px-6 py-2 bg-[#147D4A] hover:bg-[#0E6139] text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Check className="w-4 h-4" />
                 Register Staff Member

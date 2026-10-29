@@ -20,6 +20,7 @@ export const ExecutiveDashboard: React.FC = () => {
   const {
     employees,
     divisions,
+    notifications,
     regionalScope,
     setActivePage,
     navigateToDivisionStaff,
@@ -255,7 +256,7 @@ export const ExecutiveDashboard: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-          {divisions.filter(d => d.id !== 'div-hq-admin-hrg').map((div) => {
+          {divisions.filter(d => d.level !== 'Central Operations').map((div) => {
             const divStaff = employees.filter(e => e.divisionId === div.id);
             const expiringInDiv = divStaff.filter(e => 
               e.contract.renewalStatus === 'Approaching Renewal' || e.contract.renewalStatus === 'Renewal Pending Sign-off'
@@ -283,14 +284,20 @@ export const ExecutiveDashboard: React.FC = () => {
                   </h3>
 
                   <div className="mt-3 flex items-center gap-2 text-xs text-[#57685D]">
-                    <img
-                      src={div.principalAvatar}
-                      alt={div.principalName}
-                      className="w-7 h-7 rounded-xl object-cover border border-[#C5E8D2]"
-                    />
+                    {div.principalAvatar ? (
+                      <img
+                        src={div.principalAvatar}
+                        alt={div.principalName}
+                        className="w-7 h-7 rounded-xl object-cover border border-[#C5E8D2]"
+                      />
+                    ) : (
+                      <div className="w-7 h-7 rounded-xl bg-[#EBF7EE] border border-[#C5E8D2] shrink-0 flex items-center justify-center text-[#147D4A]">
+                        <UserCheck className="w-3.5 h-3.5" />
+                      </div>
+                    )}
                     <div className="truncate">
                       <span className="block text-[9px] text-[#798C80] uppercase font-bold">Principal</span>
-                      <span className="font-semibold text-[#192C21] text-xs truncate block">{div.principalName}</span>
+                      <span className="font-semibold text-[#192C21] text-xs truncate block">{div.principalName || 'Not assigned'}</span>
                     </div>
                   </div>
                 </div>
@@ -415,12 +422,14 @@ export const ExecutiveDashboard: React.FC = () => {
           </div>
 
           <div className="space-y-2.5 text-xs">
-            {[
-              { title: 'Staff Onboarded', desc: 'Guled Ismail Omar registered to Boys Primary Hargeisa', time: '2h ago' },
-              { title: 'Contract Renewed', desc: 'Executive Principal contract extended 2 years', time: 'Yesterday' },
-              { title: 'CID Clearance Verified', desc: 'Police check updated for Boys Secondary Teacher', time: '2d ago' },
-              { title: 'Gabiley Roster Certified', desc: 'Q4 compliance verified for 4 regional divisions', time: '3d ago' }
-            ].map((act, i) => (
+            {notifications.length === 0 && (
+              <p className="text-[11px] text-[#57685D]">No activity recorded yet.</p>
+            )}
+            {notifications.slice(0, 4).map((n) => ({
+              title: n.title,
+              desc: n.message,
+              time: new Date(n.timestamp).toLocaleDateString()
+            })).map((act, i) => (
               <div key={i} className="flex gap-2.5 items-start">
                 <span className="w-2 h-2 rounded-full bg-[#147D4A] mt-1.5 shrink-0" />
                 <div className="flex-1 min-w-0">

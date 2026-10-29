@@ -82,6 +82,7 @@ export const RegisterEmployeePage: React.FC = () => {
     e.preventDefault();
 
     const selectedDiv = divisions.find(d => d.id === divisionId) || divisions[0];
+    if (!selectedDiv) return;
 
     const endDate = new Date(new Date(startDate).getTime() + contractYears * 365 * 24 * 60 * 60 * 1000)
       .toISOString()
@@ -378,6 +379,14 @@ export const RegisterEmployeePage: React.FC = () => {
 
             <div>
               <label className="block text-slate-700 font-semibold mb-1.5">School Division *</label>
+                {divisions.length === 0 && (
+                  <div className="p-3 mb-2 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-xs">
+                    No school divisions exist yet.{' '}
+                    <button type="button" onClick={() => setActivePage('divisions')} className="font-bold underline">
+                      Create a division first
+                    </button>
+                  </div>
+                )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {divisions.map((d) => (
                   <div
@@ -685,7 +694,8 @@ export const RegisterEmployeePage: React.FC = () => {
           ) : (
             <button
               type="submit"
-              className="px-6 py-2.5 bg-[#147D4A] hover:bg-[#0E6139] text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all"
+              disabled={divisions.length === 0}
+              className="px-6 py-2.5 bg-[#147D4A] hover:bg-[#0E6139] text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>Complete Registration</span>

@@ -55,6 +55,7 @@ interface AppContextType {
   setIsUploadDocOpen: (open: boolean) => void;
 
   // Actions
+  addDivision: (divData: Omit<SchoolDivisionCategory, 'id' | 'canonicalIndex'>) => SchoolDivisionCategory;
   addEmployee: (empData: Partial<EmployeeRecord>) => EmployeeRecord;
   updateEmployee: (id: string, updates: Partial<EmployeeRecord>) => void;
   deleteEmployee: (id: string) => void;
@@ -109,7 +110,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return INITIAL_EMPLOYEES;
   });
 
-  const [divisions] = useState<SchoolDivisionCategory[]>(CANONICAL_DIVISIONS);
+  const [divisions, setDivisions] = useState<SchoolDivisionCategory[]>(() => {
+    const saved = localStorage.getItem('directaid_divisions');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse saved divisions:', e);
+      }
+    }
+    return CANONICAL_DIVISIONS;
+  });
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeRecord | null>(() => employees[0] || null);
   const [activePage, setActivePage] = useState<AppPage>('dashboard');
   const [regionalScope, setRegionalScope] = useState<'all' | 'hargeisa' | 'gabiley'>('all');
@@ -168,6 +179,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [employees]);
 
   useEffect(() => {
+    localStorage.setItem('directaid_divisions', JSON.stringify(divisions));
+  }, [divisions]);
+
+  useEffect(() => {
     localStorage.setItem('directaid_notifications', JSON.stringify(notifications));
   }, [notifications]);
 
@@ -222,12 +237,39 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { score, missing };
   };
 
+  const addDivision = (data: Omit<SchoolDivisionCategory, 'id' | 'canonicalIndex'>): SchoolDivisionCategory => {
+    const newDivision: SchoolDivisionCategory = {
+      ...data,
+      id: `div-${Date.now()}`,
+      canonicalIndex: divisions.reduce((max, d) => Math.max(max, d.canonicalIndex), 0) + 1
+    };
+
+    setDivisions(prev => [...prev, newDivision]);
+
+    setNotifications(prev => [{
+      id: `notif-${Date.now()}`,
+      title: 'School Division Created',
+      message: `${newDivision.name} (${newDivision.code}) was added in ${newDivision.city}.`,
+      category: 'system',
+      severity: 'low',
+      divisionId: newDivision.id,
+      timestamp: new Date().toISOString(),
+      read: false,
+      actionUrl: 'divisions'
+    }, ...prev]);
+
+    return newDivision;
+  };
+
   const addEmployee = (data: Partial<EmployeeRecord>): EmployeeRecord => {
     const cityCode = data.campusLocation === 'Gabiley' ? 'GBL' : 'HRG';
     const randomSuffix = Math.floor(2000 + Math.random() * 8000);
     const newId = `DA-${cityCode}-${randomSuffix}`;
 
     const divisionObj = divisions.find(d => d.id === data.divisionId) || divisions[0];
+    if (!divisionObj) {
+      throw new Error('Create a school division before registering employees.');
+    }
 
     const { score, missing } = calculateCompleteness({ ...data, id: newId });
 
@@ -476,6 +518,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setContractRenewalTarget,
         isUploadDocOpen,
         setIsUploadDocOpen,
+        addDivision,
         addEmployee,
         updateEmployee,
         deleteEmployee,
