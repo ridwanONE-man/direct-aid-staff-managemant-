@@ -38,7 +38,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setRegionalScope,
     notifications,
     setIsAddEmployeeOpen,
-    logout
+    logout,
+    userEmail
   } = useApp();
 
   const unreadAlerts = notifications.filter(n => !n.read).length;
@@ -288,7 +289,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </button>
               </div>
               <p className="text-[10px] text-[#6B7E72] truncate">
-                DirectAid Staff Portal
+                {userEmail || 'DirectAid Staff Portal'}
               </p>
               <div className="flex items-center gap-1 mt-0.5">
                 <span className="text-[9px] font-bold text-[#147D4A] bg-[#EBF7EE] px-1.5 py-0.2 rounded-full">

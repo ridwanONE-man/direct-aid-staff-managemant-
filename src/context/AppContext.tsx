@@ -9,7 +9,8 @@ import {
   EmployeeContract,
   DocumentAttachment
 } from '../types';
-import { CANONICAL_DIVISIONS, INITIAL_EMPLOYEES, INITIAL_NOTIFICATIONS, INITIAL_COMPLIANCE_ITEMS } from '../data/initialData';
+import type { Session } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 
 export type AppPage = 'dashboard' | 'directory' | 'divisions' | 'profile' | 'contracts' | 'reports' | 'register';
 
@@ -65,10 +66,15 @@ interface AppContextType {
   navigateToProfile: (employeeId: string) => void;
   navigateToDivisionStaff: (divisionId: string) => void;
 
-  // Authentication
+  // Authentication & sync
   isAuthenticated: boolean;
-  login: (usernameOrEmail?: string, password?: string) => boolean;
-  logout: () => void;
+  isAuthReady: boolean;
+  userEmail: string | null;
+  login: (email: string, password: string) => Promise<string | null>;
+  logout: () => Promise<void>;
+  isDataLoading: boolean;
+  syncError: string | null;
+  clearSyncError: () => void;
 }
 
 const defaultFilters: DirectoryFilters = {
@@ -84,72 +90,35 @@ const defaultFilters: DirectoryFilters = {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Bump to discard demo data previously persisted in the browser
-const DATA_VERSION = '2';
-try {
-  if (localStorage.getItem('directaid_data_version') !== DATA_VERSION) {
-    localStorage.removeItem('directaid_employees');
-    localStorage.removeItem('directaid_notifications');
-    localStorage.removeItem('directaid_compliance');
-    localStorage.setItem('directaid_data_version', DATA_VERSION);
-  }
-} catch (e) {
-  console.error('Failed to reset stored data:', e);
-}
+// Remove data saved by earlier browser-only versions of the portal
+['directaid_employees', 'directaid_divisions', 'directaid_notifications', 'directaid_compliance', 'directaid_auth', 'directaid_data_version']
+  .forEach(key => {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Storage may be unavailable (private mode); nothing to clean up
+    }
+  });
+
+type DbResult = PromiseLike<{ error: { message: string } | null }>;
+
+const employeeRow = (emp: EmployeeRecord) => ({
+  id: emp.id,
+  division_id: emp.divisionId,
+  data: emp,
+  updated_at: new Date().toISOString()
+});
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [employees, setEmployees] = useState<EmployeeRecord[]>(() => {
-    const saved = localStorage.getItem('directaid_employees');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse saved employees:', e);
-      }
-    }
-    return INITIAL_EMPLOYEES;
-  });
-
-  const [divisions, setDivisions] = useState<SchoolDivisionCategory[]>(() => {
-    const saved = localStorage.getItem('directaid_divisions');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse saved divisions:', e);
-      }
-    }
-    return CANONICAL_DIVISIONS;
-  });
-  const [selectedEmployee, setSelectedEmployee] = useState<EmployeeRecord | null>(() => employees[0] || null);
+  const [employees, setEmployees] = useState<EmployeeRecord[]>([]);
+  const [divisions, setDivisions] = useState<SchoolDivisionCategory[]>([]);
+  const [selectedEmployee, setSelectedEmployee] = useState<EmployeeRecord | null>(null);
   const [activePage, setActivePage] = useState<AppPage>('dashboard');
   const [regionalScope, setRegionalScope] = useState<'all' | 'hargeisa' | 'gabiley'>('all');
   const [currentRole, setCurrentRole] = useState<AppUserRole>('super_admin');
   const [filters, setFilters] = useState<DirectoryFilters>(defaultFilters);
-
-  const [notifications, setNotifications] = useState<HRAlertNotification[]>(() => {
-    const saved = localStorage.getItem('directaid_notifications');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return INITIAL_NOTIFICATIONS;
-  });
-
-  const [complianceItems, setComplianceItems] = useState<ComplianceAuditItem[]>(() => {
-    const saved = localStorage.getItem('directaid_compliance');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return INITIAL_COMPLIANCE_ITEMS;
-  });
+  const [notifications, setNotifications] = useState<HRAlertNotification[]>([]);
+  const [complianceItems, setComplianceItems] = useState<ComplianceAuditItem[]>([]);
 
   // Modal states
   const [isAddEmployeeOpen, setIsAddEmployeeOpen] = useState(false);
@@ -157,59 +126,117 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [contractRenewalTarget, setContractRenewalTarget] = useState<EmployeeRecord | null>(null);
   const [isUploadDocOpen, setIsUploadDocOpen] = useState(false);
 
-  // Authentication state
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem('directaid_auth') === 'true';
-  });
+  // Authentication & sync state
+  const [session, setSession] = useState<Session | null>(null);
+  const [isAuthReady, setIsAuthReady] = useState(!supabase);
+  const [isDataLoading, setIsDataLoading] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
-  const login = (_usernameOrEmail?: string, _password?: string) => {
-    setIsAuthenticated(true);
-    localStorage.setItem('directaid_auth', 'true');
-    return true;
+  useEffect(() => {
+    if (!supabase) return;
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setIsAuthReady(true);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
+    });
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  const userId = session?.user.id;
+
+  // Load all records from Supabase whenever a user signs in
+  useEffect(() => {
+    if (!supabase || !userId) {
+      setEmployees([]);
+      setDivisions([]);
+      setNotifications([]);
+      setComplianceItems([]);
+      setSelectedEmployee(null);
+      return;
+    }
+
+    let cancelled = false;
+    setIsDataLoading(true);
+    Promise.all([
+      supabase.from('divisions').select('data').order('created_at', { ascending: true }),
+      supabase.from('employees').select('data').order('created_at', { ascending: false }),
+      supabase.from('notifications').select('data').order('created_at', { ascending: false }),
+      supabase.from('compliance_items').select('data').order('created_at', { ascending: true })
+    ]).then(([divRes, empRes, notifRes, compRes]) => {
+      if (cancelled) return;
+      const failed = [divRes, empRes, notifRes, compRes].find(r => r.error);
+      if (failed?.error) {
+        setSyncError(`Could not load data from Supabase: ${failed.error.message}`);
+      }
+      setDivisions((divRes.data || []).map(r => r.data as SchoolDivisionCategory));
+      setEmployees((empRes.data || []).map(r => r.data as EmployeeRecord));
+      setNotifications((notifRes.data || []).map(r => r.data as HRAlertNotification));
+      setComplianceItems((compRes.data || []).map(r => r.data as ComplianceAuditItem));
+      setIsDataLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  // Changes apply to the screen immediately; a failed save is reported in the sync banner
+  const persist = (op: DbResult) => {
+    Promise.resolve(op).then(({ error }) => {
+      if (error) {
+        console.error('Supabase save failed:', error);
+        setSyncError(`Could not save to Supabase: ${error.message}`);
+      }
+    });
   };
 
-  const logout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('directaid_auth');
+  const saveNotification = (notif: HRAlertNotification) => {
+    setNotifications(prev => [notif, ...prev]);
+    if (supabase) persist(supabase.from('notifications').insert({ id: notif.id, data: notif }));
   };
 
-  // Persistence
-  useEffect(() => {
-    localStorage.setItem('directaid_employees', JSON.stringify(employees));
-  }, [employees]);
+  const login = async (email: string, password: string): Promise<string | null> => {
+    if (!supabase) {
+      return 'Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env.local.';
+    }
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    return error ? error.message : null;
+  };
 
-  useEffect(() => {
-    localStorage.setItem('directaid_divisions', JSON.stringify(divisions));
-  }, [divisions]);
-
-  useEffect(() => {
-    localStorage.setItem('directaid_notifications', JSON.stringify(notifications));
-  }, [notifications]);
-
-  useEffect(() => {
-    localStorage.setItem('directaid_compliance', JSON.stringify(complianceItems));
-  }, [complianceItems]);
+  const logout = async () => {
+    if (supabase) await supabase.auth.signOut();
+    setActivePage('dashboard');
+  };
 
   const resetFilters = () => {
     setFilters(defaultFilters);
   };
 
   const markNotificationRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    const target = notifications.find(n => n.id === id);
+    if (!target || target.read) return;
+    const updated = { ...target, read: true };
+    setNotifications(prev => prev.map(n => n.id === id ? updated : n));
+    if (supabase) persist(supabase.from('notifications').update({ data: updated }).eq('id', id));
   };
 
   const clearAllNotifications = () => {
+    const unread = notifications.filter(n => !n.read).map(n => ({ ...n, read: true }));
+    if (unread.length === 0) return;
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    if (supabase) persist(supabase.from('notifications').upsert(unread.map(n => ({ id: n.id, data: n }))));
   };
 
   const toggleComplianceStatus = (id: string) => {
-    setComplianceItems(prev => prev.map(item => {
-      if (item.id === id) {
-        const nextStatus = item.status === 'Open' ? 'In Progress' : item.status === 'In Progress' ? 'Resolved' : 'Open';
-        return { ...item, status: nextStatus };
-      }
-      return item;
-    }));
+    const item = complianceItems.find(i => i.id === id);
+    if (!item) return;
+    const nextStatus: ComplianceAuditItem['status'] =
+      item.status === 'Open' ? 'In Progress' : item.status === 'In Progress' ? 'Resolved' : 'Open';
+    const updated = { ...item, status: nextStatus };
+    setComplianceItems(prev => prev.map(i => i.id === id ? updated : i));
+    if (supabase) persist(supabase.from('compliance_items').update({ data: updated }).eq('id', id));
   };
 
   // Helper to recalculate completeness
@@ -245,8 +272,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     setDivisions(prev => [...prev, newDivision]);
+    if (supabase) {
+      persist(supabase.from('divisions').insert({ id: newDivision.id, code: newDivision.code, data: newDivision }));
+    }
 
-    setNotifications(prev => [{
+    saveNotification({
       id: `notif-${Date.now()}`,
       title: 'School Division Created',
       message: `${newDivision.name} (${newDivision.code}) was added in ${newDivision.city}.`,
@@ -256,7 +286,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       timestamp: new Date().toISOString(),
       read: false,
       actionUrl: 'divisions'
-    }, ...prev]);
+    });
 
     return newDivision;
   };
@@ -346,6 +376,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     setEmployees(prev => [newRecord, ...prev]);
+    if (supabase) persist(supabase.from('employees').insert(employeeRow(newRecord)));
 
     // Add alert notification
     const newNotif: HRAlertNotification = {
@@ -359,24 +390,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       read: false,
       actionUrl: 'directory'
     };
-    setNotifications(prev => [newNotif, ...prev]);
+    saveNotification(newNotif);
 
     return newRecord;
   };
 
+  // Recalculate completeness, update local state, and save one employee record
+  const commitEmployee = (emp: EmployeeRecord) => {
+    const { score, missing } = calculateCompleteness(emp);
+    const finalEmp = { ...emp, profileCompleteness: score, missingRequirements: missing };
+    setEmployees(prev => prev.map(e => e.id === finalEmp.id ? finalEmp : e));
+    if (selectedEmployee?.id === finalEmp.id) {
+      setSelectedEmployee(finalEmp);
+    }
+    if (supabase) persist(supabase.from('employees').update(employeeRow(finalEmp)).eq('id', finalEmp.id));
+  };
+
   const updateEmployee = (id: string, updates: Partial<EmployeeRecord>) => {
-    setEmployees(prev => prev.map(emp => {
-      if (emp.id === id) {
-        const merged = { ...emp, ...updates };
-        const { score, missing } = calculateCompleteness(merged);
-        const updated = { ...merged, profileCompleteness: score, missingRequirements: missing };
-        if (selectedEmployee?.id === id) {
-          setSelectedEmployee(updated);
-        }
-        return updated;
-      }
-      return emp;
-    }));
+    const emp = employees.find(e => e.id === id);
+    if (emp) commitEmployee({ ...emp, ...updates });
   };
 
   const deleteEmployee = (id: string) => {
@@ -384,96 +416,60 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (selectedEmployee?.id === id) {
       setSelectedEmployee(employees.find(e => e.id !== id) || null);
     }
+    if (supabase) persist(supabase.from('employees').delete().eq('id', id));
   };
 
   const renewContract = (employeeId: string, contractUpdates: Partial<EmployeeContract>) => {
-    setEmployees(prev => prev.map(emp => {
-      if (emp.id === employeeId) {
-        const updatedContract: EmployeeContract = {
-          ...emp.contract,
-          ...contractUpdates,
-          renewalStatus: 'Renewed'
-        };
+    const emp = employees.find(e => e.id === employeeId);
+    if (!emp) return;
 
-        const renewedDoc: DocumentAttachment = {
-          id: `doc-renew-${Date.now()}`,
-          name: `Renewed Employment Contract (${contractUpdates.startDate || '2025'} - ${contractUpdates.endDate || '2027'})`,
-          type: 'contract',
-          fileName: `CTR_RENEWED_${emp.id}_${Date.now()}.pdf`,
-          fileSize: '2.4 MB',
-          uploadedAt: new Date().toISOString().split('T')[0],
-          verified: true
-        };
+    const updatedContract: EmployeeContract = {
+      ...emp.contract,
+      ...contractUpdates,
+      renewalStatus: 'Renewed'
+    };
 
-        const updatedDocs = [renewedDoc, ...emp.documents];
-        const updatedEmp = {
-          ...emp,
-          contract: updatedContract,
-          documents: updatedDocs
-        };
+    const renewedDoc: DocumentAttachment = {
+      id: `doc-renew-${Date.now()}`,
+      name: `Renewed Employment Contract (${contractUpdates.startDate || '2025'} - ${contractUpdates.endDate || '2027'})`,
+      type: 'contract',
+      fileName: `CTR_RENEWED_${emp.id}_${Date.now()}.pdf`,
+      fileSize: '2.4 MB',
+      uploadedAt: new Date().toISOString().split('T')[0],
+      verified: true
+    };
 
-        const { score, missing } = calculateCompleteness(updatedEmp);
-        const finalEmp = { ...updatedEmp, profileCompleteness: score, missingRequirements: missing };
-
-        if (selectedEmployee?.id === employeeId) {
-          setSelectedEmployee(finalEmp);
-        }
-        return finalEmp;
-      }
-      return emp;
-    }));
+    commitEmployee({ ...emp, contract: updatedContract, documents: [renewedDoc, ...emp.documents] });
 
     // Add alert notification
-    const emp = employees.find(e => e.id === employeeId);
-    setNotifications(prev => [{
+    saveNotification({
       id: `notif-${Date.now()}`,
       title: 'Contract Renewal Completed',
-      message: `Employment contract successfully renewed for ${emp?.fullName || employeeId}.`,
+      message: `Employment contract successfully renewed for ${emp.fullName}.`,
       category: 'contract',
       severity: 'low',
       employeeId,
       timestamp: new Date().toISOString(),
       read: false,
       actionUrl: 'contracts'
-    }, ...prev]);
+    });
   };
 
   const addDocument = (employeeId: string, docData: Omit<DocumentAttachment, 'id' | 'uploadedAt'>) => {
+    const emp = employees.find(e => e.id === employeeId);
+    if (!emp) return;
     const newDoc: DocumentAttachment = {
       ...docData,
       id: `doc-${Date.now()}`,
       uploadedAt: new Date().toISOString().split('T')[0]
     };
-
-    setEmployees(prev => prev.map(emp => {
-      if (emp.id === employeeId) {
-        const updatedDocs = [newDoc, ...emp.documents];
-        const updated = { ...emp, documents: updatedDocs };
-        const { score, missing } = calculateCompleteness(updated);
-        const finalEmp = { ...updated, profileCompleteness: score, missingRequirements: missing };
-        if (selectedEmployee?.id === employeeId) {
-          setSelectedEmployee(finalEmp);
-        }
-        return finalEmp;
-      }
-      return emp;
-    }));
+    commitEmployee({ ...emp, documents: [newDoc, ...emp.documents] });
   };
 
   const deleteDocument = (employeeId: string, docId: string) => {
-    setEmployees(prev => prev.map(emp => {
-      if (emp.id === employeeId) {
-        const updatedDocs = emp.documents.filter(d => d.id !== docId);
-        const updated = { ...emp, documents: updatedDocs };
-        const { score, missing } = calculateCompleteness(updated);
-        const finalEmp = { ...updated, profileCompleteness: score, missingRequirements: missing };
-        if (selectedEmployee?.id === employeeId) {
-          setSelectedEmployee(finalEmp);
-        }
-        return finalEmp;
-      }
-      return emp;
-    }));
+    const emp = employees.find(e => e.id === employeeId);
+    if (!emp) return;
+    commitEmployee({ ...emp, documents: emp.documents.filter(d => d.id !== docId) });
   };
 
   const navigateToProfile = (employeeId: string) => {
@@ -527,9 +523,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteDocument,
         navigateToProfile,
         navigateToDivisionStaff,
-        isAuthenticated,
+        isAuthenticated: !!session,
+        isAuthReady,
+        userEmail: session?.user.email ?? null,
         login,
-        logout
+        logout,
+        isDataLoading,
+        syncError,
+        clearSyncError: () => setSyncError(null)
       }}
     >
       {children}

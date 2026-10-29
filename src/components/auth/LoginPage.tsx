@@ -9,43 +9,32 @@ import {
   ShieldCheck,
   Building2,
   CheckCircle2,
-  KeyRound,
   Sparkles
 } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const { login } = useApp();
 
-  // Pre-filled default credentials as requested
-  const [email, setEmail] = useState('admin@directaid.org');
-  const [password, setPassword] = useState('directaid2025');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
     if (!email.trim() || !password.trim()) {
-      setErrorMsg('Please enter both email/username and password.');
+      setErrorMsg('Please enter both email and password.');
       return;
     }
 
     setIsLoading(true);
-
-    // Smooth feedback transition
-    setTimeout(() => {
-      login(email, password);
-      setIsLoading(false);
-    }, 350);
-  };
-
-  const handleResetToDefault = () => {
-    setEmail('admin@directaid.org');
-    setPassword('directaid2025');
-    setErrorMsg('');
+    const error = await login(email, password);
+    setIsLoading(false);
+    if (error) setErrorMsg(error);
   };
 
   return (
@@ -88,30 +77,6 @@ export const LoginPage: React.FC = () => {
           {/* Top Emerald Accent Bar */}
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-linear-to-r from-[#147D4A] via-[#35B86B] to-[#147D4A]" />
 
-          {/* Default Credentials Badge */}
-          <div className="mb-6 p-3 bg-[#EBF7EE] border border-[#C5E8D2] rounded-2xl flex items-start gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-[#147D4A] text-white flex items-center justify-center shrink-0 mt-0.5">
-              <KeyRound className="w-3.5 h-3.5" />
-            </div>
-            <div className="flex-1 min-w-0 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-[#147D4A]">Default Credentials</span>
-                <button
-                  type="button"
-                  onClick={handleResetToDefault}
-                  className="text-[10px] text-[#147D4A] hover:underline font-bold"
-                >
-                  Auto-fill
-                </button>
-              </div>
-              <p className="text-[11px] text-[#2D4536] mt-0.5 leading-snug">
-                Email: <span className="font-mono font-semibold text-[#192C21]">admin@directaid.org</span>
-                <br />
-                Password: <span className="font-mono font-semibold text-[#192C21]">directaid2025</span>
-              </p>
-            </div>
-          </div>
-
           {errorMsg && (
             <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-medium">
               {errorMsg}
@@ -122,12 +87,13 @@ export const LoginPage: React.FC = () => {
             {/* Email / Username Input */}
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-[#192C21]">
-                Email or Username
+                Email
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7E9185]" />
                 <input
-                  type="text"
+                  type="email"
+                  autoComplete="username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@directaid.org"
@@ -151,6 +117,7 @@ export const LoginPage: React.FC = () => {
                 <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7E9185]" />
                 <input
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
