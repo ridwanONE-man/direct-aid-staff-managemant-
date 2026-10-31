@@ -12,7 +12,8 @@ import {
   ArrowLeft,
   Check,
   Upload,
-  User
+  User,
+  HeartHandshake
 } from 'lucide-react';
 
 const inputClass =
@@ -550,28 +551,42 @@ export const RegisterEmployeePage: React.FC = () => {
                 />
               </div>
 
-              <div>
-                <label htmlFor="reg-kin" className={labelClass}>Next of Kin</label>
-                <input
-                  id="reg-kin"
-                  type="text"
-                  value={nextOfKinName}
-                  onChange={(e) => setNextOfKinName(e.target.value)}
-                  placeholder="Name of closest relative"
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="reg-kin-phone" className={labelClass}>Next of Kin Phone</label>
-                <input
-                  id="reg-kin-phone"
-                  type="tel"
-                  value={nextOfKinPhone}
-                  onChange={(e) => setNextOfKinPhone(e.target.value)}
-                  placeholder="+252 63 ..."
-                  className={`${inputClass} font-mono`}
-                />
+              {/* Next of Kin */}
+              <div className="sm:col-span-2 relative overflow-hidden rounded-2xl border border-[#C5E8D2] bg-linear-to-br from-[#EBF7EE] to-[#F6FBF7] p-4">
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#147D4A]" />
+                <div className="flex items-center gap-2.5 mb-3">
+                  <span className="w-8 h-8 rounded-xl bg-[#147D4A] text-white flex items-center justify-center shadow-sm">
+                    <HeartHandshake className="w-4 h-4" />
+                  </span>
+                  <div>
+                    <span className="font-bold text-sm text-[#147D4A] block leading-tight">Next of Kin</span>
+                    <span className="text-[11px] text-[#57685D]">Who to contact in an emergency (optional)</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="reg-kin" className={labelClass}>Full Name</label>
+                    <input
+                      id="reg-kin"
+                      type="text"
+                      value={nextOfKinName}
+                      onChange={(e) => setNextOfKinName(e.target.value)}
+                      placeholder="Name of closest relative"
+                      className={`${inputClass} bg-white border-[#C5E8D2]`}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="reg-kin-phone" className={labelClass}>Phone Number</label>
+                    <input
+                      id="reg-kin-phone"
+                      type="tel"
+                      value={nextOfKinPhone}
+                      onChange={(e) => setNextOfKinPhone(e.target.value)}
+                      placeholder="+252 63 ..."
+                      className={`${inputClass} bg-white border-[#C5E8D2] font-mono`}
+                    />
+                  </div>
+                </div>
               </div>
 
               <div>
