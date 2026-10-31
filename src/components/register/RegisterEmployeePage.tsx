@@ -108,26 +108,55 @@ interface SelectWithOtherProps {
   label: string;
   required?: boolean;
   options: { value: string; label: string }[];
+  extraValues?: string[];
   value: string;
   onChange: (value: string) => void;
   otherLabel: string;
   placeholder: string;
   inputType?: 'text' | 'number';
+  formatLabel?: (value: string) => string;
 }
 
-// Dropdown whose last option switches to a free-text (or number) field
+// Dropdown whose last option lets the user type a new value, which is then added to the list
 const SelectWithOther: React.FC<SelectWithOtherProps> = ({
   id,
   label,
   required,
   options,
+  extraValues = [],
   value,
   onChange,
   otherLabel,
   placeholder,
-  inputType = 'text'
+  inputType = 'text',
+  formatLabel = (v) => v
 }) => {
-  const [isCustom, setIsCustom] = useState(() => value !== '' && !options.some(o => o.value === value));
+  const [addedValues, setAddedValues] = useState<string[]>([]);
+  const [isAdding, setIsAdding] = useState(false);
+  const [draft, setDraft] = useState('');
+
+  const allOptions = [...options];
+  [...extraValues, ...addedValues, value].forEach(v => {
+    const trimmed = v.trim();
+    if (trimmed && !allOptions.some(o => o.value.toLowerCase() === trimmed.toLowerCase())) {
+      allOptions.push({ value: trimmed, label: formatLabel(trimmed) });
+    }
+  });
+
+  const commit = () => {
+    const trimmed = draft.trim();
+    if (!trimmed || (inputType === 'number' && !(Number(trimmed) >= 1))) return;
+    const existing = allOptions.find(o => o.value.toLowerCase() === trimmed.toLowerCase());
+    if (!existing) setAddedValues(prev => [...prev, trimmed]);
+    onChange(existing ? existing.value : trimmed);
+    setDraft('');
+    setIsAdding(false);
+  };
+
+  const cancel = () => {
+    setDraft('');
+    setIsAdding(false);
+  };
 
   return (
     <div>
@@ -136,48 +165,75 @@ const SelectWithOther: React.FC<SelectWithOtherProps> = ({
       </label>
       <select
         id={id}
-        value={isCustom ? OTHER : value}
+        value={isAdding ? OTHER : value}
         onChange={(e) => {
           if (e.target.value === OTHER) {
-            setIsCustom(true);
-            onChange('');
+            setIsAdding(true);
           } else {
-            setIsCustom(false);
+            setIsAdding(false);
             onChange(e.target.value);
           }
         }}
         className={inputClass}
       >
-        {options.map(o => (
+        {allOptions.map(o => (
           <option key={o.value} value={o.value}>{o.label}</option>
         ))}
         <option value={OTHER}>{otherLabel}</option>
       </select>
-      {isCustom && (
-        <input
-          type={inputType}
-          min={inputType === 'number' ? 1 : undefined}
-          max={inputType === 'number' ? 30 : undefined}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className={`${inputClass} mt-2 border-[#147D4A]/40 bg-white`}
-          autoFocus
-        />
+      {isAdding && (
+        <div className="mt-2 flex items-center gap-2">
+          <input
+            type={inputType}
+            min={inputType === 'number' ? 1 : undefined}
+            max={inputType === 'number' ? 30 : undefined}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                commit();
+              } else if (e.key === 'Escape') {
+                cancel();
+              }
+            }}
+            onBlur={commit}
+            placeholder={placeholder}
+            className={`${inputClass} border-[#147D4A]/40 bg-white`}
+            autoFocus
+          />
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={commit}
+            className="px-3.5 py-2.5 bg-[#147D4A] hover:bg-[#0E6139] text-white rounded-xl text-xs font-bold shrink-0 transition-colors"
+          >
+            Add
+          </button>
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={cancel}
+            className="px-2.5 py-2.5 text-xs font-semibold text-slate-500 hover:text-slate-800 shrink-0"
+          >
+            Cancel
+          </button>
+        </div>
       )}
     </div>
   );
 };
 
 export const RegisterEmployeePage: React.FC = () => {
-  const { divisions, addEmployee, navigateToProfile, setActivePage } = useApp();
+  const { divisions, employees, addEmployee, navigateToProfile, setActivePage } = useApp();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [error, setError] = useState('');
 
   // 1. Personal & Photo
   const [fullName, setFullName] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [nextOfKinName, setNextOfKinName] = useState('');
+  const [nextOfKinPhone, setNextOfKinPhone] = useState('');
   const [gender, setGender] = useState<'Male' | 'Female'>('Male');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
@@ -212,6 +268,11 @@ export const RegisterEmployeePage: React.FC = () => {
   const [policeRefNo] = useState(`CID-SL-${Math.floor(10000 + Math.random() * 90000)}`);
 
   const isKnownRole = JOB_ROLES.some(r => r.value === jobRole);
+
+  // Values typed manually for earlier staff appear in the dropdowns for everyone
+  const savedRoles = employees.filter(e => e.jobTitle === 'Other' && e.customJobTitle).map(e => e.customJobTitle as string);
+  const savedEmploymentTypes = employees.map(e => e.employmentType);
+  const savedSubjects = employees.flatMap(e => e.teachingSubjects || []);
   const isTeacher = jobRole === 'Teacher';
   const avatarPreview = photoUrl || initialsAvatar(fullName);
 
@@ -305,7 +366,11 @@ export const RegisterEmployeePage: React.FC = () => {
       fullName: fullName.trim(),
       avatarUrl: avatarPreview,
       gender,
-      dateOfBirth,
+      emergencyContact: {
+        name: nextOfKinName.trim(),
+        relationship: 'Next of Kin',
+        phone: nextOfKinPhone.trim()
+      },
       phoneNumber: phoneNumber.trim(),
       email: email.trim(),
       residentialArea: residentialArea.trim(),
@@ -486,14 +551,26 @@ export const RegisterEmployeePage: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="reg-dob" className={labelClass}>Date of Birth</label>
+                <label htmlFor="reg-kin" className={labelClass}>Next of Kin</label>
                 <input
-                  id="reg-dob"
-                  type="date"
-                  value={dateOfBirth}
-                  max={new Date().toISOString().split('T')[0]}
-                  onChange={(e) => setDateOfBirth(e.target.value)}
+                  id="reg-kin"
+                  type="text"
+                  value={nextOfKinName}
+                  onChange={(e) => setNextOfKinName(e.target.value)}
+                  placeholder="Name of closest relative"
                   className={inputClass}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="reg-kin-phone" className={labelClass}>Next of Kin Phone</label>
+                <input
+                  id="reg-kin-phone"
+                  type="tel"
+                  value={nextOfKinPhone}
+                  onChange={(e) => setNextOfKinPhone(e.target.value)}
+                  placeholder="+252 63 ..."
+                  className={`${inputClass} font-mono`}
                 />
               </div>
 
@@ -534,7 +611,7 @@ export const RegisterEmployeePage: React.FC = () => {
                 />
               </div>
 
-              <div className="sm:col-span-2">
+              <div>
                 <label htmlFor="reg-area" className={labelClass}>Residential District</label>
                 <input
                   id="reg-area"
@@ -607,6 +684,7 @@ export const RegisterEmployeePage: React.FC = () => {
                 label="Job Role"
                 required
                 options={JOB_ROLES}
+                extraValues={savedRoles}
                 value={jobRole}
                 onChange={setJobRole}
                 otherLabel="+ Add manually..."
@@ -618,6 +696,7 @@ export const RegisterEmployeePage: React.FC = () => {
                 label="Employment Type"
                 required
                 options={EMPLOYMENT_TYPES}
+                extraValues={savedEmploymentTypes}
                 value={employmentType}
                 onChange={setEmploymentType}
                 otherLabel="+ Add manually..."
@@ -630,6 +709,7 @@ export const RegisterEmployeePage: React.FC = () => {
                 id="reg-subject"
                 label="Teaching Subject"
                 options={TEACHING_SUBJECTS}
+                extraValues={savedSubjects}
                 value={teachingSubject}
                 onChange={setTeachingSubject}
                 otherLabel="+ Add manually..."
@@ -788,6 +868,7 @@ export const RegisterEmployeePage: React.FC = () => {
                 otherLabel="+ Enter years manually..."
                 placeholder="Number of years"
                 inputType="number"
+                formatLabel={(v) => `${v} ${Number(v) === 1 ? 'Year' : 'Years'}`}
               />
             </div>
 
