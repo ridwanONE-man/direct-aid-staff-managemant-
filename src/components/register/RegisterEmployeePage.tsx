@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { JobRole, DegreeLevel, EmploymentType, DocumentAttachment } from '../../types';
 import {
-  UserPlus,
   Camera,
   FileText,
   ShieldCheck,
@@ -10,41 +9,186 @@ import {
   Building2,
   CheckCircle2,
   ArrowRight,
-  ArrowLeft
+  ArrowLeft,
+  Check,
+  Upload,
+  User
 } from 'lucide-react';
+
+const inputClass =
+  'w-full px-3.5 py-2.5 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl text-sm text-[#192C21] placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-[#147D4A] focus:ring-2 focus:ring-[#147D4A]/15 transition-all';
+const labelClass = 'block text-xs font-semibold text-[#384C3F] mb-1.5';
+
+const OTHER = '__other__';
+
+const JOB_ROLES: { value: JobRole; label: string }[] = [
+  { value: 'Principal', label: 'Principal / Headmaster' },
+  { value: 'Deputy Principal', label: 'Deputy Principal' },
+  { value: 'Teacher', label: 'Teacher / Instructor' },
+  { value: 'Security Guard', label: 'Security Guard' },
+  { value: 'Cleaner', label: 'Cleaner' },
+  { value: 'Driver', label: 'Bus Driver' },
+  { value: 'Secretary', label: 'Secretary' },
+  { value: 'Finance Officer', label: 'Finance Officer' },
+  { value: 'IT Support Officer', label: 'IT Support Officer' },
+  { value: 'Administrative Officer', label: 'Administrative Officer' }
+];
+
+const EMPLOYMENT_TYPES = [
+  { value: 'Fixed-Term Contract', label: 'Fixed-Term Contract' },
+  { value: 'Permanent', label: 'Permanent' },
+  { value: 'Probationary', label: 'Probationary (3 Months)' },
+  { value: 'Part-Time', label: 'Part-Time' }
+];
+
+const TEACHING_SUBJECTS = [
+  { value: 'Pure Mathematics & Calculus', label: 'Pure Mathematics' },
+  { value: 'Physics & Physical Sciences', label: 'Physics' },
+  { value: 'Chemistry & Laboratory', label: 'Chemistry' },
+  { value: 'Biology & Life Sciences', label: 'Biology' },
+  { value: 'Arabic Language & Grammar', label: 'Arabic Language' },
+  { value: 'Islamic Studies & Sharia', label: 'Islamic Studies' },
+  { value: 'Somali Literature & History', label: 'Somali Literature' },
+  { value: 'English Language & Composition', label: 'English Language' },
+  { value: 'Primary Numeracy & Literacy', label: 'Primary Numeracy & Literacy' },
+  { value: 'ICT & Computer Science', label: 'ICT' }
+];
+
+const CONTRACT_DURATIONS = [
+  { value: '1', label: '1 Year' },
+  { value: '2', label: '2 Years' },
+  { value: '3', label: '3 Years' }
+];
+
+const STEPS = [
+  { num: 1, label: 'Personal', icon: User },
+  { num: 2, label: 'Division & Role', icon: Building2 },
+  { num: 3, label: 'Credentials', icon: GraduationCap },
+  { num: 4, label: 'Contract', icon: FileText }
+] as const;
+
+// Green circle with the person's initials, used until a photo is uploaded
+const initialsAvatar = (name: string) => {
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map(part => part.match(/\p{L}/u)?.[0]?.toUpperCase() || '')
+    .join('') || '?';
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><rect width='200' height='200' fill='#147D4A'/><text x='50%' y='50%' dy='.35em' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-size='80' font-weight='700' fill='#ffffff'>${initials}</text></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+};
+
+// Center-crop and shrink an uploaded photo so it stays small in the database
+const resizePhoto = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error);
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Could not read image'));
+      img.onload = () => {
+        const size = 240;
+        const side = Math.min(img.width, img.height);
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        canvas
+          .getContext('2d')!
+          .drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+
+interface SelectWithOtherProps {
+  id: string;
+  label: string;
+  required?: boolean;
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (value: string) => void;
+  otherLabel: string;
+  placeholder: string;
+  inputType?: 'text' | 'number';
+}
+
+// Dropdown whose last option switches to a free-text (or number) field
+const SelectWithOther: React.FC<SelectWithOtherProps> = ({
+  id,
+  label,
+  required,
+  options,
+  value,
+  onChange,
+  otherLabel,
+  placeholder,
+  inputType = 'text'
+}) => {
+  const [isCustom, setIsCustom] = useState(() => value !== '' && !options.some(o => o.value === value));
+
+  return (
+    <div>
+      <label htmlFor={id} className={labelClass}>
+        {label} {required && <span className="text-rose-500">*</span>}
+      </label>
+      <select
+        id={id}
+        value={isCustom ? OTHER : value}
+        onChange={(e) => {
+          if (e.target.value === OTHER) {
+            setIsCustom(true);
+            onChange('');
+          } else {
+            setIsCustom(false);
+            onChange(e.target.value);
+          }
+        }}
+        className={inputClass}
+      >
+        {options.map(o => (
+          <option key={o.value} value={o.value}>{o.label}</option>
+        ))}
+        <option value={OTHER}>{otherLabel}</option>
+      </select>
+      {isCustom && (
+        <input
+          type={inputType}
+          min={inputType === 'number' ? 1 : undefined}
+          max={inputType === 'number' ? 30 : undefined}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className={`${inputClass} mt-2 border-[#147D4A]/40 bg-white`}
+          autoFocus
+        />
+      )}
+    </div>
+  );
+};
 
 export const RegisterEmployeePage: React.FC = () => {
   const { divisions, addEmployee, navigateToProfile, setActivePage } = useApp();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [error, setError] = useState('');
 
   // 1. Personal & Photo
   const [fullName, setFullName] = useState('');
-  const [somaliName, setSomaliName] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [gender, setGender] = useState<'Male' | 'Female'>('Male');
-  const [dateOfBirth, setDateOfBirth] = useState('1990-05-15');
-  const [bloodGroup, setBloodGroup] = useState('O+');
-  const [maritalStatus, setMaritalStatus] = useState<'Single' | 'Married' | 'Divorced' | 'Widowed'>('Married');
-  const [phoneNumber, setPhoneNumber] = useState('+252 63 ');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
   const [residentialArea, setResidentialArea] = useState('');
-  const [nationalIdNumber, setNationalIdNumber] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80');
-
-  // Emergency & Payment
-  const [emergencyName, setEmergencyName] = useState('');
-  const [emergencyPhone, setEmergencyPhone] = useState('+252 63 ');
-  const [emergencyRelation, setEmergencyRelation] = useState('Spouse');
-  const [paymentMethod, setPaymentMethod] = useState<'ZAAD (Telesom)' | 'e-Dahab (Dahabshiil)' | 'Dahabshiil Bank'>('ZAAD (Telesom)');
-  const [paymentAccountNo, setPaymentAccountNo] = useState('');
+  const [photoUrl, setPhotoUrl] = useState('');
 
   // 2. Division & Role
-  const [divisionId, setDivisionId] = useState(divisions[0]?.id || 'div-sec-boys-hrg');
-  const [jobTitle, setJobTitle] = useState<JobRole>('Teacher');
-  const [customJobTitle, setCustomJobTitle] = useState('');
-  const [employmentType, setEmploymentType] = useState<EmploymentType>('Fixed-Term Contract');
-  const [shiftSchedule, setShiftSchedule] = useState('Morning Duty (07:15 - 13:45)');
-  const [teachingSubject, setTeachingSubject] = useState('Mathematics');
+  const [divisionId, setDivisionId] = useState(divisions[0]?.id || '');
+  const [jobRole, setJobRole] = useState<string>('Teacher');
+  const [employmentType, setEmploymentType] = useState('Fixed-Term Contract');
+  const [teachingSubject, setTeachingSubject] = useState(TEACHING_SUBJECTS[0].value);
 
   // 3. Qualifications & Degree Assignment
   const [degreeLevel, setDegreeLevel] = useState<DegreeLevel>('Bachelor');
@@ -53,40 +197,66 @@ export const RegisterEmployeePage: React.FC = () => {
   const [fieldOfStudy, setFieldOfStudy] = useState('Secondary Education & Pedagogy');
   const [graduationYear, setGraduationYear] = useState(2019);
   const [yearsOfExperience, setYearsOfExperience] = useState(4);
-  const [teachingLicenseNo, setTeachingLicenseNo] = useState('');
   const [univCertFileName] = useState('University_Degree_Certificate.pdf');
 
   // 4. Contract & Documents
   const [monthlyBaseSalary, setMonthlyBaseSalary] = useState(600);
-  const [contractYears, setContractYears] = useState(2);
+  const [contractYears, setContractYears] = useState('2');
   const [startDate] = useState(new Date().toISOString().split('T')[0]);
   const [contractRefNo] = useState(`CTR-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`);
-  
+
   // Compliance Files
   const [cvFileName] = useState('Staff_Resume_CV.pdf');
   const [contractFileName] = useState('Signed_DirectAid_Contract.pdf');
   const [policeCertFileName] = useState('CID_Criminal_Record_Check.pdf');
   const [policeRefNo] = useState(`CID-SL-${Math.floor(10000 + Math.random() * 90000)}`);
 
-  // Quick preset avatars
-  const avatarPresets = [
-    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80'
-  ];
+  const isKnownRole = JOB_ROLES.some(r => r.value === jobRole);
+  const isTeacher = jobRole === 'Teacher';
+  const avatarPreview = photoUrl || initialsAvatar(fullName);
+
+  const goToStep = (target: 1 | 2 | 3 | 4) => {
+    if (target > 1 && !fullName.trim()) {
+      setError('Please enter the full name to continue.');
+      setStep(1);
+      return;
+    }
+    setError('');
+    setStep(target);
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setPhotoUrl(await resizePhoto(file));
+    } catch {
+      setError('That photo could not be read. Please try a JPG or PNG image.');
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (step !== 4) return;
 
     const selectedDiv = divisions.find(d => d.id === divisionId) || divisions[0];
     if (!selectedDiv) return;
 
-    const endDate = new Date(new Date(startDate).getTime() + contractYears * 365 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split('T')[0];
+    const years = Number(contractYears);
+    if (!jobRole.trim() || !employmentType.trim()) {
+      setError('Please choose or type the job role and employment type.');
+      setStep(2);
+      return;
+    }
+    if (!Number.isFinite(years) || years < 1) {
+      setError('Please enter a contract duration of at least 1 year.');
+      return;
+    }
+
+    const end = new Date(startDate);
+    end.setFullYear(end.getFullYear() + Math.round(years));
+    const endDate = end.toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
 
     // Build documents array
     const documents: DocumentAttachment[] = [
@@ -96,7 +266,7 @@ export const RegisterEmployeePage: React.FC = () => {
         type: 'cv',
         fileName: cvFileName,
         fileSize: '1.2 MB',
-        uploadedAt: new Date().toISOString().split('T')[0],
+        uploadedAt: today,
         verified: true
       },
       {
@@ -105,7 +275,7 @@ export const RegisterEmployeePage: React.FC = () => {
         type: 'contract',
         fileName: contractFileName,
         fileSize: '2.5 MB',
-        uploadedAt: new Date().toISOString().split('T')[0],
+        uploadedAt: today,
         verified: true
       },
       {
@@ -114,7 +284,7 @@ export const RegisterEmployeePage: React.FC = () => {
         type: 'academic_degree',
         fileName: univCertFileName,
         fileSize: '3.1 MB',
-        uploadedAt: new Date().toISOString().split('T')[0],
+        uploadedAt: today,
         verified: true
       },
       {
@@ -123,54 +293,44 @@ export const RegisterEmployeePage: React.FC = () => {
         type: 'police_clearance',
         fileName: policeCertFileName,
         fileSize: '950 KB',
-        uploadedAt: new Date().toISOString().split('T')[0],
+        uploadedAt: today,
         verified: true
       }
     ];
 
+    const jobTitle: JobRole = isKnownRole ? (jobRole as JobRole) : 'Other';
+    const contractType = employmentType.trim() as EmploymentType;
+
     const newEmp = addEmployee({
-      fullName,
-      somaliName,
-      avatarUrl,
+      fullName: fullName.trim(),
+      avatarUrl: avatarPreview,
       gender,
       dateOfBirth,
-      bloodGroup,
-      maritalStatus,
-      phoneNumber,
-      email: email || `${fullName.toLowerCase().replace(/\s+/g, '.')}@directaid.org`,
-      residentialArea,
-      nationalIdNumber: nationalIdNumber || `SL-ID-${Math.floor(100000 + Math.random() * 900000)}`,
-      paymentMethod,
-      paymentAccountNo: paymentAccountNo || phoneNumber,
+      phoneNumber: phoneNumber.trim(),
+      email: email.trim(),
+      residentialArea: residentialArea.trim(),
       policeClearanceStatus: 'Verified',
       policeClearanceRef: policeRefNo,
-      emergencyContact: {
-        name: emergencyName || 'Family Relative',
-        relationship: emergencyRelation,
-        phone: emergencyPhone
-      },
       divisionId: selectedDiv.id,
       divisionName: selectedDiv.name,
       campusLocation: selectedDiv.city,
       schoolLevel: selectedDiv.level,
       genderDivision: selectedDiv.gender,
       jobTitle,
-      customJobTitle: customJobTitle || undefined,
-      employmentType,
-      shiftSchedule,
-      teachingSubjects: teachingSubject ? [teachingSubject] : undefined,
+      customJobTitle: isKnownRole ? undefined : jobRole.trim(),
+      employmentType: contractType,
+      teachingSubjects: isTeacher && teachingSubject.trim() ? [teachingSubject.trim()] : undefined,
       qualifications: {
         degreeLevel,
         highestDegree,
         institution,
         fieldOfStudy,
         graduationYear: Number(graduationYear),
-        yearsOfExperience: Number(yearsOfExperience),
-        teachingLicenseNo: teachingLicenseNo || undefined
+        yearsOfExperience: Number(yearsOfExperience)
       },
       contract: {
         referenceNo: contractRefNo,
-        contractType: employmentType,
+        contractType,
         startDate,
         endDate,
         renewalStatus: 'Not Due',
@@ -188,179 +348,202 @@ export const RegisterEmployeePage: React.FC = () => {
 
   return (
     <div className="space-y-5 max-w-4xl mx-auto">
-      {/* Top Banner */}
-      <div className="bg-white border border-[#E2EAE4] rounded-2xl p-5 shadow-xs relative overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] font-bold text-[#147D4A] bg-[#EBF7EE] px-2.5 py-0.5 rounded-full">
-                Onboarding
-              </span>
-              <span className="text-xs text-[#57685D]">Hargeisa &amp; Gabiley</span>
+      {/* Header with logo */}
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-[#0E6139] via-[#147D4A] to-[#2D9A48] p-6 shadow-[0_20px_50px_-20px_rgba(20,125,74,0.55)]">
+        <div className="absolute -top-20 -right-14 w-60 h-60 rounded-full border-[24px] border-white/10 pointer-events-none" />
+        <div className="absolute -bottom-24 left-1/3 w-48 h-48 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="bg-white rounded-2xl px-3 py-1.5 shadow-lg self-start sm:self-auto">
+              <img
+                src="/directaid-logo-full.png"
+                alt="DirectAid - العون المباشر"
+                className="h-14 w-auto object-contain"
+              />
             </div>
-            <h1 className="text-xl font-black text-[#192C21] mt-1 flex items-center gap-2">
-              <UserPlus className="w-5 h-5 text-[#147D4A]" />
-              Staff Registration
-            </h1>
-            <p className="text-xs text-[#57685D] mt-0.5">
-              Enroll staff members into verified school divisions.
-            </p>
+            <div className="text-white">
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Staff Register</h1>
+              <p className="text-sm text-white/80 mt-0.5">Add a new staff member in four quick steps.</p>
+            </div>
           </div>
 
           <button
+            type="button"
             onClick={() => setActivePage('directory')}
-            className="text-xs font-semibold text-[#57685D] hover:text-[#192C21] flex items-center gap-1 self-start sm:self-center"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-xl transition-all self-start sm:self-center"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Directory
           </button>
         </div>
+      </div>
 
-        {/* Stepper */}
-        <div className="grid grid-cols-4 gap-2 mt-5 pt-4 border-t border-[#E2EAE4] text-xs">
-          {[
-            { num: 1, label: 'Personal' },
-            { num: 2, label: 'Division & Role' },
-            { num: 3, label: 'Credentials' },
-            { num: 4, label: 'Contract' }
-          ].map(s => (
-            <button
-              key={s.num}
-              type="button"
-              onClick={() => setStep(s.num as any)}
-              className={`p-2 rounded-xl text-left transition-all ${
-                step === s.num
-                  ? 'bg-[#147D4A] text-white shadow-xs font-bold'
-                  : step > s.num
-                  ? 'bg-[#EBF7EE] text-[#147D4A] font-semibold'
-                  : 'bg-slate-100 text-slate-500'
-              }`}
-            >
-              <div className="text-[9px] uppercase tracking-wider opacity-80">Step {s.num}</div>
-              <div className="truncate text-xs">{s.label}</div>
-            </button>
-          ))}
+      {/* Stepper */}
+      <div className="bg-white border border-[#E2EAE4] rounded-2xl px-4 py-4 sm:px-6 shadow-xs">
+        <div className="flex items-center">
+          {STEPS.map((s, i) => {
+            const isDone = step > s.num;
+            const isActive = step === s.num;
+            return (
+              <React.Fragment key={s.num}>
+                <button
+                  type="button"
+                  onClick={() => goToStep(s.num)}
+                  className="flex flex-col sm:flex-row items-center gap-2 group shrink-0"
+                >
+                  <span
+                    className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                      isActive
+                        ? 'bg-[#147D4A] text-white ring-4 ring-[#147D4A]/15'
+                        : isDone
+                        ? 'bg-[#EBF7EE] text-[#147D4A]'
+                        : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'
+                    }`}
+                  >
+                    {isDone ? <Check className="w-4 h-4" /> : s.num}
+                  </span>
+                  <span
+                    className={`text-[11px] sm:text-xs font-semibold ${
+                      isActive ? 'text-[#147D4A]' : isDone ? 'text-[#384C3F]' : 'text-slate-400'
+                    }`}
+                  >
+                    {s.label}
+                  </span>
+                </button>
+                {i < STEPS.length - 1 && (
+                  <div className="flex-1 h-0.5 mx-2 sm:mx-3 rounded-full bg-slate-100 overflow-hidden">
+                    <div className={`h-full bg-[#147D4A] transition-all duration-300 ${isDone ? 'w-full' : 'w-0'}`} />
+                  </div>
+                )}
+              </React.Fragment>
+            );
+          })}
         </div>
       </div>
 
       {/* Main Form Card */}
-      <form onSubmit={handleSubmit} className="bg-white border border-[#E2EAE4] rounded-2xl p-6 shadow-xs space-y-6 text-xs">
-        {/* STEP 1: PERSONAL PHOTO & DETAILS */}
+      <form onSubmit={handleSubmit} className="bg-white border border-[#E2EAE4] rounded-2xl p-5 sm:p-7 shadow-xs space-y-6">
+        {error && (
+          <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-semibold">
+            {error}
+          </div>
+        )}
+
+        {/* STEP 1: PERSONAL */}
         {step === 1 && (
-          <div className="space-y-5">
+          <div className="space-y-6">
             <div>
-              <h2 className="text-sm font-bold text-[#192C21] flex items-center gap-2">
-                <Camera className="w-4 h-4 text-[#147D4A]" />
-                1. Personal Photo &amp; Details
+              <h2 className="text-base font-bold text-[#192C21] flex items-center gap-2">
+                <Camera className="w-4.5 h-4.5 text-[#147D4A]" />
+                Personal Details
               </h2>
-              <p className="text-[#57685D] text-xs">Staff photograph and basic personal records.</p>
+              <p className="text-xs text-[#57685D] mt-0.5">Only the full name is required. Everything else can be added later.</p>
             </div>
 
-            {/* Photo Picker */}
+            {/* Photo */}
             <div className="p-4 bg-[#F9FBFA] border border-[#E2EAE4] rounded-2xl flex flex-col sm:flex-row items-center gap-4">
-              <div className="relative shrink-0">
-                <img
-                  src={avatarUrl}
-                  alt="Staff Preview"
-                  className="w-20 h-20 rounded-2xl object-cover border-2 border-[#147D4A] shadow-sm"
-                />
-                <span className="absolute -bottom-1 -right-1 bg-[#147D4A] text-white p-1 rounded-full shadow-xs">
-                  <CheckCircle2 className="w-3 h-3" />
-                </span>
-              </div>
-
-              <div className="space-y-1.5 flex-1">
-                <span className="font-semibold text-[#192C21] block">Profile Photograph</span>
-                <p className="text-[11px] text-[#57685D]">
-                  Select an avatar preset:
-                </p>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  {avatarPresets.map((url, i) => (
+              <img
+                src={avatarPreview}
+                alt="Staff photo preview"
+                className="w-20 h-20 rounded-2xl object-cover border-2 border-white shadow-md shrink-0"
+              />
+              <div className="flex-1 text-center sm:text-left">
+                <span className="font-semibold text-sm text-[#192C21] block">Profile Photo</span>
+                <p className="text-xs text-[#57685D] mt-0.5">Optional. Initials are shown until a photo is added.</p>
+                <div className="mt-2.5 flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                  <label className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#147D4A] bg-white border border-[#C5E8D2] hover:bg-[#EBF7EE] rounded-xl cursor-pointer transition-colors">
+                    <Upload className="w-3.5 h-3.5" />
+                    {photoUrl ? 'Change Photo' : 'Upload Photo'}
+                    <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+                  </label>
+                  {photoUrl && (
                     <button
-                      key={i}
                       type="button"
-                      onClick={() => setAvatarUrl(url)}
-                      className={`w-9 h-9 rounded-xl overflow-hidden border-2 transition-all ${
-                        avatarUrl === url ? 'border-[#147D4A] ring-2 ring-[#35B86B]/30 scale-105' : 'border-slate-200 opacity-70 hover:opacity-100'
-                      }`}
+                      onClick={() => setPhotoUrl('')}
+                      className="px-3 py-2 text-xs font-semibold text-slate-500 hover:text-rose-600 rounded-xl"
                     >
-                      <img src={url} alt={`Avatar ${i}`} className="w-full h-full object-cover" />
+                      Remove
                     </button>
-                  ))}
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Basic Info */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">Full Legal Name *</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="sm:col-span-2">
+                <label htmlFor="reg-name" className={labelClass}>
+                  Full Name <span className="text-rose-500">*</span>
+                </label>
                 <input
+                  id="reg-name"
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Mahad Jama Warsame"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs focus:ring-1 focus:ring-[#147D4A] focus:outline-none"
-                  required
+                  placeholder="Enter full name"
+                  className={inputClass}
+                  autoFocus
                 />
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Somali Name</label>
+                <label htmlFor="reg-dob" className={labelClass}>Date of Birth</label>
                 <input
-                  type="text"
-                  value={somaliName}
-                  onChange={(e) => setSomaliName(e.target.value)}
-                  placeholder="e.g. Mahad Jaamac Warsame"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs focus:ring-1 focus:ring-[#147D4A] focus:outline-none"
+                  id="reg-dob"
+                  type="date"
+                  value={dateOfBirth}
+                  max={new Date().toISOString().split('T')[0]}
+                  onChange={(e) => setDateOfBirth(e.target.value)}
+                  className={inputClass}
                 />
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Telephone Number *</label>
-                <input
-                  type="text"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="+252 63 4421098"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-mono focus:ring-1 focus:ring-[#147D4A] focus:outline-none"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">Email Address</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. m.jama@directaid.org"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs focus:ring-1 focus:ring-[#147D4A] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">Residential District *</label>
-                <input
-                  type="text"
-                  value={residentialArea}
-                  onChange={(e) => setResidentialArea(e.target.value)}
-                  placeholder="e.g. 26 June, Hargeisa"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs focus:ring-1 focus:ring-[#147D4A] focus:outline-none"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">Gender</label>
+                <label htmlFor="reg-gender" className={labelClass}>Gender</label>
                 <select
+                  id="reg-gender"
                   value={gender}
-                  onChange={(e) => setGender(e.target.value as any)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs"
+                  onChange={(e) => setGender(e.target.value as 'Male' | 'Female')}
+                  className={inputClass}
                 >
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                 </select>
+              </div>
+
+              <div>
+                <label htmlFor="reg-phone" className={labelClass}>Telephone Number</label>
+                <input
+                  id="reg-phone"
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="+252 63 ..."
+                  className={`${inputClass} font-mono`}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="reg-email" className={labelClass}>Email Address</label>
+                <input
+                  id="reg-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  className={inputClass}
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label htmlFor="reg-area" className={labelClass}>Residential District</label>
+                <input
+                  id="reg-area"
+                  type="text"
+                  value={residentialArea}
+                  onChange={(e) => setResidentialArea(e.target.value)}
+                  placeholder="e.g. 26 June, Hargeisa"
+                  className={inputClass}
+                />
               </div>
             </div>
           </div>
@@ -368,124 +551,107 @@ export const RegisterEmployeePage: React.FC = () => {
 
         {/* STEP 2: DIVISION & ROLE */}
         {step === 2 && (
-          <div className="space-y-5">
+          <div className="space-y-6">
             <div>
-              <h2 className="text-sm font-bold text-[#192C21] flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-[#147D4A]" />
-                2. Division &amp; Role Placement
+              <h2 className="text-base font-bold text-[#192C21] flex items-center gap-2">
+                <Building2 className="w-4.5 h-4.5 text-[#147D4A]" />
+                Division &amp; Role
               </h2>
-              <p className="text-[#57685D] text-xs">Assign the employee to a campus division and role.</p>
+              <p className="text-xs text-[#57685D] mt-0.5">Choose where this person works and what they do.</p>
             </div>
 
             <div>
-              <label className="block text-slate-700 font-semibold mb-1.5">School Division *</label>
-                {divisions.length === 0 && (
-                  <div className="p-3 mb-2 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-xs">
-                    No school divisions exist yet.{' '}
-                    <button type="button" onClick={() => setActivePage('divisions')} className="font-bold underline">
-                      Create a division first
-                    </button>
-                  </div>
-                )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {divisions.map((d) => (
-                  <div
-                    key={d.id}
-                    onClick={() => setDivisionId(d.id)}
-                    className={`p-3 rounded-xl border-2 cursor-pointer transition-all ${
-                      divisionId === d.id
-                        ? 'border-[#147D4A] bg-[#EBF7EE] shadow-xs ring-1 ring-[#147D4A]'
-                        : 'border-[#E2EAE4] hover:border-slate-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs text-[#192C21]">{d.canonicalIndex}. {d.name}</span>
-                      <span className="font-mono text-[10px] bg-white border border-slate-200 px-1.5 py-0.5 rounded font-bold text-[#147D4A]">
-                        {d.city}
+              <span className={labelClass}>
+                School Division <span className="text-rose-500">*</span>
+              </span>
+              {divisions.length === 0 && (
+                <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-xs">
+                  No school divisions exist yet.{' '}
+                  <button type="button" onClick={() => setActivePage('divisions')} className="font-bold underline">
+                    Create a division first
+                  </button>
+                </div>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {divisions.map((d) => {
+                  const isSelected = (divisionId || divisions[0]?.id) === d.id;
+                  return (
+                    <button
+                      type="button"
+                      key={d.id}
+                      onClick={() => setDivisionId(d.id)}
+                      className={`relative p-3.5 rounded-xl border-2 text-left transition-all ${
+                        isSelected
+                          ? 'border-[#147D4A] bg-[#EBF7EE]'
+                          : 'border-[#E2EAE4] hover:border-[#C5E8D2] bg-white'
+                      }`}
+                    >
+                      {isSelected && (
+                        <span className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-[#147D4A] text-white flex items-center justify-center">
+                          <Check className="w-3 h-3" />
+                        </span>
+                      )}
+                      <span className="font-bold text-sm text-[#192C21] block pr-6">{d.name}</span>
+                      <span className="text-xs text-[#57685D] block mt-0.5">
+                        {d.city} · {d.gender} · {d.level}
                       </span>
-                    </div>
-                    <span className="text-[11px] text-[#57685D] block mt-0.5">
-                      {d.gender} Wing · {d.level}
-                    </span>
-                  </div>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">Job Role *</label>
-                <select
-                  value={jobTitle}
-                  onChange={(e) => setJobTitle(e.target.value as any)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-semibold text-[#147D4A]"
-                >
-                  <option value="Principal">Principal / Headmaster</option>
-                  <option value="Deputy Principal">Deputy Principal</option>
-                  <option value="Teacher">Teacher / Instructor</option>
-                  <option value="Security Guard">Security Guard</option>
-                  <option value="Cleaner">Cleaner</option>
-                  <option value="Driver">Bus Driver</option>
-                  <option value="Secretary">Secretary</option>
-                  <option value="Finance Officer">Finance Officer</option>
-                  <option value="IT Support Officer">IT Support Officer</option>
-                  <option value="Administrative Officer">Administrative Officer</option>
-                </select>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <SelectWithOther
+                id="reg-role"
+                label="Job Role"
+                required
+                options={JOB_ROLES}
+                value={jobRole}
+                onChange={setJobRole}
+                otherLabel="+ Add manually..."
+                placeholder="Type the job role"
+              />
 
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">Employment Type *</label>
-                <select
-                  value={employmentType}
-                  onChange={(e) => setEmploymentType(e.target.value as any)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs"
-                >
-                  <option value="Fixed-Term Contract">Fixed-Term Contract</option>
-                  <option value="Permanent">Permanent</option>
-                  <option value="Probationary">Probationary (3 Months)</option>
-                  <option value="Part-Time">Part-Time</option>
-                </select>
-              </div>
+              <SelectWithOther
+                id="reg-employment"
+                label="Employment Type"
+                required
+                options={EMPLOYMENT_TYPES}
+                value={employmentType}
+                onChange={setEmploymentType}
+                otherLabel="+ Add manually..."
+                placeholder="Type the employment type"
+              />
             </div>
 
-            {jobTitle === 'Teacher' && (
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">Teaching Subject</label>
-                <select
-                  value={teachingSubject}
-                  onChange={(e) => setTeachingSubject(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-medium"
-                >
-                  <option value="Pure Mathematics & Calculus">Pure Mathematics</option>
-                  <option value="Physics & Physical Sciences">Physics</option>
-                  <option value="Chemistry & Laboratory">Chemistry</option>
-                  <option value="Biology & Life Sciences">Biology</option>
-                  <option value="Arabic Language & Grammar">Arabic Language</option>
-                  <option value="Islamic Studies & Sharia">Islamic Studies</option>
-                  <option value="Somali Literature & History">Somali Literature</option>
-                  <option value="English Language & Composition">English Language</option>
-                  <option value="Primary Numeracy & Literacy">Primary Numeracy & Literacy</option>
-                  <option value="ICT & Computer Science">ICT</option>
-                </select>
-              </div>
+            {isTeacher && (
+              <SelectWithOther
+                id="reg-subject"
+                label="Teaching Subject"
+                options={TEACHING_SUBJECTS}
+                value={teachingSubject}
+                onChange={setTeachingSubject}
+                otherLabel="+ Add manually..."
+                placeholder="Type the subject"
+              />
             )}
           </div>
         )}
 
         {/* STEP 3: QUALIFICATIONS */}
         {step === 3 && (
-          <div className="space-y-5">
+          <div className="space-y-6">
             <div>
-              <h2 className="text-sm font-bold text-[#192C21] flex items-center gap-2">
-                <GraduationCap className="w-4 h-4 text-[#147D4A]" />
-                3. Qualifications &amp; Degree Tier
+              <h2 className="text-base font-bold text-[#192C21] flex items-center gap-2">
+                <GraduationCap className="w-4.5 h-4.5 text-[#147D4A]" />
+                Qualifications
               </h2>
-              <p className="text-[#57685D] text-xs">Academic qualifications and certifications.</p>
+              <p className="text-xs text-[#57685D] mt-0.5">Highest academic qualification and experience.</p>
             </div>
 
-            {/* Degree Tier Selection Buttons */}
             <div>
-              <label className="block text-slate-700 font-semibold mb-2">Degree Tier *</label>
+              <span className={labelClass}>Degree Level</span>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {(['Diploma', 'Bachelor', 'Master', 'PhD', 'Vocational'] as DegreeLevel[]).map((tier) => (
                   <button
@@ -499,10 +665,10 @@ export const RegisterEmployeePage: React.FC = () => {
                       if (tier === 'Diploma') setHighestDegree('Diploma in Education');
                       if (tier === 'Vocational') setHighestDegree('Certified Technical License');
                     }}
-                    className={`py-2 px-3 rounded-xl border text-center transition-all cursor-pointer font-bold ${
+                    className={`py-2.5 px-3 rounded-xl border text-sm text-center transition-all font-semibold ${
                       degreeLevel === tier
-                        ? 'border-[#147D4A] bg-[#147D4A] text-white shadow-xs'
-                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                        ? 'border-[#147D4A] bg-[#147D4A] text-white shadow-sm'
+                        : 'border-[#E2EAE4] bg-white text-[#384C3F] hover:border-[#C5E8D2]'
                     }`}
                   >
                     {tier}
@@ -511,60 +677,63 @@ export const RegisterEmployeePage: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Degree Title *</label>
+                <label htmlFor="reg-degree" className={labelClass}>Degree Title</label>
                 <input
+                  id="reg-degree"
                   type="text"
                   value={highestDegree}
                   onChange={(e) => setHighestDegree(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-semibold"
-                  required
+                  className={inputClass}
                 />
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Awarding Institution *</label>
+                <label htmlFor="reg-institution" className={labelClass}>Awarding Institution</label>
                 <input
+                  id="reg-institution"
                   type="text"
                   value={institution}
                   onChange={(e) => setInstitution(e.target.value)}
                   placeholder="e.g. University of Hargeisa"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs"
-                  required
+                  className={inputClass}
                 />
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Field of Study *</label>
+                <label htmlFor="reg-field" className={labelClass}>Field of Study</label>
                 <input
+                  id="reg-field"
                   type="text"
                   value={fieldOfStudy}
                   onChange={(e) => setFieldOfStudy(e.target.value)}
                   placeholder="e.g. Science Education"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs"
-                  required
+                  className={inputClass}
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Graduation Year</label>
+                  <label htmlFor="reg-grad" className={labelClass}>Graduation Year</label>
                   <input
+                    id="reg-grad"
                     type="number"
                     value={graduationYear}
                     onChange={(e) => setGraduationYear(Number(e.target.value))}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-mono"
+                    className={`${inputClass} font-mono`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Experience (Years)</label>
+                  <label htmlFor="reg-exp" className={labelClass}>Experience (Years)</label>
                   <input
+                    id="reg-exp"
                     type="number"
+                    min={0}
                     value={yearsOfExperience}
                     onChange={(e) => setYearsOfExperience(Number(e.target.value))}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-mono"
+                    className={`${inputClass} font-mono`}
                   />
                 </div>
               </div>
@@ -572,130 +741,112 @@ export const RegisterEmployeePage: React.FC = () => {
           </div>
         )}
 
-        {/* STEP 4: CONTRACT & VAULT */}
+        {/* STEP 4: CONTRACT */}
         {step === 4 && (
-          <div className="space-y-5">
+          <div className="space-y-6">
             <div>
-              <h2 className="text-sm font-bold text-[#192C21] flex items-center gap-2">
-                <FileText className="w-4 h-4 text-[#147D4A]" />
-                4. Contract &amp; Document Vault
+              <h2 className="text-base font-bold text-[#192C21] flex items-center gap-2">
+                <FileText className="w-4.5 h-4.5 text-[#147D4A]" />
+                Contract
               </h2>
-              <p className="text-[#57685D] text-xs">Remuneration and required documents.</p>
+              <p className="text-xs text-[#57685D] mt-0.5">Salary, contract length, and documents.</p>
             </div>
 
-            <div className="p-4 bg-[#EBF7EE] border border-[#C5E8D2] rounded-2xl grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <span className="text-[10px] font-bold text-[#147D4A] uppercase tracking-wider block">Contract Ref</span>
-                <span className="font-mono font-bold text-[#192C21] text-xs">{contractRefNo}</span>
-              </div>
-              <div>
-                <span className="text-[10px] font-bold text-[#147D4A] uppercase tracking-wider block">Monthly Base</span>
-                <div className="flex items-center gap-1 mt-0.5">
-                  <span className="font-bold text-xs">$</span>
-                  <input
-                    type="number"
-                    value={monthlyBaseSalary}
-                    onChange={(e) => setMonthlyBaseSalary(Number(e.target.value))}
-                    className="w-24 px-2 py-1 bg-white border border-slate-300 rounded-lg font-mono font-bold text-xs"
-                    required
-                  />
-                  <span className="text-xs text-slate-500 font-semibold">USD</span>
+                <span className={labelClass}>Contract Reference</span>
+                <div className="px-3.5 py-2.5 bg-[#EBF7EE] border border-[#C5E8D2] rounded-xl font-mono font-bold text-sm text-[#147D4A]">
+                  {contractRefNo}
                 </div>
               </div>
+
               <div>
-                <span className="text-[10px] font-bold text-[#147D4A] uppercase tracking-wider block">Duration</span>
-                <select
-                  value={contractYears}
-                  onChange={(e) => setContractYears(Number(e.target.value))}
-                  className="mt-0.5 px-2 py-1 bg-white border border-slate-300 rounded-lg text-xs font-semibold"
-                >
-                  <option value={1}>1 Year</option>
-                  <option value={2}>2 Years</option>
-                  <option value={3}>3 Years</option>
-                </select>
+                <label htmlFor="reg-salary" className={labelClass}>
+                  Monthly Salary (USD) <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
+                  <input
+                    id="reg-salary"
+                    type="number"
+                    min={0}
+                    value={monthlyBaseSalary}
+                    onChange={(e) => setMonthlyBaseSalary(Number(e.target.value))}
+                    className={`${inputClass} pl-7 font-mono font-semibold`}
+                    required
+                  />
+                </div>
               </div>
+
+              <SelectWithOther
+                id="reg-duration"
+                label="Contract Duration"
+                required
+                options={CONTRACT_DURATIONS}
+                value={contractYears}
+                onChange={setContractYears}
+                otherLabel="+ Enter years manually..."
+                placeholder="Number of years"
+                inputType="number"
+              />
             </div>
 
             {/* Checklist */}
-            <div className="space-y-2">
-              <h3 className="font-bold text-xs text-[#192C21]">Mandatory Document Pack</h3>
+            <div className="space-y-2.5">
+              <h3 className="font-bold text-sm text-[#192C21]">Required Documents</h3>
 
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <FileText className="w-4 h-4 text-emerald-600" />
-                  <div>
-                    <span className="font-bold text-[#192C21] block">Curriculum Vitae (CV)</span>
-                    <span className="font-mono text-[11px] text-slate-500">{cvFileName}</span>
+              {[
+                { icon: FileText, color: 'text-emerald-600', title: 'Curriculum Vitae (CV)', file: cvFileName, tag: 'Attached' },
+                { icon: FileText, color: 'text-[#147D4A]', title: 'Signed Contract', file: contractFileName, tag: 'Attached' },
+                { icon: ShieldCheck, color: 'text-blue-600', title: 'Somaliland CID Clearance', file: policeCertFileName, tag: 'Verified' }
+              ].map(doc => (
+                <div key={doc.title} className="p-3.5 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="w-9 h-9 rounded-lg bg-white border border-[#E2EAE4] flex items-center justify-center shrink-0">
+                      <doc.icon className={`w-4 h-4 ${doc.color}`} />
+                    </span>
+                    <div className="min-w-0">
+                      <span className="font-semibold text-sm text-[#192C21] block">{doc.title}</span>
+                      <span className="font-mono text-[11px] text-slate-500 truncate block">{doc.file}</span>
+                    </div>
                   </div>
+                  <span className="text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-bold text-[10px] shrink-0">
+                    ✓ {doc.tag}
+                  </span>
                 </div>
-                <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md font-bold text-[10px]">
-                  ✓ Attached
-                </span>
-              </div>
-
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <FileText className="w-4 h-4 text-[#147D4A]" />
-                  <div>
-                    <span className="font-bold text-[#192C21] block">Signed Contract</span>
-                    <span className="font-mono text-[11px] text-slate-500">{contractFileName}</span>
-                  </div>
-                </div>
-                <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md font-bold text-[10px]">
-                  ✓ Attached
-                </span>
-              </div>
-
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <ShieldCheck className="w-4 h-4 text-blue-600" />
-                  <div>
-                    <span className="font-bold text-[#192C21] block">Somaliland CID Clearance</span>
-                    <span className="font-mono text-[11px] text-slate-500">{policeCertFileName}</span>
-                  </div>
-                </div>
-                <span className="text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md font-bold text-[10px]">
-                  ✓ Verified
-                </span>
-              </div>
+              ))}
             </div>
           </div>
         )}
 
         {/* Navigation Buttons */}
-        <div className="pt-4 border-t border-[#E2EAE4] flex items-center justify-between">
+        <div className="pt-5 border-t border-[#E2EAE4] flex items-center justify-between">
           {step > 1 ? (
             <button
               type="button"
-              onClick={() => setStep((step - 1) as any)}
-              className="px-4 py-2 border border-slate-300 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-1"
+              onClick={() => goToStep((step - 1) as 1 | 2 | 3)}
+              className="px-4 py-2.5 border border-[#E2EAE4] rounded-xl text-sm font-semibold text-[#57685D] hover:bg-[#F9FBFA] flex items-center gap-1.5 transition-colors"
             >
-              <ArrowLeft className="w-3.5 h-3.5" /> Previous
+              <ArrowLeft className="w-4 h-4" /> Back
             </button>
           ) : (
-            <div />
+            <span className="text-xs text-slate-400">Step 1 of 4</span>
           )}
 
           {step < 4 ? (
             <button
               type="button"
-              onClick={() => {
-                if (step === 1 && (!fullName || !phoneNumber || !residentialArea)) {
-                  alert('Please enter required Full Name, Phone, and Residential Area.');
-                  return;
-                }
-                setStep((step + 1) as any);
-              }}
-              className="px-5 py-2.5 bg-[#147D4A] hover:bg-[#0E6139] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all"
+              onClick={() => goToStep((step + 1) as 2 | 3 | 4)}
+              className="px-6 py-2.5 bg-[#147D4A] hover:bg-[#0E6139] text-white rounded-xl text-sm font-bold flex items-center gap-1.5 shadow-sm transition-all"
             >
-              <span>Next Step</span>
+              <span>Continue</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           ) : (
             <button
               type="submit"
               disabled={divisions.length === 0}
-              className="px-6 py-2.5 bg-[#147D4A] hover:bg-[#0E6139] text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2.5 bg-[#147D4A] hover:bg-[#0E6139] text-white rounded-xl text-sm font-bold flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>Complete Registration</span>

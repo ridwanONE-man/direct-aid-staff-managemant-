@@ -27,6 +27,10 @@ export const ExecutiveDashboard: React.FC = () => {
     navigateToProfile
   } = useApp();
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+  const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
   const scopedEmployees = employees.filter(emp => {
     if (regionalScope === 'hargeisa') return emp.campusLocation === 'Hargeisa';
     if (regionalScope === 'gabiley') return emp.campusLocation === 'Gabiley';
@@ -69,44 +73,57 @@ export const ExecutiveDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Executive Welcome Hero Banner */}
-      <div className="relative bg-white border border-[#E2EAE4] rounded-2xl p-6 shadow-xs overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-full bg-linear-to-l from-[#EBF7EE] via-[#F4FAF6] to-transparent pointer-events-none" />
+      {/* Welcome Hero Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-[#0E6139] via-[#147D4A] to-[#2D9A48] p-6 sm:p-7 shadow-[0_20px_50px_-20px_rgba(20,125,74,0.55)]">
+        {/* Decorative rings echoing the logo's circle */}
+        <div className="absolute -top-24 -right-16 w-72 h-72 rounded-full border-[28px] border-white/10 pointer-events-none" />
+        <div className="absolute -bottom-28 right-40 w-56 h-56 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+        <div className="absolute top-6 right-1/3 w-3 h-3 rounded-full bg-white/30 pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-semibold text-[#147D4A]">
-              <span className="w-2 h-2 rounded-full bg-[#147D4A] animate-pulse" />
-              <span>Term 2024 / 2025</span>
-              <span className="text-slate-300">·</span>
-              <span className="text-[#57685D] capitalize">
-                {regionalScope === 'all' ? 'All Campuses' : `${regionalScope} Campus`}
-              </span>
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+            <div className="bg-white rounded-2xl px-4 py-2 shadow-lg shrink-0 self-start sm:self-auto">
+              <img
+                src="/directaid-logo-full.png"
+                alt="DirectAid - العون المباشر"
+                className="h-16 sm:h-20 w-auto object-contain"
+              />
             </div>
 
-            <h1 className="text-2xl font-black text-[#192C21] tracking-tight">
-              Workforce Overview
-            </h1>
-            <p className="text-xs text-[#57685D] max-w-xl">
-              Real-time directory, contract renewals, and campus divisions across Somaliland.
-            </p>
+            <div className="space-y-1.5 text-white">
+              <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-white/85">
+                <span className="w-2 h-2 rounded-full bg-[#B8F5CF] animate-pulse" />
+                <span>{today}</span>
+                <span className="text-white/40">·</span>
+                <span className="capitalize">
+                  {regionalScope === 'all' ? 'All Campuses' : `${regionalScope} Campus`}
+                </span>
+              </div>
+
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+                {greeting}
+              </h1>
+              <p className="text-sm text-white/80 max-w-xl">
+                Staff records, contract renewals, and school divisions across Somaliland, all in one place.
+              </p>
+            </div>
           </div>
 
           {/* Quick Actions */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-[#192C21] bg-white hover:bg-[#F3F7F4] border border-[#E2EAE4] rounded-xl transition-all shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-xl transition-all backdrop-blur-sm"
             >
-              <Printer className="w-3.5 h-3.5 text-[#57685D]" />
+              <Printer className="w-3.5 h-3.5" />
               <span>Print</span>
             </button>
 
             <button
               type="button"
               onClick={handleExportPayrollReport}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-[#147D4A] bg-[#EBF7EE] hover:bg-[#DDF3E4] border border-[#C5E8D2] rounded-xl transition-all shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-xl transition-all backdrop-blur-sm"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export CSV</span>
@@ -115,7 +132,7 @@ export const ExecutiveDashboard: React.FC = () => {
             <button
               type="button"
               onClick={() => setActivePage('register')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-[#147D4A] hover:bg-[#0E6139] rounded-xl transition-all shadow-xs"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#147D4A] bg-white hover:bg-[#EBF7EE] rounded-xl transition-all shadow-md"
             >
               <UserPlus className="w-3.5 h-3.5" />
               <span>Register Staff</span>

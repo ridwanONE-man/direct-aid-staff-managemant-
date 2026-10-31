@@ -34,6 +34,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     activePage,
     setActivePage,
     employees,
+    divisions,
     regionalScope,
     setRegionalScope,
     notifications,
@@ -54,14 +55,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'directory',
       label: 'Staff Directory',
       icon: <Users className="w-4.5 h-4.5 shrink-0" />,
-      badge: employees.length,
+      badge: employees.length > 0 ? employees.length : undefined,
       badgeColor: 'bg-emerald-50 text-emerald-800 border border-emerald-200'
     },
     {
       id: 'divisions',
       label: 'School Divisions',
       icon: <Building2 className="w-4.5 h-4.5 shrink-0" />,
-      badge: '8',
+      badge: divisions.length > 0 ? divisions.length : undefined,
       badgeColor: 'bg-emerald-100 text-emerald-900 font-bold'
     },
     {

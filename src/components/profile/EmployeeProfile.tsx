@@ -458,7 +458,9 @@ export const EmployeeProfile: React.FC = () => {
               </div>
               <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
                 <span className="text-slate-500 block">Job Role</span>
-                <span className="text-[#192C21] font-bold">{employee.jobTitle} {employee.customJobTitle ? `(${employee.customJobTitle})` : ''}</span>
+                <span className="text-[#192C21] font-bold">{employee.jobTitle === 'Other' && employee.customJobTitle
+                    ? employee.customJobTitle
+                    : `${employee.jobTitle}${employee.customJobTitle ? ` (${employee.customJobTitle})` : ''}`}</span>
               </div>
               <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
                 <span className="text-slate-500 block">Role Category</span>
