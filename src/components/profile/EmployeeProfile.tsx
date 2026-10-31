@@ -226,108 +226,101 @@ export const EmployeeProfile: React.FC = () => {
       </div>
 
       {/* Hero */}
-      <div className="bg-white border border-[#E2EAE4] rounded-3xl overflow-hidden shadow-[0_18px_45px_-28px_rgba(20,125,74,0.6)]">
-        <div className="relative h-24 bg-linear-to-br from-[#0E6139] via-[#147D4A] to-[#2D9A48]">
-          <div className="absolute -top-16 right-24 w-44 h-44 rounded-full border-[18px] border-white/10 pointer-events-none" />
-          <div className="absolute -bottom-10 left-1/2 w-40 h-40 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+      <div className="rounded-3xl overflow-hidden shadow-[0_20px_50px_-24px_rgba(20,125,74,0.55)] bg-white border border-[#E2EAE4]">
+        <div className="relative bg-linear-to-br from-[#0E6139] via-[#147D4A] to-[#2D9A48] p-6">
+          <div className="absolute -top-20 -right-14 w-60 h-60 rounded-full border-[24px] border-white/10 pointer-events-none" />
+          <div className="absolute -bottom-24 left-1/3 w-48 h-48 rounded-full bg-white/10 blur-2xl pointer-events-none" />
 
-          <div className="absolute top-3 right-3 flex items-center gap-1.5">
-            <button
-              onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-lg transition-all"
-              title="Print"
-            >
-              <Printer className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Print</span>
-            </button>
-            <button
-              onClick={startEditing}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-lg transition-all"
-              title="Edit"
-            >
-              <Edit className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Edit</span>
-            </button>
-            <button
-              onClick={() => {
-                setContractRenewalTarget(employee);
-                setIsRenewContractOpen(true);
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#147D4A] bg-white hover:bg-[#EBF7EE] rounded-lg transition-all shadow-sm"
-              title="Renew Contract"
-            >
-              <FileText className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Renew</span>
-            </button>
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="relative shrink-0 self-start">
+                <img
+                  src={employee.avatarUrl}
+                  alt={employee.fullName}
+                  className="w-28 h-28 rounded-2xl object-cover border-4 border-white/90 shadow-lg bg-white"
+                />
+                <span
+                  className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-[3px] border-white ${
+                    employee.employmentStatus === 'Active' ? 'bg-emerald-400' : 'bg-amber-400'
+                  }`}
+                  title={employee.employmentStatus}
+                />
+              </div>
+
+              <div className="text-white space-y-1.5 min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
+                  <span className="font-mono bg-white/15 border border-white/20 px-2 py-0.5 rounded-md">{employee.id}</span>
+                  <span className="bg-white/15 border border-white/20 px-2 py-0.5 rounded-md">{employee.employmentStatus}</span>
+                  <span className="inline-flex items-center gap-1 text-white/85">
+                    <MapPin className="w-3.5 h-3.5" /> {employee.campusLocation}
+                  </span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tight break-words">{employee.fullName}</h1>
+                <p className="text-sm text-white/85">
+                  <span className="font-bold text-white">{roleLabel(employee)}</span> · {employee.divisionName}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <button
+                onClick={() => window.print()}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-xl transition-all"
+              >
+                <Printer className="w-3.5 h-3.5" /> Print
+              </button>
+              <button
+                onClick={startEditing}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-xl transition-all"
+              >
+                <Edit className="w-3.5 h-3.5" /> Edit
+              </button>
+              <button
+                onClick={() => {
+                  setContractRenewalTarget(employee);
+                  setIsRenewContractOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#147D4A] bg-white hover:bg-[#EBF7EE] rounded-xl transition-all shadow-md"
+              >
+                <FileText className="w-3.5 h-3.5" /> Renew Contract
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="px-5 sm:px-6 pb-5">
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-14">
-            <div className="relative shrink-0 self-start">
-              <img
-                src={employee.avatarUrl}
-                alt={employee.fullName}
-                className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover border-4 border-white shadow-lg bg-white"
-              />
-              <span
-                className={`absolute bottom-1.5 right-1.5 w-5 h-5 rounded-full border-[3px] border-white ${
-                  employee.employmentStatus === 'Active' ? 'bg-emerald-500' : 'bg-amber-500'
-                }`}
-                title={employee.employmentStatus}
-              />
-            </div>
-
-            <div className="min-w-0 flex-1 sm:pb-1">
-              <h1 className="text-xl sm:text-2xl font-black text-[#192C21] tracking-tight break-words">{employee.fullName}</h1>
-              <p className="text-sm text-[#57685D] mt-0.5">
-                <span className="font-semibold text-[#147D4A]">{roleLabel(employee)}</span> · {employee.divisionName}
-              </p>
-              <div className="flex flex-wrap items-center gap-1.5 mt-2 text-[11px] font-semibold">
-                <span className="font-mono text-[#147D4A] bg-[#EBF7EE] px-2 py-0.5 rounded-md">{employee.id}</span>
-                <span
-                  className={`px-2 py-0.5 rounded-md ${
-                    employee.employmentStatus === 'Active' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
-                  }`}
-                >
-                  {employee.employmentStatus}
-                </span>
-                <span className="inline-flex items-center gap-1 text-[#57685D] bg-slate-100 px-2 py-0.5 rounded-md">
-                  <MapPin className="w-3 h-3" /> {employee.campusLocation}
-                </span>
+        {/* Completeness */}
+        <div className="p-5 flex flex-col lg:flex-row lg:items-center gap-4">
+          <div className="flex items-center gap-3 lg:w-64 shrink-0">
+            <div className="flex-1">
+              <div className="flex items-center justify-between text-xs mb-1.5">
+                <span className="font-bold text-[#192C21]">Profile completeness</span>
+                <span className="font-mono font-bold text-[#147D4A]">{employee.profileCompleteness}%</span>
               </div>
-            </div>
-          </div>
-
-          {/* Completeness */}
-          <div className="mt-4 pt-4 border-t border-[#E2EAE4] flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="flex items-center gap-3 sm:w-60 shrink-0">
-              <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+              <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
                 <div className="h-full bg-[#147D4A] rounded-full transition-all" style={{ width: `${employee.profileCompleteness}%` }} />
               </div>
-              <span className="font-mono text-xs font-bold text-[#147D4A] w-10 text-right">{employee.profileCompleteness}%</span>
             </div>
-
-            {employee.missingRequirements.length > 0 ? (
-              <div className="flex flex-wrap items-center gap-1.5 text-xs flex-1 min-w-0">
-                <span className="text-amber-700 font-semibold flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5" /> {employee.missingRequirements.length} missing:
-                </span>
-                {employee.missingRequirements.slice(0, 3).map((req, i) => (
-                  <span key={i} className="bg-amber-50 text-amber-800 border border-amber-100 px-2 py-0.5 rounded-full text-[11px] font-medium">
-                    {req}
-                  </span>
-                ))}
-                {employee.missingRequirements.length > 3 && (
-                  <span className="text-[11px] text-slate-500">+{employee.missingRequirements.length - 3} more</span>
-                )}
-                <button onClick={() => setActiveTab('documents')} className="text-xs font-bold text-[#147D4A] hover:underline ml-1">
-                  Complete now →
-                </button>
-              </div>
-            ) : (
-              <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
-                <CheckCircle2 className="w-4 h-4" /> Profile complete
-              </span>
-            )}
           </div>
+
+          {employee.missingRequirements.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-1.5 text-xs flex-1">
+              <span className="text-amber-700 font-semibold flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5" /> Missing:
+              </span>
+              {employee.missingRequirements.map((req, i) => (
+                <span key={i} className="bg-amber-50 text-amber-800 border border-amber-100 px-2 py-0.5 rounded-full text-[11px] font-medium">
+                  {req}
+                </span>
+              ))}
+              <button onClick={() => setActiveTab('documents')} className="text-xs font-bold text-[#147D4A] hover:underline ml-1">
+                Complete now →
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full self-start">
+              <CheckCircle2 className="w-4 h-4" /> Profile complete, all required documents on file
+            </div>
+          )}
         </div>
       </div>
 
