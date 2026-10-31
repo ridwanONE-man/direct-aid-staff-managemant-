@@ -183,13 +183,13 @@ export const EmployeeProfile: React.FC = () => {
     }
   };
 
-  const tabs: { id: TabId; label: string }[] = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'personal', label: 'Personal' },
-    { id: 'employment', label: 'Employment' },
-    { id: 'qualifications', label: 'Qualifications' },
-    { id: 'contract', label: 'Contract' },
-    { id: 'documents', label: `Documents (${requiredOnFile}/${REQUIRED_DOCUMENTS.length})` }
+  const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
+    { id: 'overview', label: 'Overview', icon: Building2 },
+    { id: 'personal', label: 'Personal', icon: User },
+    { id: 'employment', label: 'Employment', icon: Briefcase },
+    { id: 'qualifications', label: 'Qualifications', icon: GraduationCap },
+    { id: 'contract', label: 'Contract', icon: FileText },
+    { id: 'documents', label: `Documents (${requiredOnFile}/${REQUIRED_DOCUMENTS.length})`, icon: FolderOpen }
   ];
 
   return (
@@ -227,36 +227,36 @@ export const EmployeeProfile: React.FC = () => {
 
       {/* Hero */}
       <div className="rounded-3xl overflow-hidden shadow-[0_20px_50px_-24px_rgba(20,125,74,0.55)] bg-white border border-[#E2EAE4]">
-        <div className="relative bg-linear-to-br from-[#0E6139] via-[#147D4A] to-[#2D9A48] p-6">
-          <div className="absolute -top-20 -right-14 w-60 h-60 rounded-full border-[24px] border-white/10 pointer-events-none" />
-          <div className="absolute -bottom-24 left-1/3 w-48 h-48 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+        <div className="relative bg-linear-to-br from-[#0E6139] via-[#147D4A] to-[#2D9A48] px-4 py-4 sm:px-5">
+          <div className="absolute -top-20 -right-14 w-56 h-56 rounded-full border-[22px] border-white/10 pointer-events-none" />
+          <div className="absolute -bottom-24 left-1/3 w-44 h-44 rounded-full bg-white/10 blur-2xl pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               <div className="relative shrink-0 self-start">
                 <img
                   src={employee.avatarUrl}
                   alt={employee.fullName}
-                  className="w-28 h-28 rounded-2xl object-cover border-4 border-white/90 shadow-lg bg-white"
+                  className="w-32 h-32 sm:w-36 sm:h-36 rounded-2xl object-cover border-4 border-white shadow-xl bg-white ring-4 ring-white/15"
                 />
                 <span
-                  className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-[3px] border-white ${
+                  className={`absolute bottom-1 right-1 w-5 h-5 rounded-full border-[3px] border-white ${
                     employee.employmentStatus === 'Active' ? 'bg-emerald-400' : 'bg-amber-400'
                   }`}
                   title={employee.employmentStatus}
                 />
               </div>
 
-              <div className="text-white space-y-1.5 min-w-0">
-                <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
+              <div className="text-white space-y-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-semibold">
                   <span className="font-mono bg-white/15 border border-white/20 px-2 py-0.5 rounded-md">{employee.id}</span>
                   <span className="bg-white/15 border border-white/20 px-2 py-0.5 rounded-md">{employee.employmentStatus}</span>
                   <span className="inline-flex items-center gap-1 text-white/85">
-                    <MapPin className="w-3.5 h-3.5" /> {employee.campusLocation}
+                    <MapPin className="w-3 h-3" /> {employee.campusLocation}
                   </span>
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-black tracking-tight break-words">{employee.fullName}</h1>
-                <p className="text-sm text-white/85">
+                <h1 className="text-lg sm:text-xl font-extrabold tracking-tight break-words">{employee.fullName}</h1>
+                <p className="text-xs text-white/85">
                   <span className="font-bold text-white">{roleLabel(employee)}</span> · {employee.divisionName}
                 </p>
               </div>
@@ -265,13 +265,13 @@ export const EmployeeProfile: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2 shrink-0">
               <button
                 onClick={() => window.print()}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-xl transition-all"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-lg transition-all"
               >
                 <Printer className="w-3.5 h-3.5" /> Print
               </button>
               <button
                 onClick={startEditing}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-xl transition-all"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-lg transition-all"
               >
                 <Edit className="w-3.5 h-3.5" /> Edit
               </button>
@@ -280,7 +280,7 @@ export const EmployeeProfile: React.FC = () => {
                   setContractRenewalTarget(employee);
                   setIsRenewContractOpen(true);
                 }}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#147D4A] bg-white hover:bg-[#EBF7EE] rounded-xl transition-all shadow-md"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-[#147D4A] bg-white hover:bg-[#EBF7EE] rounded-lg transition-all shadow-md"
               >
                 <FileText className="w-3.5 h-3.5" /> Renew Contract
               </button>
@@ -289,7 +289,7 @@ export const EmployeeProfile: React.FC = () => {
         </div>
 
         {/* Completeness */}
-        <div className="p-5 flex flex-col lg:flex-row lg:items-center gap-4">
+        <div className="px-5 py-3.5 flex flex-col lg:flex-row lg:items-center gap-3">
           <div className="flex items-center gap-3 lg:w-64 shrink-0">
             <div className="flex-1">
               <div className="flex items-center justify-between text-xs mb-1.5">
@@ -338,8 +338,11 @@ export const EmployeeProfile: React.FC = () => {
             warn: isContractExpiring
           }
         ].map(fact => (
-          <div key={fact.label} className="bg-white border border-[#E2EAE4] rounded-2xl p-3.5 flex items-center gap-3 min-w-0 shadow-xs">
-            <span className="w-9 h-9 rounded-xl bg-[#EBF7EE] text-[#147D4A] flex items-center justify-center shrink-0">
+          <div
+            key={fact.label}
+            className="bg-white border border-[#E2EAE4] hover:border-[#C5E8D2] rounded-2xl p-3.5 flex items-center gap-3 min-w-0 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+          >
+            <span className="w-10 h-10 rounded-xl bg-linear-to-br from-[#EBF7EE] to-[#DDF3E4] text-[#147D4A] flex items-center justify-center shrink-0">
               <fact.icon className="w-4 h-4" />
             </span>
             <div className="min-w-0">
@@ -362,10 +365,11 @@ export const EmployeeProfile: React.FC = () => {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`py-2 px-3.5 rounded-xl font-semibold transition-colors whitespace-nowrap ${
-              activeTab === tab.id ? 'bg-[#147D4A] text-white shadow-xs' : 'text-[#57685D] hover:text-[#192C21] hover:bg-slate-50'
+            className={`py-2 px-3.5 rounded-xl font-semibold transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+              activeTab === tab.id ? 'bg-[#147D4A] text-white shadow-sm' : 'text-[#57685D] hover:text-[#147D4A] hover:bg-[#F3F9F5]'
             }`}
           >
+            <tab.icon className="w-3.5 h-3.5" />
             {tab.label}
           </button>
         ))}
