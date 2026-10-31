@@ -589,7 +589,7 @@ export const EmployeeProfile: React.FC = () => {
                 <p className="text-xs text-[#57685D] mt-0.5">PDF, Word, or photo · up to 10 MB each. Files are stored securely in Supabase.</p>
               </div>
               <span className="text-xs font-bold text-[#147D4A] bg-[#EBF7EE] px-2.5 py-1 rounded-full shrink-0">
-                {requiredOnFile} of {REQUIRED_DOCUMENTS.length} required
+                {requiredOnFile} of {REQUIRED_DOCUMENTS.length} uploaded
               </span>
             </div>
             <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
@@ -616,7 +616,6 @@ export const EmployeeProfile: React.FC = () => {
                     key={req.type}
                     label={req.label}
                     hint={req.hint}
-                    required
                     isImage={req.type === 'photo'}
                     accept={req.accept}
                     busy={busyKey === req.type || (!!doc && busyKey === doc.id)}

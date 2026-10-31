@@ -960,8 +960,10 @@ export const RegisterEmployeePage: React.FC = () => {
             <div className="space-y-3">
               <div className="flex items-end justify-between gap-3">
                 <div>
-                  <h3 className="font-bold text-sm text-[#192C21]">Required Documents</h3>
-                  <p className="text-xs text-[#57685D] mt-0.5">PDF, Word, or photo · up to 10 MB each. Missing files can be added later from the staff profile.</p>
+                  <h3 className="font-bold text-sm text-[#192C21]">
+                    Documents <span className="text-xs font-medium text-slate-400">(optional)</span>
+                  </h3>
+                  <p className="text-xs text-[#57685D] mt-0.5">PDF, Word, or photo · up to 10 MB each. You can skip any of these and add them later from the staff profile.</p>
                 </div>
                 <span className="text-xs font-bold text-[#147D4A] bg-[#EBF7EE] px-2.5 py-1 rounded-full shrink-0">
                   {uploadedRequiredCount} of {REQUIRED_DOCUMENTS.length}
@@ -982,7 +984,6 @@ export const RegisterEmployeePage: React.FC = () => {
                       key={doc.type}
                       label={doc.label}
                       hint={doc.hint}
-                      required
                       isImage={doc.type === 'photo'}
                       accept={doc.accept}
                       fileName={file?.name}

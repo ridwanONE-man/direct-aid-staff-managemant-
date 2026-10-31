@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
+import { EmployeeRecord } from '../../types';
 import {
   Search,
   Download,
@@ -14,7 +15,9 @@ import {
   ArrowUpDown,
   Phone,
   Mail,
-  RotateCcw
+  RotateCcw,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 
 export const StaffDirectory: React.FC = () => {
@@ -28,8 +31,11 @@ export const StaffDirectory: React.FC = () => {
     navigateToProfile,
     setIsRenewContractOpen,
     setContractRenewalTarget,
-    setActivePage
+    setActivePage,
+    deleteEmployee
   } = useApp();
+
+  const [pendingDelete, setPendingDelete] = useState<EmployeeRecord | null>(null);
 
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [sortField, setSortField] = useState<'fullName' | 'id' | 'hireDate' | 'jobTitle'>('fullName');
@@ -465,9 +471,23 @@ export const StaffDirectory: React.FC = () => {
                     </span>
                   </div>
 
-                  <span className="text-xs font-bold text-[#147D4A] group-hover:underline">
-                    View Profile →
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPendingDelete(emp);
+                      }}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                      title="Delete staff"
+                      aria-label={`Delete ${emp.fullName}`}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <span className="text-xs font-bold text-[#147D4A] group-hover:underline">
+                      View Profile →
+                    </span>
+                  </div>
                 </div>
               </div>
             );
@@ -648,6 +668,15 @@ export const StaffDirectory: React.FC = () => {
                             >
                               <FileText className="w-4 h-4" />
                             </button>
+
+                            <button
+                              onClick={() => setPendingDelete(emp)}
+                              className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors"
+                              title="Delete staff"
+                              aria-label={`Delete ${emp.fullName}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -656,6 +685,57 @@ export const StaffDirectory: React.FC = () => {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirmation */}
+      {pendingDelete && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full border border-[#E2EAE4] shadow-2xl overflow-hidden">
+            <div className="p-5 flex items-start gap-4">
+              <span className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </span>
+              <div className="min-w-0">
+                <h3 className="font-bold text-base text-[#192C21]">Delete staff member?</h3>
+                <p className="text-sm text-[#57685D] mt-1">
+                  This permanently removes the staff record and all of its uploaded documents. This cannot be undone.
+                </p>
+                <div className="mt-3 p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl flex items-center gap-3">
+                  <img
+                    src={pendingDelete.avatarUrl}
+                    alt={pendingDelete.fullName}
+                    className="w-10 h-10 rounded-xl object-cover border border-[#C5E8D2] shrink-0"
+                  />
+                  <div className="min-w-0">
+                    <span className="font-bold text-sm text-[#192C21] block truncate">{pendingDelete.fullName}</span>
+                    <span className="text-xs text-[#57685D] block truncate">
+                      {pendingDelete.id} · {pendingDelete.divisionName}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="px-5 py-3.5 border-t border-[#E2EAE4] bg-[#F9FBFA] flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setPendingDelete(null)}
+                className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteEmployee(pendingDelete.id);
+                  setPendingDelete(null);
+                }}
+                className="px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl flex items-center gap-1.5"
+              >
+                <Trash2 className="w-4 h-4" /> Delete
+              </button>
+            </div>
           </div>
         </div>
       )}
