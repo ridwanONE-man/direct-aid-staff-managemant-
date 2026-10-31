@@ -33,6 +33,10 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F5F8F6] text-[#192C21] flex flex-col font-sans">
+      {/* Branded background: soft green tints with a faint DirectAid logo watermark */}
+      <div className="app-backdrop" aria-hidden="true">
+        <img src="/directaid-logo-full.png" alt="" className="app-backdrop-logo" />
+      </div>
       {/* Sidebar Navigation */}
       <Sidebar
         isCollapsed={isSidebarCollapsed}
@@ -49,7 +53,7 @@ const AppContent: React.FC = () => {
 
       {/* Main Content Area */}
       <main
-        className={`pt-20 pb-12 px-4 sm:px-6 lg:px-8 transition-all duration-300 flex-1 ${
+        className={`relative z-[1] pt-20 pb-12 px-4 sm:px-6 lg:px-8 transition-all duration-300 flex-1 ${
           isSidebarCollapsed ? 'lg:pl-24' : 'lg:pl-72'
         }`}
       >
