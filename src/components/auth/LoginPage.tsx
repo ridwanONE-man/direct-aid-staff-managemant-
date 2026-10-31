@@ -43,14 +43,14 @@ export const LoginPage: React.FC = () => {
     'w-full px-4 py-3 bg-[#EFF6FD] border border-[#DCE8F5] rounded-lg text-sm text-[#1E2B37] placeholder:text-[#8A99A8] focus:outline-none focus:bg-white focus:border-[#2B3F52] focus:ring-2 focus:ring-[#2B3F52]/10 transition-all';
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center px-4 py-10 bg-linear-to-b from-[#6E9DDA] via-[#93B9EA] to-[#C4DAF4]">
+    <div className="min-h-screen relative overflow-hidden flex flex-col items-center justify-center px-4 py-10 bg-linear-to-b from-[#6E9DDA] via-[#93B9EA] to-[#C4DAF4]">
       {/* Sky clouds */}
       {clouds.map((pos, i) => (
         <div key={i} className={`absolute rounded-full bg-white blur-3xl pointer-events-none ${pos}`} />
       ))}
 
       {/* Login card */}
-      <div className="relative z-10 w-full max-w-[440px] bg-white rounded-[36px] shadow-[0_30px_80px_-20px_rgba(30,60,110,0.35)] px-6 py-10 sm:px-12 sm:py-12">
+      <div className="relative z-10 w-full max-w-[440px] login-card-enter bg-white rounded-[36px] shadow-[0_30px_80px_-20px_rgba(30,60,110,0.35)] px-6 py-10 sm:px-12 sm:py-12">
         <div className="flex flex-col items-center text-center">
           <img
             src="/directaid-logo-full.png"
@@ -153,6 +153,10 @@ export const LoginPage: React.FC = () => {
           Don&apos;t have an account? <span className="text-[#1E2B37] font-medium">Contact your HR administrator</span>
         </p>
       </div>
+
+      <p className="relative z-10 mt-6 text-xs text-white/90 drop-shadow-sm">
+        © {new Date().getFullYear()} DirectAid Somaliland · Staff &amp; HR Portal
+      </p>
     </div>
   );
 };
