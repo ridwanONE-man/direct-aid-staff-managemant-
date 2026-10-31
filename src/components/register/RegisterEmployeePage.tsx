@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { JobRole, DegreeLevel, EmploymentType, DocumentAttachment, DocumentType, EmployeeRecord } from '../../types';
 import { REQUIRED_DOCUMENTS } from '../../data/documentTypes';
+import { JOB_ROLES, EMPLOYMENT_TYPES, TEACHING_SUBJECTS, CONTRACT_DURATIONS, SHIFT_SCHEDULES, PAYMENT_METHODS } from '../../data/staffOptions';
 import { formatFileSize, removeStaffFiles, uploadStaffFile, validateFile } from '../../lib/storage';
 import { initialsAvatar, resizePhoto } from '../../lib/photo';
 import { DocumentRow } from '../documents/DocumentRow';
@@ -26,59 +27,6 @@ const inputClass =
 const labelClass = 'block text-xs font-semibold text-[#384C3F] mb-1.5';
 
 const OTHER = '__other__';
-
-const JOB_ROLES: { value: JobRole; label: string }[] = [
-  { value: 'Principal', label: 'Principal / Headmaster' },
-  { value: 'Deputy Principal', label: 'Deputy Principal' },
-  { value: 'Teacher', label: 'Teacher / Instructor' },
-  { value: 'Security Guard', label: 'Security Guard' },
-  { value: 'Cleaner', label: 'Cleaner' },
-  { value: 'Driver', label: 'Bus Driver' },
-  { value: 'Secretary', label: 'Secretary' },
-  { value: 'Finance Officer', label: 'Finance Officer' },
-  { value: 'IT Support Officer', label: 'IT Support Officer' },
-  { value: 'Administrative Officer', label: 'Administrative Officer' }
-];
-
-const EMPLOYMENT_TYPES = [
-  { value: 'Fixed-Term Contract', label: 'Fixed-Term Contract' },
-  { value: 'Permanent', label: 'Permanent' },
-  { value: 'Probationary', label: 'Probationary (3 Months)' },
-  { value: 'Part-Time', label: 'Part-Time' }
-];
-
-const TEACHING_SUBJECTS = [
-  { value: 'Pure Mathematics & Calculus', label: 'Pure Mathematics' },
-  { value: 'Physics & Physical Sciences', label: 'Physics' },
-  { value: 'Chemistry & Laboratory', label: 'Chemistry' },
-  { value: 'Biology & Life Sciences', label: 'Biology' },
-  { value: 'Arabic Language & Grammar', label: 'Arabic Language' },
-  { value: 'Islamic Studies & Sharia', label: 'Islamic Studies' },
-  { value: 'Somali Literature & History', label: 'Somali Literature' },
-  { value: 'English Language & Composition', label: 'English Language' },
-  { value: 'Primary Numeracy & Literacy', label: 'Primary Numeracy & Literacy' },
-  { value: 'ICT & Computer Science', label: 'ICT' }
-];
-
-const CONTRACT_DURATIONS = [
-  { value: '1', label: '1 Year' },
-  { value: '2', label: '2 Years' },
-  { value: '3', label: '3 Years' }
-];
-
-const SHIFT_SCHEDULES = [
-  { value: 'Morning Shift (07:00 - 13:00)', label: 'Morning Shift (07:00 - 13:00)' },
-  { value: 'Afternoon Shift (13:00 - 18:00)', label: 'Afternoon Shift (13:00 - 18:00)' },
-  { value: 'Full Day (07:00 - 16:00)', label: 'Full Day (07:00 - 16:00)' },
-  { value: 'Night Shift (18:00 - 06:00)', label: 'Night Shift (18:00 - 06:00)' }
-];
-
-const PAYMENT_METHODS = [
-  { value: 'ZAAD (Telesom)', label: 'ZAAD (Telesom)' },
-  { value: 'e-Dahab', label: 'e-Dahab' },
-  { value: 'Dahabshiil Bank', label: 'Dahabshiil Bank' },
-  { value: 'Premier Bank', label: 'Premier Bank' }
-];
 
 const STEPS = [
   { num: 1, label: 'Personal', icon: User },
@@ -326,8 +274,8 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.SyntheticEvent) => {
+    e?.preventDefault();
     if (step !== 4 || isSubmitting) return;
 
     const selectedDiv = divisions.find(d => d.id === divisionId) || divisions[0];
@@ -512,7 +460,7 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
       </div>
 
       {/* Main Form Card */}
-      <form onSubmit={handleSubmit} className="bg-white border border-[#E2EAE4] rounded-2xl p-5 sm:p-7 shadow-xs space-y-6">
+      <form onSubmit={(e) => e.preventDefault()} className="bg-white border border-[#E2EAE4] rounded-2xl p-5 sm:p-7 shadow-xs space-y-6">
         {error && (
           <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-semibold">
             {error}
@@ -1042,6 +990,7 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
 
           {step < 4 ? (
             <button
+              key="next-step"
               type="button"
               onClick={() => goToStep((step + 1) as 2 | 3 | 4)}
               className="px-6 py-2.5 bg-[#147D4A] hover:bg-[#0E6139] text-white rounded-xl text-sm font-bold flex items-center gap-1.5 shadow-sm transition-all"
@@ -1051,7 +1000,9 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
             </button>
           ) : (
             <button
-              type="submit"
+              key="complete-registration"
+              type="button"
+              onClick={handleSubmit}
               disabled={divisions.length === 0 || isSubmitting}
               className="px-6 py-2.5 bg-[#147D4A] hover:bg-[#0E6139] text-white rounded-xl text-sm font-bold flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >

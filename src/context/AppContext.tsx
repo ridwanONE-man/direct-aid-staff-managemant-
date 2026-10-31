@@ -521,16 +521,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     if (supabase) persist(supabase.from('employees').update(employeeRow(finalEmp)).eq('id', finalEmp.id));
 
-    // Keep the division's principal details in step with the linked staff record
+    // Keep the division's principal details in step with the linked staff record,
+    // and release the school if this person is no longer a principal
     saveDivisions(
       divisions
         .filter(d => d.principalEmployeeId === finalEmp.id)
-        .map(d => ({
-          ...d,
-          principalName: finalEmp.fullName,
-          principalPhone: finalEmp.phoneNumber,
-          principalAvatar: finalEmp.avatarUrl
-        }))
+        .map(d =>
+          finalEmp.jobTitle === 'Principal'
+            ? {
+                ...d,
+                principalName: finalEmp.fullName,
+                principalPhone: finalEmp.phoneNumber,
+                principalAvatar: finalEmp.avatarUrl
+              }
+            : blankPrincipal(d)
+        )
     );
   };
 
