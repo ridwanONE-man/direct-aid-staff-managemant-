@@ -61,6 +61,7 @@ interface AppContextType {
   addDivision: (divData: Omit<SchoolDivisionCategory, 'id' | 'canonicalIndex'>) => SchoolDivisionCategory;
   deleteDivision: (id: string) => string | null;
   clearDivisionPrincipal: (id: string) => void;
+  updateDivision: (id: string, updates: Omit<SchoolDivisionCategory, 'id' | 'canonicalIndex'>) => void;
   addEmployee: (empData: Partial<EmployeeRecord>) => EmployeeRecord;
   updateEmployee: (id: string, updates: Partial<EmployeeRecord>) => void;
   deleteEmployee: (id: string) => void;
@@ -304,6 +305,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     principalAvatar: '',
     principalEmployeeId: undefined
   });
+
+  const updateDivision = (id: string, updates: Omit<SchoolDivisionCategory, 'id' | 'canonicalIndex'>) => {
+    const div = divisions.find(d => d.id === id);
+    if (!div) return;
+
+    // A principal typed by hand is no longer the linked staff member
+    const principalChanged = updates.principalName.trim() !== div.principalName.trim();
+    const updated: SchoolDivisionCategory = {
+      ...div,
+      ...updates,
+      principalAvatar: principalChanged ? '' : div.principalAvatar,
+      principalEmployeeId: principalChanged ? undefined : div.principalEmployeeId
+    };
+    saveDivisions([updated]);
+
+    // Staff records keep a copy of their division's details
+    const affected = employees
+      .filter(e => e.divisionId === id)
+      .map(e => ({
+        ...e,
+        divisionName: updated.name,
+        campusLocation: updated.city,
+        schoolLevel: updated.level,
+        genderDivision: updated.gender
+      }));
+    if (affected.length === 0) return;
+    setEmployees(prev => prev.map(e => affected.find(a => a.id === e.id) || e));
+    const selected = affected.find(a => a.id === selectedEmployee?.id);
+    if (selected) setSelectedEmployee(selected);
+    if (supabase) persist(supabase.from('employees').upsert(affected.map(employeeRow)));
+  };
 
   const clearDivisionPrincipal = (id: string) => {
     const div = divisions.find(d => d.id === id);
@@ -607,6 +639,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addDivision,
         deleteDivision,
         clearDivisionPrincipal,
+        updateDivision,
         addEmployee,
         updateEmployee,
         deleteEmployee,

@@ -11,7 +11,9 @@ import {
   Plus,
   UserCheck,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  Pencil,
+  Save
 } from 'lucide-react';
 
 const emptyDivisionForm = {
@@ -35,13 +37,15 @@ export const CampusDivisions: React.FC = () => {
     navigateToProfile,
     addDivision,
     deleteDivision,
-    clearDivisionPrincipal
+    clearDivisionPrincipal,
+    updateDivision
   } = useApp();
 
   const [selectedCity, setSelectedCity] = useState<'all' | 'Hargeisa' | 'Gabiley'>('all');
   const [selectedLevel, setSelectedLevel] = useState<'all' | 'Secondary' | 'Primary'>('all');
   const [modalDivision, setModalDivision] = useState<SchoolDivisionCategory | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<SchoolDivisionCategory | null>(null);
   const [deleteError, setDeleteError] = useState('');
   const pendingDeleteStaff = pendingDelete ? employees.filter(e => e.divisionId === pendingDelete.id).length : 0;
@@ -54,8 +58,27 @@ export const CampusDivisions: React.FC = () => {
     setDivisionForm(prev => ({ ...prev, [field]: value }));
   };
 
+  const openEditModal = (div: SchoolDivisionCategory) => {
+    setDivisionForm({
+      name: div.name,
+      code: div.code,
+      city: div.city,
+      level: div.level,
+      gender: div.gender,
+      principalName: div.principalName,
+      principalPhone: div.principalPhone,
+      studentCount: div.studentCount ? String(div.studentCount) : '',
+      description: div.description,
+      campusAddress: div.campusAddress
+    });
+    setFormError('');
+    setEditingId(div.id);
+    setIsCreateOpen(true);
+  };
+
   const closeCreateModal = () => {
     setIsCreateOpen(false);
+    setEditingId(null);
     setDivisionForm(emptyDivisionForm);
     setFormError('');
   };
@@ -69,12 +92,12 @@ export const CampusDivisions: React.FC = () => {
       setFormError('Division name and code are required.');
       return;
     }
-    if (divisions.some(d => d.code.toUpperCase() === code)) {
+    if (divisions.some(d => d.id !== editingId && d.code.toUpperCase() === code)) {
       setFormError(`A division with code ${code} already exists.`);
       return;
     }
 
-    addDivision({
+    const details = {
       name,
       code,
       city: divisionForm.city,
@@ -86,7 +109,16 @@ export const CampusDivisions: React.FC = () => {
       studentCount: isOperations ? 0 : Number(divisionForm.studentCount) || 0,
       description: divisionForm.description.trim(),
       campusAddress: divisionForm.campusAddress.trim()
-    });
+    };
+
+    if (editingId) {
+      updateDivision(editingId, details);
+      if (modalDivision?.id === editingId) setModalDivision(null);
+      closeCreateModal();
+      return;
+    }
+
+    addDivision(details);
 
     // Reset filters so the new division is visible
     setSelectedCity('all');
@@ -350,6 +382,15 @@ export const CampusDivisions: React.FC = () => {
                   </button>
                   <button
                     type="button"
+                    onClick={() => openEditModal(div)}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-[#147D4A] hover:bg-[#EBF7EE] transition-colors"
+                    title="Edit division"
+                    aria-label={`Edit ${div.name}`}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => {
                       setDeleteError('');
                       setPendingDelete(div);
@@ -558,9 +599,13 @@ export const CampusDivisions: React.FC = () => {
               <div>
                 <h3 className="text-base font-bold text-[#192C21] flex items-center gap-2">
                   <Building2 className="w-4.5 h-4.5 text-[#147D4A]" />
-                  Create School Division
+                  {editingId ? 'Edit School Division' : 'Create School Division'}
                 </h3>
-                <p className="text-xs text-[#57685D] mt-0.5">Add a campus division so staff can be assigned to it.</p>
+                <p className="text-xs text-[#57685D] mt-0.5">
+                  {editingId
+                    ? 'Changes also update the division shown on its staff records.'
+                    : 'Add a campus division so staff can be assigned to it.'}
+                </p>
               </div>
               <button
                 type="button"
@@ -709,8 +754,8 @@ export const CampusDivisions: React.FC = () => {
                 type="submit"
                 className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#147D4A] hover:bg-[#0E6139] rounded-xl transition-colors flex items-center gap-1.5"
               >
-                <Plus className="w-4 h-4" />
-                <span>Create Division</span>
+                {editingId ? <Save className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                <span>{editingId ? 'Save Changes' : 'Create Division'}</span>
               </button>
             </div>
           </form>
