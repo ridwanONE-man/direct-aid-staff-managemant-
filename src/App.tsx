@@ -10,9 +10,7 @@ import { EmployeeProfile } from './components/profile/EmployeeProfile';
 import { ContractsHub } from './components/contracts/ContractsHub';
 import { ReportsCenter } from './components/reports/ReportsCenter';
 import { RegisterEmployeePage } from './components/register/RegisterEmployeePage';
-import { AddEmployeeModal } from './components/modals/AddEmployeeModal';
 import { RenewContractModal } from './components/modals/RenewContractModal';
-import { UploadDocumentModal } from './components/modals/UploadDocumentModal';
 
 const AppContent: React.FC = () => {
   const { activePage, isAuthenticated, isAuthReady, isDataLoading, syncError, clearSyncError } = useApp();
@@ -86,9 +84,7 @@ const AppContent: React.FC = () => {
       </main>
 
       {/* Interactive Global Modals */}
-      <AddEmployeeModal />
       <RenewContractModal />
-      <UploadDocumentModal />
     </div>
   );
 };

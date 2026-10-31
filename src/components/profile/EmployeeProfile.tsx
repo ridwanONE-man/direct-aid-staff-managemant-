@@ -1,31 +1,72 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { EmployeeRecord, DocumentAttachment } from '../../types';
+import { EmployeeRecord, DocumentAttachment, DocumentType } from '../../types';
+import { REQUIRED_DOCUMENTS } from '../../data/documentTypes';
+import { formatFileSize, getStaffFileUrl, uploadStaffFile, validateFile } from '../../lib/storage';
+import { resizePhoto } from '../../lib/photo';
+import { DocumentRow } from '../documents/DocumentRow';
+import { AddOtherDocument } from '../documents/AddOtherDocument';
 import {
   MapPin,
   FileText,
   CheckCircle2,
   AlertCircle,
-  Upload,
-  Download,
-  Trash2,
   Printer,
   Edit,
   ArrowLeft,
   X,
-  Eye,
-  ShieldCheck,
-  CreditCard,
   Building2,
   Phone,
   Mail,
-  HeartPulse,
   Clock,
   Briefcase,
   GraduationCap,
-  Calendar,
-  Award
+  CalendarDays,
+  Wallet,
+  User,
+  HeartHandshake,
+  FolderOpen
 } from 'lucide-react';
+
+type TabId = 'overview' | 'personal' | 'employment' | 'qualifications' | 'contract' | 'documents';
+
+const inputClass =
+  'w-full px-3.5 py-2.5 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl text-sm text-[#192C21] placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-[#147D4A] focus:ring-2 focus:ring-[#147D4A]/15 transition-all';
+const labelClass = 'block text-xs font-semibold text-[#384C3F] mb-1.5';
+
+const roleLabel = (emp: EmployeeRecord) =>
+  emp.jobTitle === 'Other' && emp.customJobTitle
+    ? emp.customJobTitle
+    : `${emp.jobTitle}${emp.customJobTitle ? ` (${emp.customJobTitle})` : ''}`;
+
+// Label/value pair; shows a dash when the value is empty
+const Field: React.FC<{ label: string; value?: React.ReactNode; mono?: boolean; wide?: boolean }> = ({ label, value, mono, wide }) => (
+  <div className={`p-3.5 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl ${wide ? 'sm:col-span-2' : ''}`}>
+    <span className="text-[11px] font-medium text-[#64776C] block">{label}</span>
+    <span className={`text-sm font-semibold text-[#192C21] break-words ${mono ? 'font-mono' : ''}`}>
+      {value === undefined || value === null || value === '' ? <span className="text-slate-300">—</span> : value}
+    </span>
+  </div>
+);
+
+const SectionCard: React.FC<{ title: string; icon: React.ElementType; children: React.ReactNode }> = ({ title, icon: Icon, children }) => (
+  <div className="p-4 bg-[#F9FBFA] border border-[#E2EAE4] rounded-2xl">
+    <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#798C80] flex items-center gap-1.5 mb-3">
+      <Icon className="w-3.5 h-3.5 text-[#147D4A]" />
+      {title}
+    </h4>
+    <dl className="space-y-2.5 text-sm">{children}</dl>
+  </div>
+);
+
+const Row: React.FC<{ label: string; value?: React.ReactNode }> = ({ label, value }) => (
+  <div>
+    <dt className="text-[11px] text-[#64776C]">{label}</dt>
+    <dd className="font-semibold text-[#192C21] break-words">
+      {value === undefined || value === null || value === '' ? <span className="text-slate-300">—</span> : value}
+    </dd>
+  </div>
+);
 
 export const EmployeeProfile: React.FC = () => {
   const {
@@ -36,14 +77,15 @@ export const EmployeeProfile: React.FC = () => {
     updateEmployee,
     setIsRenewContractOpen,
     setContractRenewalTarget,
-    setIsUploadDocOpen,
+    addDocument,
     deleteDocument
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'personal' | 'assignment' | 'qualifications' | 'contract' | 'documents'>('overview');
+  const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editForm, setEditForm] = useState<Partial<EmployeeRecord>>({});
-  const [viewingDocument, setViewingDocument] = useState<DocumentAttachment | null>(null);
+  const [busyKey, setBusyKey] = useState<string | null>(null);
+  const [docError, setDocError] = useState('');
 
   // Fallback to first employee if none selected
   const employee = selectedEmployee || employees[0];
@@ -51,28 +93,49 @@ export const EmployeeProfile: React.FC = () => {
   if (!employee) {
     return (
       <div className="bg-white border border-[#E2EAE4] rounded-2xl p-12 text-center shadow-xs">
-        <h3 className="text-base font-bold text-[#192C21]">No Employee Selected</h3>
-        <p className="text-xs text-[#57685D] mt-1">Please select an employee from the staff directory.</p>
-        <button
-          onClick={() => setActivePage('directory')}
-          className="mt-4 px-4 py-2 bg-[#147D4A] hover:bg-[#0E6139] text-white text-xs font-semibold rounded-xl"
-        >
-          Go to Staff Directory
-        </button>
+        <User className="w-8 h-8 text-[#147D4A] mx-auto" />
+        <h3 className="text-base font-bold text-[#192C21] mt-3">No Staff Selected</h3>
+        <p className="text-xs text-[#57685D] mt-1">Register a staff member or pick one from the directory.</p>
+        <div className="mt-4 flex items-center justify-center gap-2">
+          <button
+            onClick={() => setActivePage('register')}
+            className="px-4 py-2 bg-[#147D4A] hover:bg-[#0E6139] text-white text-xs font-semibold rounded-xl"
+          >
+            Register Staff
+          </button>
+          <button
+            onClick={() => setActivePage('directory')}
+            className="px-4 py-2 border border-[#E2EAE4] hover:bg-[#F3F7F4] text-[#384C3F] text-xs font-semibold rounded-xl"
+          >
+            Staff Directory
+          </button>
+        </div>
       </div>
     );
   }
 
+  const isContractExpiring =
+    employee.contract.renewalStatus === 'Approaching Renewal' || employee.contract.renewalStatus === 'Renewal Pending Sign-off';
+  const requiredTypes = REQUIRED_DOCUMENTS.map(d => d.type);
+  const requiredOnFile = REQUIRED_DOCUMENTS.filter(d => employee.documents.some(doc => doc.type === d.type)).length;
+  const shownRequiredIds = REQUIRED_DOCUMENTS
+    .map(d => employee.documents.find(doc => doc.type === d.type)?.id)
+    .filter(Boolean);
+  const otherDocuments = employee.documents.filter(doc => !shownRequiredIds.includes(doc.id));
+  const nextOfKin = employee.emergencyContact;
+
   const startEditing = () => {
     setEditForm({
       fullName: employee.fullName,
-      somaliName: employee.somaliName || '',
+      gender: employee.gender,
+      maritalStatus: employee.maritalStatus,
       email: employee.email,
       phoneNumber: employee.phoneNumber,
       residentialArea: employee.residentialArea,
-      jobTitle: employee.jobTitle,
+      emergencyContact: { ...nextOfKin },
+      paymentMethod: employee.paymentMethod || '',
+      paymentAccountNo: employee.paymentAccountNo || '',
       shiftSchedule: employee.shiftSchedule,
-      qualifications: { ...employee.qualifications },
       notes: employee.notes || ''
     });
     setIsEditingProfile(true);
@@ -80,185 +143,248 @@ export const EmployeeProfile: React.FC = () => {
 
   const handleSaveEdit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!editForm.fullName?.trim()) return;
     updateEmployee(employee.id, editForm);
     setIsEditingProfile(false);
   };
 
-  const isContractExpiring = employee.contract.renewalStatus === 'Approaching Renewal' || employee.contract.renewalStatus === 'Renewal Pending Sign-off';
+  const uploadDocument = async (type: DocumentType, name: string, file: File, replace?: DocumentAttachment) => {
+    const invalid = validateFile(file);
+    if (invalid) {
+      setDocError(invalid);
+      return false;
+    }
+    setDocError('');
+    setBusyKey(replace?.id || type);
+    try {
+      const { path } = await uploadStaffFile(file);
+      const avatarUrl = type === 'photo' ? await resizePhoto(file).catch(() => undefined) : undefined;
+      addDocument(
+        employee.id,
+        {
+          name,
+          type,
+          fileName: file.name,
+          fileSize: formatFileSize(file.size),
+          verified: false,
+          storagePath: path,
+          mimeType: file.type
+        },
+        { replaceId: replace?.id, avatarUrl }
+      );
+      return true;
+    } catch (err) {
+      setDocError(err instanceof Error ? err.message : 'Upload failed. Please try again.');
+      return false;
+    } finally {
+      setBusyKey(null);
+    }
+  };
+
+  const openDocument = async (doc: DocumentAttachment, download = false) => {
+    if (!doc.storagePath) {
+      setDocError(`"${doc.name}" was recorded without a file. Use the replace button to upload it.`);
+      return;
+    }
+    // Open the tab synchronously so pop-up blockers allow it, then point it at the signed link
+    const win = window.open('', '_blank');
+    try {
+      const url = await getStaffFileUrl(doc.storagePath, download ? doc.fileName : undefined);
+      if (win) win.location.href = url;
+      else window.location.href = url;
+    } catch (err) {
+      win?.close();
+      setDocError(err instanceof Error ? err.message : 'Could not open the file.');
+    }
+  };
+
+  const removeDocument = (doc: DocumentAttachment) => {
+    if (window.confirm(`Delete "${doc.name}"? The file will be removed permanently.`)) {
+      deleteDocument(employee.id, doc.id);
+    }
+  };
+
+  const tabs: { id: TabId; label: string }[] = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'personal', label: 'Personal' },
+    { id: 'employment', label: 'Employment' },
+    { id: 'qualifications', label: 'Qualifications' },
+    { id: 'contract', label: 'Contract' },
+    { id: 'documents', label: `Documents (${requiredOnFile}/${REQUIRED_DOCUMENTS.length})` }
+  ];
 
   return (
     <div className="space-y-5">
-      {/* Top Navigation & Staff Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-[#E2EAE4] rounded-2xl p-4 shadow-xs">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setActivePage('directory')}
-            className="p-1.5 rounded-xl border border-[#E2EAE4] hover:bg-[#F3F7F4] text-[#57685D] transition-colors"
-            title="Back to Directory"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <div>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-[#798C80] block">
-              Staff Dossier
-            </span>
-            <span className="text-xs font-semibold text-[#192C21]">{employee.divisionName}</span>
-          </div>
-        </div>
+      {/* Top bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <button
+          onClick={() => setActivePage('directory')}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#57685D] hover:text-[#192C21] self-start"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back to Directory
+        </button>
 
-        {/* Employee Switcher */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-[#57685D] font-medium hidden md:inline">Inspect:</span>
+          <span className="text-xs text-[#57685D] font-medium hidden md:inline">View staff:</span>
           <select
             value={employee.id}
             onChange={(e) => {
               const emp = employees.find(x => x.id === e.target.value);
-              if (emp) setSelectedEmployee(emp);
+              if (emp) {
+                setSelectedEmployee(emp);
+                setDocError('');
+              }
             }}
-            className="px-3 py-1.5 bg-[#F6FAF7] border border-[#E2EAE4] rounded-xl text-xs font-semibold text-[#192C21] focus:outline-none focus:ring-1 focus:ring-[#147D4A] cursor-pointer"
+            className="px-3 py-2 bg-white border border-[#E2EAE4] rounded-xl text-xs font-semibold text-[#192C21] focus:outline-none focus:ring-2 focus:ring-[#147D4A]/15 cursor-pointer max-w-[260px]"
           >
             {employees.map(emp => (
               <option key={emp.id} value={emp.id}>
-                {emp.id} — {emp.fullName} ({emp.jobTitle})
+                {emp.fullName} · {roleLabel(emp)}
               </option>
             ))}
           </select>
         </div>
       </div>
 
-      {/* Hero Card */}
-      <div className="bg-white border border-[#E2EAE4] rounded-2xl p-6 shadow-xs relative overflow-hidden">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-start sm:items-center gap-4">
-            <div className="relative shrink-0">
-              <img
-                src={employee.avatarUrl}
-                alt={employee.fullName}
-                className="w-20 h-20 sm:w-22 sm:h-22 rounded-2xl object-cover border-2 border-[#C5E8D2] shadow-sm"
-              />
-              <span className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white ${
-                employee.employmentStatus === 'Active' ? 'bg-emerald-500' : 'bg-amber-500'
-              }`} title={employee.employmentStatus} />
-            </div>
+      {/* Hero */}
+      <div className="rounded-3xl overflow-hidden shadow-[0_20px_50px_-24px_rgba(20,125,74,0.55)] bg-white border border-[#E2EAE4]">
+        <div className="relative bg-linear-to-br from-[#0E6139] via-[#147D4A] to-[#2D9A48] p-6">
+          <div className="absolute -top-20 -right-14 w-60 h-60 rounded-full border-[24px] border-white/10 pointer-events-none" />
+          <div className="absolute -bottom-24 left-1/3 w-48 h-48 rounded-full bg-white/10 blur-2xl pointer-events-none" />
 
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-mono text-xs font-bold text-[#147D4A] bg-[#EBF7EE] px-2.5 py-0.5 rounded-md">
-                  {employee.id}
-                </span>
-                <span className="text-xs text-[#57685D] font-medium flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-[#147D4A]" />
-                  {employee.campusLocation}
-                </span>
-                <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md">
-                  {employee.employmentStatus}
-                </span>
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="relative shrink-0 self-start">
+                <img
+                  src={employee.avatarUrl}
+                  alt={employee.fullName}
+                  className="w-24 h-24 rounded-2xl object-cover border-4 border-white/90 shadow-lg bg-white"
+                />
+                <span
+                  className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-[3px] border-white ${
+                    employee.employmentStatus === 'Active' ? 'bg-emerald-400' : 'bg-amber-400'
+                  }`}
+                  title={employee.employmentStatus}
+                />
               </div>
 
-              <h1 className="text-xl sm:text-2xl font-black text-[#192C21] tracking-tight">
-                {employee.fullName}
-              </h1>
-
-              {employee.somaliName && (
-                <p className="text-xs text-[#6B7E72] font-medium">
-                  Magaca: <span className="text-[#192C21] font-semibold">{employee.somaliName}</span>
+              <div className="text-white space-y-1.5 min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
+                  <span className="font-mono bg-white/15 border border-white/20 px-2 py-0.5 rounded-md">{employee.id}</span>
+                  <span className="bg-white/15 border border-white/20 px-2 py-0.5 rounded-md">{employee.employmentStatus}</span>
+                  <span className="inline-flex items-center gap-1 text-white/85">
+                    <MapPin className="w-3.5 h-3.5" /> {employee.campusLocation}
+                  </span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tight break-words">{employee.fullName}</h1>
+                <p className="text-sm text-white/85">
+                  <span className="font-bold text-white">{roleLabel(employee)}</span> · {employee.divisionName}
                 </p>
-              )}
-
-              <p className="text-xs text-[#57685D]">
-                <strong className="text-[#147D4A]">{employee.jobTitle}</strong> · {employee.divisionName}
-              </p>
+              </div>
             </div>
-          </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2 self-start md:self-center shrink-0">
-            <button
-              onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#192C21] bg-white hover:bg-[#F3F7F4] border border-[#E2EAE4] rounded-xl transition-colors shadow-xs"
-            >
-              <Printer className="w-3.5 h-3.5 text-[#57685D]" />
-              <span>Print</span>
-            </button>
-
-            <button
-              onClick={startEditing}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#147D4A] bg-[#EBF7EE] hover:bg-[#DDF3E4] border border-[#C5E8D2] rounded-xl transition-colors shadow-xs"
-            >
-              <Edit className="w-3.5 h-3.5" />
-              <span>Edit</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setContractRenewalTarget(employee);
-                setIsRenewContractOpen(true);
-              }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-[#147D4A] hover:bg-[#0E6139] rounded-xl transition-all shadow-xs"
-            >
-              <FileText className="w-3.5 h-3.5" />
-              <span>Renew</span>
-            </button>
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <button
+                onClick={() => window.print()}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-xl transition-all"
+              >
+                <Printer className="w-3.5 h-3.5" /> Print
+              </button>
+              <button
+                onClick={startEditing}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-xl transition-all"
+              >
+                <Edit className="w-3.5 h-3.5" /> Edit
+              </button>
+              <button
+                onClick={() => {
+                  setContractRenewalTarget(employee);
+                  setIsRenewContractOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#147D4A] bg-white hover:bg-[#EBF7EE] rounded-xl transition-all shadow-md"
+              >
+                <FileText className="w-3.5 h-3.5" /> Renew Contract
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Profile Completeness Tracker */}
-        <div className="mt-5 pt-4 border-t border-[#E2EAE4] flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#EBF7EE] text-[#147D4A] flex items-center justify-center font-bold font-mono text-xs">
-              {employee.profileCompleteness}%
-            </div>
-            <div>
-              <span className="text-xs font-bold text-[#192C21] block">Completeness</span>
-              <span className="text-[11px] text-[#57685D]">
-                {employee.documents.length} verified documents
-              </span>
+        {/* Completeness */}
+        <div className="p-5 flex flex-col lg:flex-row lg:items-center gap-4">
+          <div className="flex items-center gap-3 lg:w-64 shrink-0">
+            <div className="flex-1">
+              <div className="flex items-center justify-between text-xs mb-1.5">
+                <span className="font-bold text-[#192C21]">Profile completeness</span>
+                <span className="font-mono font-bold text-[#147D4A]">{employee.profileCompleteness}%</span>
+              </div>
+              <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                <div className="h-full bg-[#147D4A] rounded-full transition-all" style={{ width: `${employee.profileCompleteness}%` }} />
+              </div>
             </div>
           </div>
 
           {employee.missingRequirements.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-1.5 text-xs">
-              <span className="text-rose-700 font-semibold flex items-center gap-1">
+            <div className="flex flex-wrap items-center gap-1.5 text-xs flex-1">
+              <span className="text-amber-700 font-semibold flex items-center gap-1">
                 <AlertCircle className="w-3.5 h-3.5" /> Missing:
               </span>
               {employee.missingRequirements.map((req, i) => (
-                <span key={i} className="bg-rose-50 text-rose-700 px-2 py-0.5 rounded text-[11px]">
+                <span key={i} className="bg-amber-50 text-amber-800 border border-amber-100 px-2 py-0.5 rounded-full text-[11px] font-medium">
                   {req}
                 </span>
               ))}
-              <button
-                onClick={() => setIsUploadDocOpen(true)}
-                className="text-xs font-semibold text-[#147D4A] underline ml-2"
-              >
-                Upload Now
+              <button onClick={() => setActiveTab('documents')} className="text-xs font-bold text-[#147D4A] hover:underline ml-1">
+                Complete now →
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
-              <CheckCircle2 className="w-4 h-4" />
-              <span>All mandatory credentials on file</span>
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full self-start">
+              <CheckCircle2 className="w-4 h-4" /> Profile complete, all required documents on file
             </div>
           )}
         </div>
       </div>
 
-      {/* Tabs Navigation */}
-      <div className="flex items-center gap-1 bg-white border border-[#E2EAE4] rounded-2xl p-1.5 overflow-x-auto text-xs font-medium">
+      {/* Quick facts */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { id: 'overview', label: 'Overview' },
-          { id: 'personal', label: 'Personal' },
-          { id: 'assignment', label: 'Assignment' },
-          { id: 'qualifications', label: 'Qualifications' },
-          { id: 'contract', label: 'Contract' },
-          { id: 'documents', label: `Documents (${employee.documents.length})` }
-        ].map((tab) => (
+          { icon: Phone, label: 'Telephone', value: employee.phoneNumber, mono: true },
+          { icon: Mail, label: 'Email', value: employee.email },
+          { icon: Clock, label: 'Shift', value: employee.shiftSchedule },
+          {
+            icon: CalendarDays,
+            label: 'Contract ends',
+            value: employee.contract.endDate,
+            mono: true,
+            warn: isContractExpiring
+          }
+        ].map(fact => (
+          <div key={fact.label} className="bg-white border border-[#E2EAE4] rounded-2xl p-3.5 flex items-center gap-3 min-w-0 shadow-xs">
+            <span className="w-9 h-9 rounded-xl bg-[#EBF7EE] text-[#147D4A] flex items-center justify-center shrink-0">
+              <fact.icon className="w-4 h-4" />
+            </span>
+            <div className="min-w-0">
+              <span className="text-[11px] text-[#64776C] block">{fact.label}</span>
+              <span
+                className={`text-sm font-semibold block truncate ${fact.mono ? 'font-mono' : ''} ${
+                  fact.warn ? 'text-amber-700' : 'text-[#192C21]'
+                }`}
+              >
+                {fact.value || <span className="text-slate-300">—</span>}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Tabs */}
+      <div className="flex items-center gap-1 bg-white border border-[#E2EAE4] rounded-2xl p-1.5 overflow-x-auto text-xs shadow-xs">
+        {tabs.map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`py-2 px-3.5 rounded-xl font-semibold transition-colors whitespace-nowrap cursor-pointer ${
-              activeTab === tab.id
-                ? 'bg-[#147D4A] text-white shadow-xs'
-                : 'text-[#57685D] hover:text-[#192C21] hover:bg-slate-50'
+            onClick={() => setActiveTab(tab.id)}
+            className={`py-2 px-3.5 rounded-xl font-semibold transition-colors whitespace-nowrap ${
+              activeTab === tab.id ? 'bg-[#147D4A] text-white shadow-xs' : 'text-[#57685D] hover:text-[#192C21] hover:bg-slate-50'
             }`}
           >
             {tab.label}
@@ -266,234 +392,98 @@ export const EmployeeProfile: React.FC = () => {
         ))}
       </div>
 
-      {/* Tab Contents */}
-      <div className="bg-white border border-[#E2EAE4] rounded-2xl p-6 shadow-xs">
-        {/* TAB 1: OVERVIEW */}
+      <div className="bg-white border border-[#E2EAE4] rounded-2xl p-5 sm:p-6 shadow-xs">
+        {/* OVERVIEW */}
         {activeTab === 'overview' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {/* Identifiers */}
-              <div className="p-4 bg-[#F9FBFA] border border-[#E2EAE4] rounded-2xl space-y-3">
-                <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#798C80] flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#147D4A]" />
-                  Identification
-                </h4>
-                <div className="space-y-2.5 text-xs">
-                  <div>
-                    <span className="text-[#64776C] text-[11px] block">DirectAid ID</span>
-                    <span className="font-mono font-bold text-[#147D4A]">{employee.id}</span>
-                  </div>
-                  <div>
-                    <span className="text-[#64776C] text-[11px] block">National ID / Passport</span>
-                    <span className="font-mono font-medium text-[#192C21]">{employee.nationalIdNumber}</span>
-                  </div>
-                  <div>
-                    <span className="text-[#64776C] text-[11px] block">Birth &amp; Gender</span>
-                    <span className="text-[#192C21] font-medium">{employee.dateOfBirth} ({employee.gender})</span>
-                  </div>
-                  <div>
-                    <span className="text-[#64776C] text-[11px] block">Blood &amp; Marital</span>
-                    <span className="text-[#192C21] font-medium">{employee.bloodGroup || 'O+'} · {employee.maritalStatus || 'Married'}</span>
-                  </div>
-                  <div>
-                    <span className="text-[#64776C] text-[11px] block">Hire Date</span>
-                    <span className="text-[#192C21] font-medium">{employee.hireDate}</span>
-                  </div>
-                </div>
-              </div>
+          <div className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <SectionCard title="Personal" icon={User}>
+                <Row label="Gender & Marital Status" value={[employee.gender, employee.maritalStatus].filter(Boolean).join(' · ')} />
+                <Row label="Residential District" value={employee.residentialArea} />
+                <Row label="Next of Kin" value={nextOfKin?.name} />
+                <Row label="Next of Kin Phone" value={nextOfKin?.phone && <span className="font-mono">{nextOfKin.phone}</span>} />
+              </SectionCard>
 
-              {/* Contact */}
-              <div className="p-4 bg-[#F9FBFA] border border-[#E2EAE4] rounded-2xl space-y-3">
-                <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#798C80] flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-[#147D4A]" />
-                  Contact &amp; Residence
-                </h4>
-                <div className="space-y-2.5 text-xs">
-                  <div>
-                    <span className="text-[#64776C] text-[11px] block">Telephone</span>
-                    <span className="font-mono font-semibold text-[#192C21]">{employee.phoneNumber}</span>
-                  </div>
-                  <div>
-                    <span className="text-[#64776C] text-[11px] block">Email</span>
-                    <span className="text-[#147D4A] font-medium">{employee.email}</span>
-                  </div>
-                  <div>
-                    <span className="text-[#64776C] text-[11px] block">District &amp; Campus</span>
-                    <span className="text-[#192C21] font-medium">{employee.residentialArea}, {employee.campusLocation}</span>
-                  </div>
-                  <div>
-                    <span className="text-[#64776C] text-[11px] block">Emergency Contact</span>
-                    <span className="text-[#192C21] font-medium">
-                      {employee.emergencyContact.name} ({employee.emergencyContact.relationship}) - {employee.emergencyContact.phone}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[#64776C] text-[11px] block">Payment Account</span>
-                    <span className="text-[#192C21] font-medium">{employee.paymentMethod || 'ZAAD'} ({employee.paymentAccountNo || employee.phoneNumber})</span>
-                  </div>
-                </div>
-              </div>
+              <SectionCard title="Employment" icon={Briefcase}>
+                <Row label="Division" value={<span className="text-[#147D4A]">{employee.divisionName}</span>} />
+                <Row label="Job Role" value={roleLabel(employee)} />
+                <Row label="Employment Type" value={employee.employmentType} />
+                <Row label="Shift Schedule" value={employee.shiftSchedule} />
+              </SectionCard>
 
-              {/* Assignment */}
-              <div className="p-4 bg-[#F9FBFA] border border-[#E2EAE4] rounded-2xl space-y-3">
-                <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#798C80] flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5 text-[#147D4A]" />
-                  Campus Assignment
-                </h4>
-                <div className="space-y-2.5 text-xs">
-                  <div>
-                    <span className="text-[#64776C] text-[11px] block">Division</span>
-                    <span className="font-bold text-[#147D4A]">{employee.divisionName}</span>
-                  </div>
-                  <div>
-                    <span className="text-[#64776C] text-[11px] block">Role &amp; Category</span>
-                    <span className="text-[#192C21] font-semibold">{employee.jobTitle} · {employee.roleCategory}</span>
-                  </div>
-                  <div>
-                    <span className="text-[#64776C] text-[11px] block">Direct Supervisor</span>
-                    <span className="text-[#192C21] font-medium">{employee.directSupervisor}</span>
-                  </div>
-                  <div>
-                    <span className="text-[#64776C] text-[11px] block">Employment &amp; Status</span>
-                    <span className="text-[#192C21] font-medium">{employee.employmentType} ({employee.employmentStatus})</span>
-                  </div>
-                  <div>
-                    <span className="text-[#64776C] text-[11px] block">Schedule</span>
-                    <span className="text-[#192C21] font-medium">{employee.shiftSchedule}</span>
-                  </div>
-                </div>
-              </div>
+              <SectionCard title="Pay & Contract" icon={Wallet}>
+                <Row label="Monthly Salary" value={<span className="font-mono">${employee.contract.monthlyBaseSalary} USD</span>} />
+                <Row label="Payment Method" value={employee.paymentMethod} />
+                <Row label="Payment Account" value={employee.paymentAccountNo && <span className="font-mono">{employee.paymentAccountNo}</span>} />
+                <Row label="Contract Period" value={`${employee.contract.startDate} → ${employee.contract.endDate}`} />
+              </SectionCard>
             </div>
 
             {employee.notes && (
               <div className="p-4 bg-[#EBF7EE] border border-[#C5E8D2] rounded-2xl">
-                <h4 className="text-xs font-bold text-[#147D4A] mb-1">Administrative Notes</h4>
-                <p className="text-xs text-[#2A4334] leading-relaxed">{employee.notes}</p>
+                <h4 className="text-xs font-bold text-[#147D4A] mb-1">Notes</h4>
+                <p className="text-sm text-[#2A4334] leading-relaxed">{employee.notes}</p>
               </div>
             )}
           </div>
         )}
 
-        {/* TAB 2: PERSONAL */}
+        {/* PERSONAL */}
         {activeTab === 'personal' && (
-          <div className="space-y-4 max-w-3xl">
-            <h3 className="text-sm font-bold text-[#192C21]">Personal &amp; Demographic Details</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Full Legal Name</span>
-                <span className="text-[#192C21] font-bold text-sm">{employee.fullName}</span>
+          <div className="space-y-5 max-w-3xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Field label="Full Name" value={employee.fullName} wide />
+              <Field label="Gender" value={employee.gender} />
+              <Field label="Marital Status" value={employee.maritalStatus} />
+              <Field label="Telephone" value={employee.phoneNumber} mono />
+              <Field label="Email" value={employee.email} />
+              <Field label="Residential District" value={employee.residentialArea} wide />
+            </div>
+
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#798C80] flex items-center gap-1.5 mb-2">
+                <HeartHandshake className="w-3.5 h-3.5 text-[#147D4A]" /> Next of Kin
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Field label="Name" value={nextOfKin?.name} />
+                <Field label="Phone" value={nextOfKin?.phone} mono />
               </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Somali Name</span>
-                <span className="text-[#192C21] font-bold text-sm">{employee.somaliName || 'N/A'}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">National ID / Passport #</span>
-                <span className="text-[#192C21] font-mono font-semibold">{employee.nationalIdNumber}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Date of Birth &amp; Gender</span>
-                <span className="text-[#192C21] font-medium">{employee.dateOfBirth} · {employee.gender}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Blood Group</span>
-                <span className="text-[#192C21] font-bold font-mono">{employee.bloodGroup || 'O+'}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Marital Status</span>
-                <span className="text-[#192C21] font-medium">{employee.maritalStatus || 'Married'}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Phone Number</span>
-                <span className="text-[#192C21] font-mono font-medium">{employee.phoneNumber}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Email Address</span>
-                <span className="text-[#192C21] font-medium">{employee.email}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Residential District</span>
-                <span className="text-[#192C21] font-medium">{employee.residentialArea}, {employee.campusLocation}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Emergency Contact</span>
-                <span className="text-[#192C21] font-medium">
-                  {employee.emergencyContact.name} ({employee.emergencyContact.relationship}) · {employee.emergencyContact.phone}
-                </span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] font-bold text-[#147D4A] uppercase tracking-wider block">Remuneration Account</span>
-                  <span className="text-[#192C21] font-semibold">{employee.paymentMethod || 'ZAAD (Telesom)'} — {employee.paymentAccountNo || employee.phoneNumber}</span>
-                </div>
-                <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
-                  Verified
-                </span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] font-bold text-[#147D4A] uppercase tracking-wider block">Somaliland CID Clearance</span>
-                  <span className="text-[#192C21] font-semibold">{employee.policeClearanceStatus || 'Verified'} ({employee.policeClearanceRef || 'CID-SL-VERIFIED'})</span>
-                </div>
-                <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
-                  Certified
-                </span>
+            </div>
+
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#798C80] flex items-center gap-1.5 mb-2">
+                <Wallet className="w-3.5 h-3.5 text-[#147D4A]" /> Payment Account
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Field label="Payment Method" value={employee.paymentMethod} />
+                <Field label="Account Number" value={employee.paymentAccountNo} mono />
               </div>
             </div>
           </div>
         )}
 
-        {/* TAB 3: ASSIGNMENT */}
-        {activeTab === 'assignment' && (
-          <div className="space-y-4 max-w-3xl">
-            <h3 className="text-sm font-bold text-[#192C21]">Assignment &amp; Campus Placement</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">School Division</span>
-                <span className="text-[#147D4A] font-bold text-sm">{employee.divisionName}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Campus City</span>
-                <span className="text-[#192C21] font-medium">{employee.campusLocation} Complex</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Job Role</span>
-                <span className="text-[#192C21] font-bold">{employee.jobTitle === 'Other' && employee.customJobTitle
-                    ? employee.customJobTitle
-                    : `${employee.jobTitle}${employee.customJobTitle ? ` (${employee.customJobTitle})` : ''}`}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Role Category</span>
-                <span className="text-[#192C21] font-semibold">{employee.roleCategory}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Wing &amp; Level</span>
-                <span className="text-[#192C21] font-medium">{employee.schoolLevel} · {employee.genderDivision} Wing</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Direct Supervisor</span>
-                <span className="text-[#192C21] font-medium">{employee.directSupervisor}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Employment Type &amp; Status</span>
-                <span className="text-[#192C21] font-medium">{employee.employmentType} ({employee.employmentStatus})</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Shift Schedule</span>
-                <span className="text-[#192C21] font-medium">{employee.shiftSchedule}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl sm:col-span-2">
-                <span className="text-slate-500 block">Hire / Effective Date</span>
-                <span className="text-[#192C21] font-medium">{employee.hireDate}</span>
-              </div>
+        {/* EMPLOYMENT */}
+        {activeTab === 'employment' && (
+          <div className="space-y-5 max-w-3xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Field label="School Division" value={<span className="text-[#147D4A]">{employee.divisionName}</span>} wide />
+              <Field label="Campus City" value={employee.campusLocation} />
+              <Field label="Wing & Level" value={`${employee.genderDivision} · ${employee.schoolLevel}`} />
+              <Field label="Job Role" value={roleLabel(employee)} />
+              <Field label="Role Category" value={employee.roleCategory} />
+              <Field label="Employment Type" value={employee.employmentType} />
+              <Field label="Status" value={employee.employmentStatus} />
+              <Field label="Shift Schedule" value={employee.shiftSchedule} />
+              <Field label="Direct Supervisor" value={employee.directSupervisor} />
+              <Field label="Hire Date" value={employee.hireDate} mono wide />
             </div>
 
             {employee.teachingSubjects && employee.teachingSubjects.length > 0 && (
-              <div className="pt-3 border-t border-[#E2EAE4]">
-                <h4 className="text-xs font-bold text-slate-800 mb-2">Teaching Subjects</h4>
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#798C80] mb-2">Teaching Subjects</h4>
                 <div className="flex flex-wrap gap-1.5">
                   {employee.teachingSubjects.map((sub, i) => (
-                    <span key={i} className="px-2.5 py-1 bg-[#EBF7EE] text-[#147D4A] rounded-lg font-bold text-xs">
+                    <span key={i} className="px-3 py-1 bg-[#EBF7EE] text-[#147D4A] border border-[#C5E8D2] rounded-full font-semibold text-xs">
                       {sub}
                     </span>
                   ))}
@@ -503,58 +493,32 @@ export const EmployeeProfile: React.FC = () => {
           </div>
         )}
 
-        {/* TAB 4: QUALIFICATIONS */}
+        {/* QUALIFICATIONS */}
         {activeTab === 'qualifications' && (
           <div className="space-y-4 max-w-3xl">
-            <h3 className="text-sm font-bold text-[#192C21]">Academic Credentials &amp; Certifications</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-[#EBF7EE] border border-[#C5E8D2] rounded-xl sm:col-span-2 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-[#147D4A] block">Degree Tier</span>
-                  <span className="text-[#147D4A] font-extrabold text-base">{employee.qualifications.degreeLevel || 'Bachelor'}</span>
-                </div>
-                <span className="bg-[#147D4A] text-white px-3 py-1 rounded-full text-xs font-bold">
-                  {employee.qualifications.degreeLevel || 'Bachelor'} Level
-                </span>
+            <div className="p-4 bg-[#EBF7EE] border border-[#C5E8D2] rounded-2xl flex items-center gap-3">
+              <span className="w-10 h-10 rounded-xl bg-[#147D4A] text-white flex items-center justify-center">
+                <GraduationCap className="w-5 h-5" />
+              </span>
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#147D4A] block">Degree Level</span>
+                <span className="text-base font-extrabold text-[#192C21]">{employee.qualifications.degreeLevel}</span>
               </div>
-
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl sm:col-span-2">
-                <span className="text-slate-500 block">Degree Title</span>
-                <span className="text-[#192C21] font-bold text-sm">{employee.qualifications.highestDegree}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Awarding Institution</span>
-                <span className="text-[#192C21] font-semibold">{employee.qualifications.institution}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Field of Study</span>
-                <span className="text-[#192C21] font-medium">{employee.qualifications.fieldOfStudy}</span>
-              </div>
-              {employee.qualifications.specialization && (
-                <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl sm:col-span-2">
-                  <span className="text-slate-500 block">Specialization</span>
-                  <span className="text-[#192C21] font-medium">{employee.qualifications.specialization}</span>
-                </div>
-              )}
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Graduation Year</span>
-                <span className="text-[#192C21] font-mono font-semibold">{employee.qualifications.graduationYear}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Years of Experience</span>
-                <span className="text-[#192C21] font-semibold">{employee.qualifications.yearsOfExperience || 4} Years</span>
-              </div>
-              {employee.qualifications.teachingLicenseNo && (
-                <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl sm:col-span-2">
-                  <span className="text-slate-500 block">Ministry Teaching License / CID Registration</span>
-                  <span className="text-[#147D4A] font-mono font-bold">{employee.qualifications.teachingLicenseNo}</span>
-                </div>
-              )}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Field label="Degree Title" value={employee.qualifications.highestDegree} wide />
+              <Field label="Awarding Institution" value={employee.qualifications.institution} />
+              <Field label="Field of Study" value={employee.qualifications.fieldOfStudy} />
+              <Field label="Graduation Year" value={employee.qualifications.graduationYear || undefined} mono />
+              <Field
+                label="Years of Experience"
+                value={employee.qualifications.yearsOfExperience !== undefined ? `${employee.qualifications.yearsOfExperience} years` : undefined}
+              />
             </div>
           </div>
         )}
 
-        {/* TAB 5: CONTRACT */}
+        {/* CONTRACT */}
         {activeTab === 'contract' && (
           <div className="space-y-5 max-w-3xl">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-[#F9FBFA] border border-[#E2EAE4] rounded-2xl">
@@ -563,255 +527,295 @@ export const EmployeeProfile: React.FC = () => {
                   <span className="font-mono text-xs font-bold text-[#147D4A] bg-[#EBF7EE] px-2 py-0.5 rounded-md">
                     {employee.contract.referenceNo}
                   </span>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-md ${
-                    isContractExpiring ? 'bg-amber-100 text-amber-800' : 'bg-emerald-50 text-emerald-800'
-                  }`}>
+                  <span
+                    className={`text-xs font-semibold px-2 py-0.5 rounded-md ${
+                      isContractExpiring ? 'bg-amber-100 text-amber-800' : 'bg-emerald-50 text-emerald-800'
+                    }`}
+                  >
                     {employee.contract.renewalStatus}
                   </span>
                 </div>
-                <h3 className="text-sm font-bold text-[#192C21] mt-1">DirectAid Employment Agreement</h3>
+                <h3 className="text-sm font-bold text-[#192C21] mt-1">Employment Agreement</h3>
               </div>
-
               <button
                 onClick={() => {
                   setContractRenewalTarget(employee);
                   setIsRenewContractOpen(true);
                 }}
-                className="px-3.5 py-1.5 bg-[#147D4A] hover:bg-[#0E6139] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors shrink-0"
+                className="px-4 py-2 bg-[#147D4A] hover:bg-[#0E6139] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors shrink-0"
               >
-                Initiate Renewal
+                Renew Contract
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Contract Type</span>
-                <span className="text-[#192C21] font-semibold">{employee.contract.contractType}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Salary Grade</span>
-                <span className="text-[#147D4A] font-bold">{employee.contract.salaryGrade || 'Grade Standard'}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Start Date</span>
-                <span className="text-[#192C21] font-semibold">{employee.contract.startDate}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">End Date</span>
-                <span className={`font-semibold ${isContractExpiring ? 'text-amber-700' : 'text-[#192C21]'}`}>
-                  {employee.contract.endDate}
-                </span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Monthly Base Salary</span>
-                <span className="text-[#192C21] font-bold font-mono text-sm">${employee.contract.monthlyBaseSalary} {employee.contract.currency}</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
-                <span className="text-slate-500 block">Notice Period</span>
-                <span className="text-[#192C21] font-medium">{employee.contract.noticePeriodDays} Days</span>
-              </div>
-              <div className="p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl sm:col-span-2">
-                <span className="text-slate-500 block mb-1">Contract Benefits &amp; Allowances</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Field label="Contract Type" value={employee.contract.contractType} />
+              <Field label="Salary Grade" value={employee.contract.salaryGrade} />
+              <Field label="Start Date" value={employee.contract.startDate} mono />
+              <Field
+                label="End Date"
+                value={<span className={isContractExpiring ? 'text-amber-700' : ''}>{employee.contract.endDate}</span>}
+                mono
+              />
+              <Field label="Monthly Salary" value={`$${employee.contract.monthlyBaseSalary} ${employee.contract.currency}`} mono />
+              <Field label="Notice Period" value={`${employee.contract.noticePeriodDays} days`} />
+              <Field label="Payment Method" value={employee.paymentMethod} />
+              <Field label="Payment Account" value={employee.paymentAccountNo} mono />
+            </div>
+
+            {employee.contract.benefits?.length > 0 && (
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#798C80] mb-2">Benefits</h4>
                 <div className="flex flex-wrap gap-1.5">
-                  {(employee.contract.benefits || ['Medical Insurance']).map((b, i) => (
-                    <span key={i} className="px-2 py-0.5 bg-[#EBF7EE] text-[#147D4A] border border-[#C5E8D2] rounded-md text-[11px] font-semibold">
+                  {employee.contract.benefits.map((b, i) => (
+                    <span key={i} className="px-3 py-1 bg-[#EBF7EE] text-[#147D4A] border border-[#C5E8D2] rounded-full text-xs font-semibold">
                       ✓ {b}
                     </span>
                   ))}
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
-        {/* TAB 6: DOCUMENTS */}
+        {/* DOCUMENTS */}
         {activeTab === 'documents' && (
           <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-end justify-between gap-3">
               <div>
-                <h3 className="text-sm font-bold text-[#192C21]">Document Vault</h3>
-                <p className="text-xs text-[#57685D]">
-                  Certified employee documents and credentials.
-                </p>
+                <h3 className="text-sm font-bold text-[#192C21] flex items-center gap-2">
+                  <FolderOpen className="w-4 h-4 text-[#147D4A]" /> Documents
+                </h3>
+                <p className="text-xs text-[#57685D] mt-0.5">PDF, Word, or photo · up to 10 MB each. Files are stored securely in Supabase.</p>
               </div>
-
-              <button
-                onClick={() => setIsUploadDocOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#147D4A] hover:bg-[#0E6139] text-white text-xs font-semibold rounded-xl transition-colors shadow-xs"
-              >
-                <Upload className="w-3.5 h-3.5" />
-                <span>Upload Document</span>
-              </button>
+              <span className="text-xs font-bold text-[#147D4A] bg-[#EBF7EE] px-2.5 py-1 rounded-full shrink-0">
+                {requiredOnFile} of {REQUIRED_DOCUMENTS.length} required
+              </span>
+            </div>
+            <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+              <div
+                className="h-full bg-[#147D4A] rounded-full transition-all duration-300"
+                style={{ width: `${(requiredOnFile / REQUIRED_DOCUMENTS.length) * 100}%` }}
+              />
             </div>
 
-            <div className="divide-y divide-[#E2EAE4] border border-[#E2EAE4] rounded-2xl overflow-hidden">
-              {employee.documents.map((doc) => (
-                <div key={doc.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#F9FBFA] transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#EBF7EE] text-[#147D4A] flex items-center justify-center shrink-0">
-                      <FileText className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-xs text-[#192C21]">{doc.name}</span>
-                        {doc.verified && (
-                          <span className="text-[10px] bg-emerald-50 text-emerald-700 px-1.5 py-0.2 rounded-md font-medium flex items-center gap-0.5">
-                            <CheckCircle2 className="w-3 h-3" /> Verified
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[11px] text-[#57685D] flex items-center gap-2 mt-0.5">
-                        <span className="font-mono">{doc.fileName}</span>
-                        <span>·</span>
-                        <span>{doc.fileSize}</span>
-                        <span>·</span>
-                        <span>{doc.uploadedAt}</span>
-                      </div>
-                    </div>
-                  </div>
+            {docError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-semibold flex items-start justify-between gap-3">
+                <span>{docError}</span>
+                <button onClick={() => setDocError('')} className="shrink-0">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
 
-                  {/* Document Actions: OPEN next to DOWNLOAD */}
-                  <div className="flex items-center gap-2 self-end sm:self-center">
-                    <button
-                      type="button"
-                      onClick={() => setViewingDocument(doc)}
-                      className="px-2.5 py-1 text-xs font-semibold text-[#192C21] bg-white hover:bg-[#F3F7F4] border border-[#E2EAE4] rounded-lg transition-colors flex items-center gap-1 cursor-pointer shadow-2xs"
-                      title="Open Document Preview"
-                    >
-                      <Eye className="w-3.5 h-3.5 text-[#57685D]" />
-                      <span>Open</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const element = document.createElement("a");
-                        const file = new Blob([`DirectAid Official HR Document Vault\nDocument: ${doc.name}\nEmployee: ${employee.fullName} (${employee.id})\nDivision: ${employee.divisionName}\nFile Name: ${doc.fileName}\nVerification Status: Verified`], { type: 'text/plain' });
-                        element.href = URL.createObjectURL(file);
-                        element.download = doc.fileName;
-                        document.body.appendChild(element);
-                        element.click();
-                        document.body.removeChild(element);
-                      }}
-                      className="px-2.5 py-1 text-xs font-semibold text-[#147D4A] hover:bg-[#EBF7EE] rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>Download</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => deleteDocument(employee.id, doc.id)}
-                      className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+            <div className="space-y-2">
+              {REQUIRED_DOCUMENTS.map(req => {
+                const doc = employee.documents.find(d => d.type === req.type);
+                return (
+                  <DocumentRow
+                    key={req.type}
+                    label={req.label}
+                    hint={req.hint}
+                    required
+                    isImage={req.type === 'photo'}
+                    accept={req.accept}
+                    busy={busyKey === req.type || (!!doc && busyKey === doc.id)}
+                    fileName={doc?.fileName}
+                    meta={doc ? `${doc.fileSize} · ${doc.uploadedAt}` : undefined}
+                    onPick={(file) => uploadDocument(req.type, req.label, file, doc)}
+                    onView={doc ? () => openDocument(doc) : undefined}
+                    onDownload={doc ? () => openDocument(doc, true) : undefined}
+                    onRemove={doc ? () => removeDocument(doc) : undefined}
+                  />
+                );
+              })}
             </div>
+
+            {otherDocuments.length > 0 && (
+              <div className="space-y-2 pt-1">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#798C80]">Other Documents</h4>
+                {otherDocuments.map(doc => (
+                  <DocumentRow
+                    key={doc.id}
+                    label={doc.name}
+                    accept="*"
+                    busy={busyKey === doc.id}
+                    fileName={doc.fileName}
+                    meta={`${doc.fileSize} · ${doc.uploadedAt}`}
+                    onPick={(file) =>
+                      uploadDocument(requiredTypes.includes(doc.type) ? doc.type : 'other', doc.name, file, doc)
+                    }
+                    onView={() => openDocument(doc)}
+                    onDownload={() => openDocument(doc, true)}
+                    onRemove={() => removeDocument(doc)}
+                  />
+                ))}
+              </div>
+            )}
+
+            <AddOtherDocument busy={busyKey === 'other'} onAdd={(name, file) => uploadDocument('other', name, file)} />
           </div>
         )}
       </div>
 
-      {/* Edit Profile Modal Dialog */}
+      {/* Edit Profile Modal */}
       {isEditingProfile && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-xl w-full border border-[#E2EAE4] shadow-2xl overflow-hidden animate-in fade-in-50 zoom-in-95">
+          <form
+            onSubmit={handleSaveEdit}
+            className="bg-white rounded-2xl max-w-2xl w-full border border-[#E2EAE4] shadow-2xl overflow-hidden"
+          >
             <div className="p-4 border-b border-[#E2EAE4] bg-[#F9FBFA] flex items-center justify-between">
-              <h3 className="font-bold text-sm text-[#192C21]">Edit Profile: {employee.fullName}</h3>
-              <button
-                onClick={() => setIsEditingProfile(false)}
-                className="text-slate-400 hover:text-slate-600 p-1"
-              >
+              <h3 className="font-bold text-sm text-[#192C21] flex items-center gap-2">
+                <Edit className="w-4 h-4 text-[#147D4A]" /> Edit Profile
+              </h3>
+              <button type="button" onClick={() => setIsEditingProfile(false)} className="text-slate-400 hover:text-slate-600 p-1">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveEdit} className="p-5 space-y-3.5 text-xs">
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">Full Legal Name</label>
+            <div className="p-5 max-h-[65vh] overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="sm:col-span-2">
+                <label className={labelClass}>
+                  Full Name <span className="text-rose-500">*</span>
+                </label>
                 <input
                   type="text"
                   value={editForm.fullName || ''}
                   onChange={(e) => setEditForm(prev => ({ ...prev, fullName: e.target.value }))}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs"
+                  className={inputClass}
                   required
                 />
               </div>
-
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Somali Name</label>
+                <label className={labelClass}>Gender</label>
+                <select
+                  value={editForm.gender}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, gender: e.target.value as 'Male' | 'Female' }))}
+                  className={inputClass}
+                >
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>Marital Status</label>
+                <select
+                  value={editForm.maritalStatus || 'Single'}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, maritalStatus: e.target.value as 'Single' | 'Married' }))}
+                  className={inputClass}
+                >
+                  <option value="Single">Single</option>
+                  <option value="Married">Married</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>Telephone</label>
                 <input
-                  type="text"
-                  value={editForm.somaliName || ''}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, somaliName: e.target.value }))}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs"
+                  type="tel"
+                  value={editForm.phoneNumber || ''}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                  className={`${inputClass} font-mono`}
                 />
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Telephone</label>
-                  <input
-                    type="text"
-                    value={editForm.phoneNumber || ''}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={editForm.email || ''}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs"
-                    required
-                  />
-                </div>
-              </div>
-
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Residential Area</label>
+                <label className={labelClass}>Email</label>
+                <input
+                  type="email"
+                  value={editForm.email || ''}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
+                  className={inputClass}
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={labelClass}>Residential District</label>
                 <input
                   type="text"
                   value={editForm.residentialArea || ''}
                   onChange={(e) => setEditForm(prev => ({ ...prev, residentialArea: e.target.value }))}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs"
-                  required
+                  className={inputClass}
                 />
               </div>
-
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Administrative Notes</label>
+                <label className={labelClass}>Next of Kin</label>
+                <input
+                  type="text"
+                  value={editForm.emergencyContact?.name || ''}
+                  onChange={(e) =>
+                    setEditForm(prev => ({
+                      ...prev,
+                      emergencyContact: { relationship: 'Next of Kin', phone: '', ...prev.emergencyContact, name: e.target.value }
+                    }))
+                  }
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Next of Kin Phone</label>
+                <input
+                  type="tel"
+                  value={editForm.emergencyContact?.phone || ''}
+                  onChange={(e) =>
+                    setEditForm(prev => ({
+                      ...prev,
+                      emergencyContact: { relationship: 'Next of Kin', name: '', ...prev.emergencyContact, phone: e.target.value }
+                    }))
+                  }
+                  className={`${inputClass} font-mono`}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Payment Method</label>
+                <input
+                  type="text"
+                  value={editForm.paymentMethod || ''}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, paymentMethod: e.target.value }))}
+                  placeholder="e.g. ZAAD (Telesom)"
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Payment Account Number</label>
+                <input
+                  type="text"
+                  value={editForm.paymentAccountNo || ''}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, paymentAccountNo: e.target.value }))}
+                  className={`${inputClass} font-mono`}
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={labelClass}>Shift Schedule</label>
+                <input
+                  type="text"
+                  value={editForm.shiftSchedule || ''}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, shiftSchedule: e.target.value }))}
+                  className={inputClass}
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={labelClass}>Notes</label>
                 <textarea
-                  rows={2}
+                  rows={3}
                   value={editForm.notes || ''}
                   onChange={(e) => setEditForm(prev => ({ ...prev, notes: e.target.value }))}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs"
+                  className={`${inputClass} resize-none`}
                 />
               </div>
+            </div>
 
-              <div className="pt-3 border-t border-slate-200 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsEditingProfile(false)}
-                  className="px-3.5 py-1.5 text-slate-600 hover:bg-slate-100 rounded-xl font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 bg-[#147D4A] hover:bg-[#0E6139] text-white font-semibold rounded-xl"
-                >
-                  Save Updates
-                </button>
-              </div>
-            </form>
-          </div>
+            <div className="p-4 border-t border-[#E2EAE4] bg-[#F9FBFA] flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsEditingProfile(false)}
+                className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-xl font-medium"
+              >
+                Cancel
+              </button>
+              <button type="submit" className="px-5 py-2 bg-[#147D4A] hover:bg-[#0E6139] text-white text-sm font-semibold rounded-xl">
+                Save Changes
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>

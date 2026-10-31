@@ -26,16 +26,29 @@ export type ContractStatus = 'Active' | 'Expiring Soon' | 'Expired' | 'Pending R
 
 export type AppUserRole = 'super_admin' | 'hr_admin' | 'division_manager' | 'employee';
 
+export type DocumentType =
+  | 'cv'
+  | 'contract'
+  | 'academic_degree'
+  | 'national_id'
+  | 'police_clearance'
+  | 'photo'
+  | 'appointment_letter'
+  | 'medical_fitness'
+  | 'other';
+
 export interface DocumentAttachment {
   id: string;
   name: string;
-  type: 'cv' | 'contract' | 'academic_degree' | 'national_id' | 'police_clearance' | 'appointment_letter' | 'medical_fitness' | 'other';
+  type: DocumentType;
   fileName: string;
   fileSize: string;
   uploadedAt: string;
   expiryDate?: string;
   verified: boolean;
   downloadUrl?: string;
+  storagePath?: string; // path in the Supabase "staff-documents" bucket
+  mimeType?: string;
 }
 
 export type DegreeLevel = 'Diploma' | 'Bachelor' | 'Master' | 'PhD' | 'Vocational';

@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { JobRole, DegreeLevel, EmploymentType, DocumentAttachment } from '../../types';
+import { JobRole, DegreeLevel, EmploymentType, DocumentAttachment, DocumentType } from '../../types';
+import { REQUIRED_DOCUMENTS } from '../../data/documentTypes';
+import { formatFileSize, removeStaffFiles, uploadStaffFile, validateFile } from '../../lib/storage';
+import { initialsAvatar, resizePhoto } from '../../lib/photo';
+import { DocumentRow } from '../documents/DocumentRow';
+import { AddOtherDocument } from '../documents/AddOtherDocument';
 import {
   Camera,
   FileText,
-  ShieldCheck,
   GraduationCap,
+  Loader2,
   Building2,
   CheckCircle2,
   ArrowRight,
@@ -60,48 +65,26 @@ const CONTRACT_DURATIONS = [
   { value: '3', label: '3 Years' }
 ];
 
+const SHIFT_SCHEDULES = [
+  { value: 'Morning Shift (07:00 - 13:00)', label: 'Morning Shift (07:00 - 13:00)' },
+  { value: 'Afternoon Shift (13:00 - 18:00)', label: 'Afternoon Shift (13:00 - 18:00)' },
+  { value: 'Full Day (07:00 - 16:00)', label: 'Full Day (07:00 - 16:00)' },
+  { value: 'Night Shift (18:00 - 06:00)', label: 'Night Shift (18:00 - 06:00)' }
+];
+
+const PAYMENT_METHODS = [
+  { value: 'ZAAD (Telesom)', label: 'ZAAD (Telesom)' },
+  { value: 'e-Dahab', label: 'e-Dahab' },
+  { value: 'Dahabshiil Bank', label: 'Dahabshiil Bank' },
+  { value: 'Premier Bank', label: 'Premier Bank' }
+];
+
 const STEPS = [
   { num: 1, label: 'Personal', icon: User },
   { num: 2, label: 'Division & Role', icon: Building2 },
   { num: 3, label: 'Credentials', icon: GraduationCap },
   { num: 4, label: 'Contract', icon: FileText }
 ] as const;
-
-// Green circle with the person's initials, used until a photo is uploaded
-const initialsAvatar = (name: string) => {
-  const initials = name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map(part => part.match(/\p{L}/u)?.[0]?.toUpperCase() || '')
-    .join('') || '?';
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><rect width='200' height='200' fill='#147D4A'/><text x='50%' y='50%' dy='.35em' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-size='80' font-weight='700' fill='#ffffff'>${initials}</text></svg>`;
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-};
-
-// Center-crop and shrink an uploaded photo so it stays small in the database
-const resizePhoto = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(reader.error);
-    reader.onload = () => {
-      const img = new Image();
-      img.onerror = () => reject(new Error('Could not read image'));
-      img.onload = () => {
-        const size = 240;
-        const side = Math.min(img.width, img.height);
-        const canvas = document.createElement('canvas');
-        canvas.width = size;
-        canvas.height = size;
-        canvas
-          .getContext('2d')!
-          .drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
-        resolve(canvas.toDataURL('image/jpeg', 0.85));
-      };
-      img.src = reader.result as string;
-    };
-    reader.readAsDataURL(file);
-  });
 
 interface SelectWithOtherProps {
   id: string;
@@ -235,6 +218,7 @@ export const RegisterEmployeePage: React.FC = () => {
   const [nextOfKinName, setNextOfKinName] = useState('');
   const [nextOfKinPhone, setNextOfKinPhone] = useState('');
   const [gender, setGender] = useState<'Male' | 'Female'>('Male');
+  const [maritalStatus, setMaritalStatus] = useState<'Single' | 'Married'>('Single');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
   const [residentialArea, setResidentialArea] = useState('');
@@ -245,6 +229,7 @@ export const RegisterEmployeePage: React.FC = () => {
   const [jobRole, setJobRole] = useState<string>('Teacher');
   const [employmentType, setEmploymentType] = useState('Fixed-Term Contract');
   const [teachingSubject, setTeachingSubject] = useState(TEACHING_SUBJECTS[0].value);
+  const [shiftSchedule, setShiftSchedule] = useState(SHIFT_SCHEDULES[0].value);
 
   // 3. Qualifications & Degree Assignment
   const [degreeLevel, setDegreeLevel] = useState<DegreeLevel>('Bachelor');
@@ -253,7 +238,6 @@ export const RegisterEmployeePage: React.FC = () => {
   const [fieldOfStudy, setFieldOfStudy] = useState('Secondary Education & Pedagogy');
   const [graduationYear, setGraduationYear] = useState(2019);
   const [yearsOfExperience, setYearsOfExperience] = useState(4);
-  const [univCertFileName] = useState('University_Degree_Certificate.pdf');
 
   // 4. Contract & Documents
   const [monthlyBaseSalary, setMonthlyBaseSalary] = useState(600);
@@ -261,11 +245,13 @@ export const RegisterEmployeePage: React.FC = () => {
   const [startDate] = useState(new Date().toISOString().split('T')[0]);
   const [contractRefNo] = useState(`CTR-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`);
 
-  // Compliance Files
-  const [cvFileName] = useState('Staff_Resume_CV.pdf');
-  const [contractFileName] = useState('Signed_DirectAid_Contract.pdf');
-  const [policeCertFileName] = useState('CID_Criminal_Record_Check.pdf');
-  const [policeRefNo] = useState(`CID-SL-${Math.floor(10000 + Math.random() * 90000)}`);
+  const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS[0].value);
+  const [paymentAccountNo, setPaymentAccountNo] = useState('');
+
+  // Documents are held locally and uploaded to storage when the form is submitted
+  const [docFiles, setDocFiles] = useState<Partial<Record<DocumentType, File>>>({});
+  const [otherDocs, setOtherDocs] = useState<{ id: string; name: string; file: File }[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isKnownRole = JOB_ROLES.some(r => r.value === jobRole);
 
@@ -273,6 +259,9 @@ export const RegisterEmployeePage: React.FC = () => {
   const savedRoles = employees.filter(e => e.jobTitle === 'Other' && e.customJobTitle).map(e => e.customJobTitle as string);
   const savedEmploymentTypes = employees.map(e => e.employmentType);
   const savedSubjects = employees.flatMap(e => e.teachingSubjects || []);
+  const savedShifts = employees.map(e => e.shiftSchedule).filter(Boolean);
+  const savedPaymentMethods = employees.map(e => e.paymentMethod || '').filter(Boolean);
+  const uploadedRequiredCount = REQUIRED_DOCUMENTS.filter(d => docFiles[d.type]).length;
   const isTeacher = jobRole === 'Teacher';
   const avatarPreview = photoUrl || initialsAvatar(fullName);
 
@@ -286,19 +275,59 @@ export const RegisterEmployeePage: React.FC = () => {
     setStep(target);
   };
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // The profile photo and the "Personal Photo" document are the same file
+  const setPhotoFile = async (file: File | null) => {
+    if (!file) {
+      setPhotoUrl('');
+      setDocFiles(prev => ({ ...prev, photo: undefined }));
+      return;
+    }
+    const invalid = validateFile(file);
+    if (invalid) {
+      setError(invalid);
+      return;
+    }
     try {
       setPhotoUrl(await resizePhoto(file));
+      setDocFiles(prev => ({ ...prev, photo: file }));
+      setError('');
     } catch {
       setError('That photo could not be read. Please try a JPG or PNG image.');
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const pickDocument = (type: DocumentType, file: File) => {
+    if (type === 'photo') {
+      setPhotoFile(file);
+      return;
+    }
+    const invalid = validateFile(file);
+    if (invalid) {
+      setError(invalid);
+      return;
+    }
+    setError('');
+    setDocFiles(prev => ({ ...prev, [type]: file }));
+  };
+
+  const previewFile = (file: File) => {
+    window.open(URL.createObjectURL(file), '_blank', 'noopener');
+  };
+
+  const addOtherDocument = (name: string, file: File) => {
+    const invalid = validateFile(file);
+    if (invalid) {
+      setError(invalid);
+      return false;
+    }
+    setError('');
+    setOtherDocs(prev => [...prev, { id: crypto.randomUUID(), name, file }]);
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (step !== 4) return;
+    if (step !== 4 || isSubmitting) return;
 
     const selectedDiv = divisions.find(d => d.id === divisionId) || divisions[0];
     if (!selectedDiv) return;
@@ -319,45 +348,38 @@ export const RegisterEmployeePage: React.FC = () => {
     const endDate = end.toISOString().split('T')[0];
     const today = new Date().toISOString().split('T')[0];
 
-    // Build documents array
-    const documents: DocumentAttachment[] = [
-      {
-        id: `doc-cv-${Date.now()}`,
-        name: 'Curriculum Vitae (CV)',
-        type: 'cv',
-        fileName: cvFileName,
-        fileSize: '1.2 MB',
-        uploadedAt: today,
-        verified: true
-      },
-      {
-        id: `doc-ctr-${Date.now()}`,
-        name: 'Signed Employment Contract',
-        type: 'contract',
-        fileName: contractFileName,
-        fileSize: '2.5 MB',
-        uploadedAt: today,
-        verified: true
-      },
-      {
-        id: `doc-deg-${Date.now()}`,
-        name: `${degreeLevel} Certificate (${institution})`,
-        type: 'academic_degree',
-        fileName: univCertFileName,
-        fileSize: '3.1 MB',
-        uploadedAt: today,
-        verified: true
-      },
-      {
-        id: `doc-pol-${Date.now()}`,
-        name: `Police Clearance CID Certificate (${policeRefNo})`,
-        type: 'police_clearance',
-        fileName: policeCertFileName,
-        fileSize: '950 KB',
-        uploadedAt: today,
-        verified: true
-      }
+    // Upload every attached file, then record it on the employee
+    const pending: { type: DocumentType; name: string; file: File }[] = [
+      ...REQUIRED_DOCUMENTS.filter(d => docFiles[d.type]).map(d => ({ type: d.type, name: d.label, file: docFiles[d.type]! })),
+      ...otherDocs.map(d => ({ type: 'other' as DocumentType, name: d.name, file: d.file }))
     ];
+
+    setIsSubmitting(true);
+    setError('');
+    const uploadedPaths: string[] = [];
+    const documents: DocumentAttachment[] = [];
+    try {
+      for (const [i, item] of pending.entries()) {
+        const { path } = await uploadStaffFile(item.file);
+        uploadedPaths.push(path);
+        documents.push({
+          id: `doc-${item.type}-${Date.now()}-${i}`,
+          name: item.name,
+          type: item.type,
+          fileName: item.file.name,
+          fileSize: formatFileSize(item.file.size),
+          uploadedAt: today,
+          verified: false,
+          storagePath: path,
+          mimeType: item.file.type
+        });
+      }
+    } catch (err) {
+      await removeStaffFiles(uploadedPaths);
+      setError(err instanceof Error ? err.message : 'Upload failed. Please try again.');
+      setIsSubmitting(false);
+      return;
+    }
 
     const jobTitle: JobRole = isKnownRole ? (jobRole as JobRole) : 'Other';
     const contractType = employmentType.trim() as EmploymentType;
@@ -366,6 +388,7 @@ export const RegisterEmployeePage: React.FC = () => {
       fullName: fullName.trim(),
       avatarUrl: avatarPreview,
       gender,
+      maritalStatus,
       emergencyContact: {
         name: nextOfKinName.trim(),
         relationship: 'Next of Kin',
@@ -374,8 +397,10 @@ export const RegisterEmployeePage: React.FC = () => {
       phoneNumber: phoneNumber.trim(),
       email: email.trim(),
       residentialArea: residentialArea.trim(),
-      policeClearanceStatus: 'Verified',
-      policeClearanceRef: policeRefNo,
+      paymentMethod: paymentMethod.trim(),
+      paymentAccountNo: paymentAccountNo.trim(),
+      shiftSchedule: shiftSchedule.trim(),
+      policeClearanceStatus: docFiles.police_clearance ? 'Verified' : undefined,
       divisionId: selectedDiv.id,
       divisionName: selectedDiv.name,
       campusLocation: selectedDiv.city,
@@ -408,6 +433,7 @@ export const RegisterEmployeePage: React.FC = () => {
       documents
     });
 
+    setIsSubmitting(false);
     navigateToProfile(newEmp.id);
   };
 
@@ -514,17 +540,26 @@ export const RegisterEmployeePage: React.FC = () => {
               />
               <div className="flex-1 text-center sm:text-left">
                 <span className="font-semibold text-sm text-[#192C21] block">Profile Photo</span>
-                <p className="text-xs text-[#57685D] mt-0.5">Optional. Initials are shown until a photo is added.</p>
+                <p className="text-xs text-[#57685D] mt-0.5">Optional. Also saved as the Personal Photo document.</p>
                 <div className="mt-2.5 flex flex-wrap items-center justify-center sm:justify-start gap-2">
                   <label className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#147D4A] bg-white border border-[#C5E8D2] hover:bg-[#EBF7EE] rounded-xl cursor-pointer transition-colors">
                     <Upload className="w-3.5 h-3.5" />
                     {photoUrl ? 'Change Photo' : 'Upload Photo'}
-                    <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) setPhotoFile(file);
+                        e.target.value = '';
+                      }}
+                      className="hidden"
+                    />
                   </label>
                   {photoUrl && (
                     <button
                       type="button"
-                      onClick={() => setPhotoUrl('')}
+                      onClick={() => setPhotoFile(null)}
                       className="px-3 py-2 text-xs font-semibold text-slate-500 hover:text-rose-600 rounded-xl"
                     >
                       Remove
@@ -564,6 +599,19 @@ export const RegisterEmployeePage: React.FC = () => {
               </div>
 
               <div>
+                <label htmlFor="reg-marital" className={labelClass}>Marital Status</label>
+                <select
+                  id="reg-marital"
+                  value={maritalStatus}
+                  onChange={(e) => setMaritalStatus(e.target.value as 'Single' | 'Married')}
+                  className={inputClass}
+                >
+                  <option value="Single">Single</option>
+                  <option value="Married">Married</option>
+                </select>
+              </div>
+
+              <div>
                 <label htmlFor="reg-phone" className={labelClass}>Telephone Number</label>
                 <input
                   id="reg-phone"
@@ -587,7 +635,7 @@ export const RegisterEmployeePage: React.FC = () => {
                 />
               </div>
 
-              <div>
+              <div className="sm:col-span-2">
                 <label htmlFor="reg-area" className={labelClass}>Residential District</label>
                 <input
                   id="reg-area"
@@ -704,18 +752,31 @@ export const RegisterEmployeePage: React.FC = () => {
               />
             </div>
 
-            {isTeacher && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <SelectWithOther
-                id="reg-subject"
-                label="Teaching Subject"
-                options={TEACHING_SUBJECTS}
-                extraValues={savedSubjects}
-                value={teachingSubject}
-                onChange={setTeachingSubject}
+                id="reg-shift"
+                label="Shift Schedule"
+                options={SHIFT_SCHEDULES}
+                extraValues={savedShifts}
+                value={shiftSchedule}
+                onChange={setShiftSchedule}
                 otherLabel="+ Add manually..."
-                placeholder="Type the subject"
+                placeholder="e.g. Weekend Shift (08:00 - 14:00)"
               />
-            )}
+
+              {isTeacher && (
+                <SelectWithOther
+                  id="reg-subject"
+                  label="Teaching Subject"
+                  options={TEACHING_SUBJECTS}
+                  extraValues={savedSubjects}
+                  value={teachingSubject}
+                  onChange={setTeachingSubject}
+                  otherLabel="+ Add manually..."
+                  placeholder="Type the subject"
+                />
+              )}
+            </div>
           </div>
         )}
 
@@ -829,7 +890,7 @@ export const RegisterEmployeePage: React.FC = () => {
                 <FileText className="w-4.5 h-4.5 text-[#147D4A]" />
                 Contract
               </h2>
-              <p className="text-xs text-[#57685D] mt-0.5">Salary, contract length, and documents.</p>
+              <p className="text-xs text-[#57685D] mt-0.5">Salary, payment account, contract length, and documents.</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -872,30 +933,95 @@ export const RegisterEmployeePage: React.FC = () => {
               />
             </div>
 
-            {/* Checklist */}
-            <div className="space-y-2.5">
-              <h3 className="font-bold text-sm text-[#192C21]">Required Documents</h3>
+            {/* Payment account */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <SelectWithOther
+                id="reg-payment-method"
+                label="Payment Method"
+                options={PAYMENT_METHODS}
+                extraValues={savedPaymentMethods}
+                value={paymentMethod}
+                onChange={setPaymentMethod}
+                otherLabel="+ Add manually..."
+                placeholder="e.g. Salaam Bank"
+              />
+              <div>
+                <label htmlFor="reg-payment-account" className={labelClass}>Payment Account Number</label>
+                <input
+                  id="reg-payment-account"
+                  type="text"
+                  value={paymentAccountNo}
+                  onChange={(e) => setPaymentAccountNo(e.target.value)}
+                  placeholder="Mobile money number or bank account"
+                  className={`${inputClass} font-mono`}
+                />
+              </div>
+            </div>
 
-              {[
-                { icon: FileText, color: 'text-emerald-600', title: 'Curriculum Vitae (CV)', file: cvFileName, tag: 'Attached' },
-                { icon: FileText, color: 'text-[#147D4A]', title: 'Signed Contract', file: contractFileName, tag: 'Attached' },
-                { icon: ShieldCheck, color: 'text-blue-600', title: 'Somaliland CID Clearance', file: policeCertFileName, tag: 'Verified' }
-              ].map(doc => (
-                <div key={doc.title} className="p-3.5 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="w-9 h-9 rounded-lg bg-white border border-[#E2EAE4] flex items-center justify-center shrink-0">
-                      <doc.icon className={`w-4 h-4 ${doc.color}`} />
-                    </span>
-                    <div className="min-w-0">
-                      <span className="font-semibold text-sm text-[#192C21] block">{doc.title}</span>
-                      <span className="font-mono text-[11px] text-slate-500 truncate block">{doc.file}</span>
-                    </div>
-                  </div>
-                  <span className="text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-bold text-[10px] shrink-0">
-                    ✓ {doc.tag}
-                  </span>
+            {/* Documents */}
+            <div className="space-y-3">
+              <div className="flex items-end justify-between gap-3">
+                <div>
+                  <h3 className="font-bold text-sm text-[#192C21]">Required Documents</h3>
+                  <p className="text-xs text-[#57685D] mt-0.5">PDF, Word, or photo · up to 10 MB each. Missing files can be added later from the staff profile.</p>
                 </div>
-              ))}
+                <span className="text-xs font-bold text-[#147D4A] bg-[#EBF7EE] px-2.5 py-1 rounded-full shrink-0">
+                  {uploadedRequiredCount} of {REQUIRED_DOCUMENTS.length}
+                </span>
+              </div>
+              <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                <div
+                  className="h-full bg-[#147D4A] rounded-full transition-all duration-300"
+                  style={{ width: `${(uploadedRequiredCount / REQUIRED_DOCUMENTS.length) * 100}%` }}
+                />
+              </div>
+
+              <div className="space-y-2">
+                {REQUIRED_DOCUMENTS.map(doc => {
+                  const file = docFiles[doc.type];
+                  return (
+                    <DocumentRow
+                      key={doc.type}
+                      label={doc.label}
+                      hint={doc.hint}
+                      required
+                      isImage={doc.type === 'photo'}
+                      accept={doc.accept}
+                      fileName={file?.name}
+                      meta={file ? formatFileSize(file.size) : undefined}
+                      onPick={(f) => pickDocument(doc.type, f)}
+                      onView={file ? () => previewFile(file) : undefined}
+                      onRemove={() =>
+                        doc.type === 'photo' ? setPhotoFile(null) : setDocFiles(prev => ({ ...prev, [doc.type]: undefined }))
+                      }
+                    />
+                  );
+                })}
+              </div>
+
+              {otherDocs.length > 0 && (
+                <div className="space-y-2 pt-1">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#798C80]">Other Documents</h4>
+                  {otherDocs.map(doc => (
+                    <DocumentRow
+                      key={doc.id}
+                      label={doc.name}
+                      accept="*"
+                      fileName={doc.file.name}
+                      meta={formatFileSize(doc.file.size)}
+                      onPick={(f) => {
+                        const invalid = validateFile(f);
+                        if (invalid) return setError(invalid);
+                        setOtherDocs(prev => prev.map(d => (d.id === doc.id ? { ...d, file: f } : d)));
+                      }}
+                      onView={() => previewFile(doc.file)}
+                      onRemove={() => setOtherDocs(prev => prev.filter(d => d.id !== doc.id))}
+                    />
+                  ))}
+                </div>
+              )}
+
+              <AddOtherDocument onAdd={addOtherDocument} />
             </div>
           </div>
         )}
@@ -926,11 +1052,11 @@ export const RegisterEmployeePage: React.FC = () => {
           ) : (
             <button
               type="submit"
-              disabled={divisions.length === 0}
+              disabled={divisions.length === 0 || isSubmitting}
               className="px-6 py-2.5 bg-[#147D4A] hover:bg-[#0E6139] text-white rounded-xl text-sm font-bold flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>Complete Registration</span>
+              {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+              <span>{isSubmitting ? 'Uploading documents...' : 'Complete Registration'}</span>
             </button>
           )}
         </div>

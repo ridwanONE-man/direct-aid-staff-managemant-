@@ -11,6 +11,8 @@ import {
 } from '../types';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { removeStaffFiles } from '../lib/storage';
+import { REQUIRED_DOCUMENTS } from '../data/documentTypes';
 
 export type AppPage = 'dashboard' | 'directory' | 'divisions' | 'profile' | 'contracts' | 'reports' | 'register';
 
@@ -61,7 +63,11 @@ interface AppContextType {
   updateEmployee: (id: string, updates: Partial<EmployeeRecord>) => void;
   deleteEmployee: (id: string) => void;
   renewContract: (employeeId: string, contractUpdates: Partial<EmployeeContract>) => void;
-  addDocument: (employeeId: string, doc: Omit<DocumentAttachment, 'id' | 'uploadedAt'>) => void;
+  addDocument: (
+    employeeId: string,
+    doc: Omit<DocumentAttachment, 'id' | 'uploadedAt'>,
+    options?: { replaceId?: string; avatarUrl?: string }
+  ) => void;
   deleteDocument: (employeeId: string, docId: string) => void;
   navigateToProfile: (employeeId: string) => void;
   navigateToDivisionStaff: (divisionId: string) => void;
@@ -242,23 +248,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Helper to recalculate completeness
   const calculateCompleteness = (emp: Partial<EmployeeRecord>): { score: number; missing: string[] } => {
     const missing: string[] = [];
-    if (!emp.nationalIdNumber) missing.push('National ID / Passport Number');
     if (!emp.phoneNumber) missing.push('Phone Number');
-    if (!emp.email) missing.push('Email Address');
-    if (!emp.residentialArea) missing.push('Residential Area');
-    if (!emp.qualifications?.highestDegree) missing.push('Highest Qualification Certificate');
-    if (!emp.contract?.referenceNo) missing.push('Signed Employment Contract');
-    
+    if (!emp.residentialArea) missing.push('Residential District');
+    if (!emp.emergencyContact?.name) missing.push('Next of Kin');
+    if (!emp.paymentAccountNo) missing.push('Payment Account');
+
     const docs = emp.documents || [];
-    const hasCv = docs.some(d => d.type === 'cv');
-    const hasContract = docs.some(d => d.type === 'contract');
-    const hasPolice = docs.some(d => d.type === 'police_clearance');
+    REQUIRED_DOCUMENTS.forEach(req => {
+      if (!docs.some(d => d.type === req.type)) missing.push(req.label);
+    });
 
-    if (!hasCv) missing.push('CV / Resume');
-    if (!hasContract) missing.push('Signed Contract PDF');
-    if (!hasPolice) missing.push('Police Clearance Check (CID)');
-
-    const totalCheckpoints = 9;
+    const totalCheckpoints = 4 + REQUIRED_DOCUMENTS.length;
     const completed = totalCheckpoints - missing.length;
     const score = Math.round((completed / totalCheckpoints) * 100);
     return { score, missing };
@@ -324,7 +324,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       dateOfBirth: data.dateOfBirth || '',
       gender: data.gender || 'Male',
       maritalStatus: data.maritalStatus || 'Single',
-      bloodGroup: data.bloodGroup || 'O+',
+      bloodGroup: data.bloodGroup,
       emergencyContact: data.emergencyContact || {
         name: 'Family Contact',
         relationship: 'Relative',
@@ -332,8 +332,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       },
       paymentMethod: data.paymentMethod || 'ZAAD (Telesom)',
       paymentAccountNo: data.paymentAccountNo || data.phoneNumber || '',
-      policeClearanceStatus: data.policeClearanceStatus || 'Verified',
-      policeClearanceRef: data.policeClearanceRef || `CID-SL-${Math.floor(10000 + Math.random() * 90000)}`,
+      policeClearanceStatus: data.policeClearanceStatus,
+      policeClearanceRef: data.policeClearanceRef,
       hireDate: data.hireDate || new Date().toISOString().split('T')[0],
       employmentType: data.employmentType || 'Fixed-Term Contract',
       employmentStatus: data.employmentStatus || 'Active',
@@ -359,20 +359,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         benefits: ['Medical Insurance'],
         noticePeriodDays: 30
       },
-      documents: data.documents || [
-        {
-          id: `doc-${Date.now()}`,
-          name: 'Employment Offer Letter',
-          type: 'appointment_letter',
-          fileName: 'DirectAid_Appointment_Signed.pdf',
-          fileSize: '1.2 MB',
-          uploadedAt: new Date().toISOString().split('T')[0],
-          verified: true
-        }
-      ],
+      documents: data.documents || [],
       profileCompleteness: score,
       missingRequirements: missing,
-      notes: data.notes || 'Newly registered employee in portal.'
+      notes: data.notes || ''
     };
 
     setEmployees(prev => [newRecord, ...prev]);
@@ -412,6 +402,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteEmployee = (id: string) => {
+    const emp = employees.find(e => e.id === id);
+    removeStaffFiles((emp?.documents || []).map(d => d.storagePath).filter((p): p is string => !!p));
     setEmployees(prev => prev.filter(emp => emp.id !== id));
     if (selectedEmployee?.id === id) {
       setSelectedEmployee(employees.find(e => e.id !== id) || null);
@@ -429,17 +421,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       renewalStatus: 'Renewed'
     };
 
-    const renewedDoc: DocumentAttachment = {
-      id: `doc-renew-${Date.now()}`,
-      name: `Renewed Employment Contract (${contractUpdates.startDate || '2025'} - ${contractUpdates.endDate || '2027'})`,
-      type: 'contract',
-      fileName: `CTR_RENEWED_${emp.id}_${Date.now()}.pdf`,
-      fileSize: '2.4 MB',
-      uploadedAt: new Date().toISOString().split('T')[0],
-      verified: true
-    };
-
-    commitEmployee({ ...emp, contract: updatedContract, documents: [renewedDoc, ...emp.documents] });
+    // The new signed contract is uploaded from the staff profile's Documents tab
+    commitEmployee({ ...emp, contract: updatedContract });
 
     // Add alert notification
     saveNotification({
@@ -455,7 +438,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const addDocument = (employeeId: string, docData: Omit<DocumentAttachment, 'id' | 'uploadedAt'>) => {
+  const addDocument = (
+    employeeId: string,
+    docData: Omit<DocumentAttachment, 'id' | 'uploadedAt'>,
+    options: { replaceId?: string; avatarUrl?: string } = {}
+  ) => {
     const emp = employees.find(e => e.id === employeeId);
     if (!emp) return;
     const newDoc: DocumentAttachment = {
@@ -463,13 +450,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: `doc-${Date.now()}`,
       uploadedAt: new Date().toISOString().split('T')[0]
     };
-    commitEmployee({ ...emp, documents: [newDoc, ...emp.documents] });
+    const replaced = options.replaceId ? emp.documents.find(d => d.id === options.replaceId) : undefined;
+    commitEmployee({
+      ...emp,
+      avatarUrl: options.avatarUrl || emp.avatarUrl,
+      documents: [newDoc, ...emp.documents.filter(d => d.id !== options.replaceId)]
+    });
+    if (replaced?.storagePath) removeStaffFiles([replaced.storagePath]);
   };
 
   const deleteDocument = (employeeId: string, docId: string) => {
     const emp = employees.find(e => e.id === employeeId);
     if (!emp) return;
+    const doc = emp.documents.find(d => d.id === docId);
     commitEmployee({ ...emp, documents: emp.documents.filter(d => d.id !== docId) });
+    if (doc?.storagePath) removeStaffFiles([doc.storagePath]);
   };
 
   const navigateToProfile = (employeeId: string) => {

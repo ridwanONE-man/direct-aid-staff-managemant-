@@ -52,3 +52,21 @@ create policy "Signed-in users manage notifications" on public.notifications
 drop policy if exists "Signed-in users manage compliance items" on public.compliance_items;
 create policy "Signed-in users manage compliance items" on public.compliance_items
   for all to authenticated using (true) with check (true);
+
+-- File storage for staff documents (CV, contract, CID clearance, ID, certificates, photos).
+-- Private bucket: files are only reachable through short-lived signed links for signed-in users.
+insert into storage.buckets (id, name, public, file_size_limit)
+values ('staff-documents', 'staff-documents', false, 10485760)
+on conflict (id) do update set public = false, file_size_limit = excluded.file_size_limit;
+
+drop policy if exists "Signed-in users read staff documents" on storage.objects;
+create policy "Signed-in users read staff documents" on storage.objects
+  for select to authenticated using (bucket_id = 'staff-documents');
+
+drop policy if exists "Signed-in users upload staff documents" on storage.objects;
+create policy "Signed-in users upload staff documents" on storage.objects
+  for insert to authenticated with check (bucket_id = 'staff-documents');
+
+drop policy if exists "Signed-in users delete staff documents" on storage.objects;
+create policy "Signed-in users delete staff documents" on storage.objects
+  for delete to authenticated using (bucket_id = 'staff-documents');
