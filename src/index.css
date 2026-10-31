@@ -131,18 +131,24 @@
 
 .app-backdrop-logo {
   position: absolute;
-  right: -4%;
-  bottom: -6%;
-  width: min(900px, 90vw);
-  opacity: 0.06;
+  top: 50%;
+  left: 50%;
+  width: min(760px, 85vw);
+  transform: translate(-50%, -50%);
+  opacity: 0.11;
   mix-blend-mode: multiply; /* drops the image's white background */
   user-select: none;
+  transition: left 0.3s ease;
 }
 
-@media (max-width: 640px) {
+/* Center within the content area, beside the sidebar (18rem open, 6rem collapsed) */
+@media (min-width: 1024px) {
   .app-backdrop-logo {
-    right: -20%;
-    bottom: 4%;
-    width: 140vw;
+    left: calc(50% + 9rem);
+    width: min(760px, calc(85vw - 18rem));
+  }
+
+  .app-backdrop-logo.sidebar-collapsed {
+    left: calc(50% + 3rem);
   }
 }

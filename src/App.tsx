@@ -35,7 +35,11 @@ const AppContent: React.FC = () => {
     <div className="min-h-screen bg-[#F5F8F6] text-[#192C21] flex flex-col font-sans">
       {/* Branded background: soft green tints with a faint DirectAid logo watermark */}
       <div className="app-backdrop" aria-hidden="true">
-        <img src="/directaid-logo-full.png" alt="" className="app-backdrop-logo" />
+        <img
+          src="/directaid-logo-full.png"
+          alt=""
+          className={`app-backdrop-logo ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}
+        />
       </div>
       {/* Sidebar Navigation */}
       <Sidebar
