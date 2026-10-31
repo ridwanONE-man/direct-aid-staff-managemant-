@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { DegreeLevel, EmployeeRecord, EmploymentStatus, EmploymentType, JobRole } from '../../types';
+import { DegreeLevel, DocumentAttachment, EmployeeRecord, EmploymentStatus, EmploymentType, JobRole } from '../../types';
 import { EMPLOYMENT_TYPES, JOB_ROLES, PAYMENT_METHODS, SHIFT_SCHEDULES, TEACHING_SUBJECTS } from '../../data/staffOptions';
-import { Briefcase, Edit, FileText, GraduationCap, StickyNote, User, X } from 'lucide-react';
+import { formatFileSize, removeStaffFiles, uploadStaffFile, validateFile } from '../../lib/storage';
+import { initialsAvatar, resizePhoto } from '../../lib/photo';
+import { Briefcase, Camera, Edit, FileText, GraduationCap, Loader2, StickyNote, Trash2, Upload, User, X } from 'lucide-react';
 
 const inputClass =
   'w-full px-3.5 py-2.5 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl text-sm text-[#192C21] placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-[#147D4A] focus:ring-2 focus:ring-[#147D4A]/15 transition-all';
@@ -48,6 +50,28 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, 
   const [subjects, setSubjects] = useState((employee.teachingSubjects || []).join(', '));
   const [benefits, setBenefits] = useState((employee.contract.benefits || []).join(', '));
 
+  // Profile photo: also stored as the "Personal Photo" document
+  const hasInitialsAvatar = employee.avatarUrl.startsWith('data:image/svg+xml');
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState(hasInitialsAvatar ? '' : employee.avatarUrl);
+  const [isSaving, setIsSaving] = useState(false);
+  const shownAvatar = photoPreview || initialsAvatar(form.fullName);
+
+  const pickPhoto = async (file: File) => {
+    const invalid = validateFile(file);
+    if (invalid) {
+      setError(invalid);
+      return;
+    }
+    try {
+      setPhotoPreview(await resizePhoto(file));
+      setPhotoFile(file);
+      setError('');
+    } catch {
+      setError('That photo could not be read. Please try a JPG or PNG image.');
+    }
+  };
+
   const set = <K extends keyof EmployeeRecord>(key: K, value: EmployeeRecord[K]) =>
     setForm(prev => ({ ...prev, [key]: value }));
   const setQual = <K extends keyof EmployeeRecord['qualifications']>(key: K, value: EmployeeRecord['qualifications'][K]) =>
@@ -57,8 +81,9 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, 
   const setKin = (key: 'name' | 'phone', value: string) =>
     setForm(prev => ({ ...prev, emergencyContact: { ...prev.emergencyContact, relationship: prev.emergencyContact.relationship || 'Next of Kin', [key]: value } }));
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSaving) return;
     if (!form.fullName.trim()) {
       setSection('personal');
       setError('Full name is required.');
@@ -75,11 +100,47 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, 
       return;
     }
 
+    // Upload a new photo, or drop the old one if it was removed
+    const oldPhotoDoc = employee.documents.find(d => d.type === 'photo');
+    let documents = employee.documents;
+    let avatarUrl = photoPreview || initialsAvatar(form.fullName.trim());
+    if (photoFile) {
+      setIsSaving(true);
+      try {
+        const { path } = await uploadStaffFile(photoFile);
+        const photoDoc: DocumentAttachment = {
+          id: `doc-photo-${Date.now()}`,
+          name: 'Personal Photo',
+          type: 'photo',
+          fileName: photoFile.name,
+          fileSize: formatFileSize(photoFile.size),
+          uploadedAt: new Date().toISOString().split('T')[0],
+          verified: false,
+          storagePath: path,
+          mimeType: photoFile.type
+        };
+        documents = [photoDoc, ...employee.documents.filter(d => d.type !== 'photo')];
+      } catch (err) {
+        setIsSaving(false);
+        setSection('personal');
+        setError(err instanceof Error ? err.message : 'Photo upload failed. Please try again.');
+        return;
+      }
+    } else if (!photoPreview && oldPhotoDoc) {
+      documents = employee.documents.filter(d => d.type !== 'photo');
+    }
+    if (documents !== employee.documents && oldPhotoDoc?.storagePath) {
+      removeStaffFiles([oldPhotoDoc.storagePath]);
+    }
+    if (!photoPreview) avatarUrl = initialsAvatar(form.fullName.trim());
+
     const division = divisions.find(d => d.id === form.divisionId);
     const employmentType = (form.employmentType.trim() || employee.employmentType) as EmploymentType;
     updateEmployee(employee.id, {
       ...form,
       fullName: form.fullName.trim(),
+      avatarUrl,
+      documents,
       ...(division && {
         divisionName: division.name,
         campusLocation: division.city,
@@ -111,7 +172,7 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, 
         {/* Header */}
         <div className="p-4 border-b border-[#E2EAE4] bg-[#F9FBFA] flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <img src={employee.avatarUrl} alt="" className="w-10 h-10 rounded-xl object-cover border border-[#C5E8D2]" />
+            <img src={shownAvatar} alt="" className="w-10 h-10 rounded-xl object-cover border border-[#C5E8D2]" />
             <div className="min-w-0">
               <h3 className="font-bold text-sm text-[#192C21] flex items-center gap-1.5">
                 <Edit className="w-4 h-4 text-[#147D4A]" /> Edit Staff Information
@@ -148,6 +209,48 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, 
 
           {section === 'personal' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="sm:col-span-2 p-4 bg-[#F9FBFA] border border-[#E2EAE4] rounded-2xl flex flex-col sm:flex-row items-center gap-4">
+                <img
+                  src={shownAvatar}
+                  alt="Profile photo"
+                  className="w-20 h-20 rounded-2xl object-cover border-2 border-white shadow-md shrink-0"
+                />
+                <div className="flex-1 text-center sm:text-left">
+                  <span className="font-semibold text-sm text-[#192C21] flex items-center justify-center sm:justify-start gap-1.5">
+                    <Camera className="w-4 h-4 text-[#147D4A]" /> Profile Photo
+                  </span>
+                  <p className="text-xs text-[#57685D] mt-0.5">Also saved as the Personal Photo document. Initials are shown without a photo.</p>
+                  <div className="mt-2.5 flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                    <label className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#147D4A] bg-white border border-[#C5E8D2] hover:bg-[#EBF7EE] rounded-xl cursor-pointer transition-colors">
+                      <Upload className="w-3.5 h-3.5" />
+                      {photoPreview ? 'Change Photo' : 'Upload Photo'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) pickPhoto(file);
+                          e.target.value = '';
+                        }}
+                      />
+                    </label>
+                    {photoPreview && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPhotoPreview('');
+                          setPhotoFile(null);
+                        }}
+                        className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold text-slate-500 hover:text-rose-600 rounded-xl"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Remove
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="sm:col-span-2">
                 <label className={labelClass}>
                   Full Name <span className="text-rose-500">*</span>
@@ -420,8 +523,13 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, 
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-xl font-medium">
               Cancel
             </button>
-            <button type="submit" className="px-5 py-2 bg-[#147D4A] hover:bg-[#0E6139] text-white text-sm font-semibold rounded-xl">
-              Save Changes
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="px-5 py-2 bg-[#147D4A] hover:bg-[#0E6139] text-white text-sm font-semibold rounded-xl flex items-center gap-1.5 disabled:opacity-60"
+            >
+              {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isSaving ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </div>
