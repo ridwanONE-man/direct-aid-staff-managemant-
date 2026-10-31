@@ -446,13 +446,11 @@ export const RegisterEmployeePage: React.FC = () => {
 
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="bg-white rounded-2xl px-3 py-1.5 shadow-lg self-start sm:self-auto">
-              <img
-                src="/directaid-logo-full.png"
-                alt="DirectAid - العون المباشر"
-                className="h-14 w-auto object-contain"
-              />
-            </div>
+            <img
+              src="/directaid-logo-white.png"
+              alt="DirectAid - العون المباشر"
+              className="h-11 sm:h-12 w-auto object-contain shrink-0 self-start sm:self-auto drop-shadow-sm sm:pr-4 sm:border-r sm:border-white/25"
+            />
             <div className="text-white">
               <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Staff Register</h1>
               <p className="text-sm text-white/80 mt-0.5">Add a new staff member in four quick steps.</p>

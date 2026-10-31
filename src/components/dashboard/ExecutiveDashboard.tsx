@@ -82,13 +82,11 @@ export const ExecutiveDashboard: React.FC = () => {
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex flex-col sm:flex-row sm:items-center gap-5">
-            <div className="bg-white rounded-2xl px-4 py-2 shadow-lg shrink-0 self-start sm:self-auto">
-              <img
-                src="/directaid-logo-full.png"
-                alt="DirectAid - العون المباشر"
-                className="h-16 sm:h-20 w-auto object-contain"
-              />
-            </div>
+            <img
+              src="/directaid-logo-white.png"
+              alt="DirectAid - العون المباشر"
+              className="h-12 sm:h-14 w-auto object-contain shrink-0 self-start sm:self-auto drop-shadow-sm sm:pr-5 sm:border-r sm:border-white/25"
+            />
 
             <div className="space-y-1.5 text-white">
               <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-white/85">
