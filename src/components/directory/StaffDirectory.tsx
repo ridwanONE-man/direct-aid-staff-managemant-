@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { needsRenewal } from '../../lib/contracts';
 import { EmployeeRecord } from '../../types';
+import { BulkActionBar, ConfirmDeleteDialog, SelectBox } from '../common/BulkActions';
 import {
   Search,
   Download,
@@ -33,10 +34,13 @@ export const StaffDirectory: React.FC = () => {
     setIsRenewContractOpen,
     setContractRenewalTarget,
     setActivePage,
-    deleteEmployee
+    deleteEmployee,
+    deleteEmployees
   } = useApp();
 
   const [pendingDelete, setPendingDelete] = useState<EmployeeRecord | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkDelete, setBulkDelete] = useState<{ ids: string[]; all: boolean } | null>(null);
 
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [sortField, setSortField] = useState<'fullName' | 'id' | 'hireDate' | 'jobTitle'>('fullName');
@@ -115,6 +119,14 @@ export const StaffDirectory: React.FC = () => {
       return 0;
     });
   }, [employees, regionalScope, filters, sortField, sortOrder]);
+
+  // Only rows currently on screen count as selected
+  const visibleSelected = selectedIds.filter(id => filteredEmployees.some(e => e.id === id));
+  const isSelected = (id: string) => visibleSelected.includes(id);
+  const toggleSelected = (id: string) =>
+    setSelectedIds(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
+  const toggleAllVisible = () =>
+    setSelectedIds(visibleSelected.length === filteredEmployees.length ? [] : filteredEmployees.map(e => e.id));
 
   const handleSort = (field: 'fullName' | 'id' | 'hireDate' | 'jobTitle') => {
     if (sortField === field) {
@@ -391,6 +403,16 @@ export const StaffDirectory: React.FC = () => {
         </div>
       </div>
 
+      <BulkActionBar
+        noun={{ one: 'staff member', many: 'staff members' }}
+        visibleCount={filteredEmployees.length}
+        selectedCount={visibleSelected.length}
+        onToggleAll={toggleAllVisible}
+        onClearSelection={() => setSelectedIds([])}
+        onDeleteSelected={() => setBulkDelete({ ids: visibleSelected, all: false })}
+        onDeleteAll={() => setBulkDelete({ ids: filteredEmployees.map(e => e.id), all: true })}
+      />
+
       {/* Main Employee Presentation: Grid vs Table */}
       {viewMode === 'grid' ? (
         /* Grid Card View - Beautiful & Attractive */
@@ -401,14 +423,23 @@ export const StaffDirectory: React.FC = () => {
               <div
                 key={emp.id}
                 onClick={() => navigateToProfile(emp.id)}
-                className="bg-white border border-[#E2EAE4] hover:border-[#147D4A] rounded-2xl p-4 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between group hover:-translate-y-1"
+                className={`bg-white border rounded-2xl p-4 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between group hover:-translate-y-1 ${
+                  isSelected(emp.id) ? 'border-[#147D4A] ring-2 ring-[#147D4A]/20' : 'border-[#E2EAE4] hover:border-[#147D4A]'
+                }`}
               >
                 <div>
                   {/* Card Header: ID & Location */}
                   <div className="flex items-center justify-between mb-3">
-                    <span className="font-mono text-[10px] font-bold text-[#147D4A] bg-[#EBF7EE] px-2 py-0.5 rounded-md">
-                      {emp.id}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <SelectBox
+                        checked={isSelected(emp.id)}
+                        onChange={() => toggleSelected(emp.id)}
+                        label={`Select ${emp.fullName}`}
+                      />
+                      <span className="font-mono text-[10px] font-bold text-[#147D4A] bg-[#EBF7EE] px-2 py-0.5 rounded-md">
+                        {emp.id}
+                      </span>
+                    </div>
                     <span className="text-[11px] font-semibold text-[#57685D] flex items-center gap-1">
                       <MapPin className="w-3 h-3 text-[#147D4A]" />
                       {emp.campusLocation}
@@ -501,6 +532,13 @@ export const StaffDirectory: React.FC = () => {
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-[#F8FAF9] border-b border-[#E2EAE4] text-[#55675B] font-semibold select-none">
+                  <th className="py-3 pl-4 pr-1 w-8">
+                    <SelectBox
+                      checked={filteredEmployees.length > 0 && visibleSelected.length === filteredEmployees.length}
+                      onChange={toggleAllVisible}
+                      label="Select all staff"
+                    />
+                  </th>
                   <th className="py-3 px-4 cursor-pointer hover:text-[#192C21]" onClick={() => handleSort('id')}>
                     <div className="flex items-center gap-1">
                       <span>ID</span>
@@ -530,7 +568,7 @@ export const StaffDirectory: React.FC = () => {
               <tbody className="divide-y divide-[#EBF1ED]">
                 {filteredEmployees.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="py-12 text-center text-slate-500">
+                    <td colSpan={10} className="py-12 text-center text-slate-500">
                       <div className="flex flex-col items-center justify-center space-y-2">
                         <AlertCircle className="w-8 h-8 text-slate-300" />
                         <span className="font-semibold text-slate-700">No staff members found</span>
@@ -550,9 +588,16 @@ export const StaffDirectory: React.FC = () => {
                     return (
                       <tr
                         key={emp.id}
-                        className="hover:bg-[#F8FCF9] transition-colors group cursor-pointer"
+                        className={`transition-colors group cursor-pointer ${isSelected(emp.id) ? 'bg-[#EBF7EE]' : 'hover:bg-[#F8FCF9]'}`}
                         onClick={() => navigateToProfile(emp.id)}
                       >
+                        <td className="py-3 pl-4 pr-1">
+                          <SelectBox
+                            checked={isSelected(emp.id)}
+                            onChange={() => toggleSelected(emp.id)}
+                            label={`Select ${emp.fullName}`}
+                          />
+                        </td>
                         {/* ID */}
                         <td className="py-3 px-4 font-mono font-medium text-[#147D4A]">
                           {emp.id}
@@ -688,6 +733,29 @@ export const StaffDirectory: React.FC = () => {
             </table>
           </div>
         </div>
+      )}
+
+      {bulkDelete && (
+        <ConfirmDeleteDialog
+          title={bulkDelete.all ? 'Delete all staff shown?' : `Delete ${bulkDelete.ids.length} selected staff?`}
+          message={
+            <>
+              This permanently removes <strong className="text-[#192C21]">{bulkDelete.ids.length}</strong>{' '}
+              {bulkDelete.ids.length === 1 ? 'staff record' : 'staff records'} and all of their uploaded documents. This cannot be undone.
+            </>
+          }
+          confirmLabel={`Delete ${bulkDelete.ids.length}`}
+          onCancel={() => setBulkDelete(null)}
+          onConfirm={() => {
+            deleteEmployees(bulkDelete.ids);
+            setSelectedIds([]);
+            setBulkDelete(null);
+          }}
+        >
+          {(hasActiveFilters || regionalScope !== 'all') && bulkDelete.all && (
+            <p className="mt-2 text-xs text-[#57685D]">Only staff matching the current filters and regional scope are included.</p>
+          )}
+        </ConfirmDeleteDialog>
       )}
 
       {/* Delete confirmation */}

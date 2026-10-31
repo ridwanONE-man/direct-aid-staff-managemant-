@@ -34,8 +34,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const {
     activePage,
     setActivePage,
-    employees,
-    divisions,
+    scopedEmployees: employees,
+    scopedDivisions: divisions,
     regionalScope,
     setRegionalScope,
     notifications,

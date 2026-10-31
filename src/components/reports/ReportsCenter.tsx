@@ -15,8 +15,9 @@ import {
 
 export const ReportsCenter: React.FC = () => {
   const {
-    employees,
-    divisions,
+    scopedEmployees: employees,
+    scopedDivisions: divisions,
+    regionalScope,
     complianceItems,
     toggleComplianceStatus
   } = useApp();
@@ -93,8 +94,8 @@ export const ReportsCenter: React.FC = () => {
               <ShieldCheck className="w-5 h-5 text-[#147D4A]" />
               Audit &amp; Reports
             </h1>
-            <span className="text-xs bg-[#EBF7EE] text-[#147D4A] font-bold px-2.5 py-0.5 rounded-full font-mono">
-              DirectAid
+            <span className="text-xs bg-[#EBF7EE] text-[#147D4A] font-bold px-2.5 py-0.5 rounded-full">
+              {regionalScope === 'all' ? 'All Campuses' : regionalScope === 'hargeisa' ? 'Hargeisa' : 'Gabiley'}
             </span>
           </div>
           <p className="text-xs text-[#57685D] mt-1">

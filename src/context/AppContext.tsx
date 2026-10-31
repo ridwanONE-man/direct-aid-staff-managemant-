@@ -31,6 +31,9 @@ export interface DirectoryFilters {
 interface AppContextType {
   employees: EmployeeRecord[];
   divisions: SchoolDivisionCategory[];
+  // Staff and divisions limited to the selected regional scope
+  scopedEmployees: EmployeeRecord[];
+  scopedDivisions: SchoolDivisionCategory[];
   selectedEmployee: EmployeeRecord | null;
   setSelectedEmployee: (emp: EmployeeRecord | null) => void;
   activePage: AppPage;
@@ -66,6 +69,8 @@ interface AppContextType {
   addEmployee: (empData: Partial<EmployeeRecord>) => EmployeeRecord;
   updateEmployee: (id: string, updates: Partial<EmployeeRecord>) => void;
   deleteEmployee: (id: string) => void;
+  deleteEmployees: (ids: string[]) => void;
+  deleteDivisions: (ids: string[]) => { deleted: number; blocked: string[] };
   renewContract: (employeeId: string, contractUpdates: Partial<EmployeeContract>) => void;
   addDocument: (
     employeeId: string,
@@ -155,6 +160,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const userId = session?.user.id;
+
+  const inScope = (city: LocationCity) =>
+    regionalScope === 'all' || city.toLowerCase() === regionalScope;
+  const scopedEmployees = employees.filter(e => inScope(e.campusLocation));
+  const scopedDivisions = divisions.filter(d => inScope(d.city));
 
   // Load all records from Supabase whenever a user signs in
   useEffect(() => {
@@ -342,6 +352,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (div) saveDivisions([blankPrincipal(div)]);
   };
 
+  // Divisions that still have staff are skipped and reported back
+  const deleteDivisions = (ids: string[]): { deleted: number; blocked: string[] } => {
+    const targets = divisions.filter(d => ids.includes(d.id));
+    const blocked = targets.filter(d => employees.some(e => e.divisionId === d.id));
+    const deletable = targets.filter(d => !blocked.includes(d)).map(d => d.id);
+    if (deletable.length > 0) {
+      setDivisions(prev => prev.filter(d => !deletable.includes(d.id)));
+      if (deletable.includes(filters.divisionId)) setFilters(prev => ({ ...prev, divisionId: '' }));
+      if (supabase) persist(supabase.from('divisions').delete().in('id', deletable));
+    }
+    return { deleted: deletable.length, blocked: blocked.map(d => d.name) };
+  };
+
   // Returns an error message when the division still has staff assigned
   const deleteDivision = (id: string): string | null => {
     const div = divisions.find(d => d.id === id);
@@ -350,9 +373,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (staffCount > 0) {
       return `${div.name} still has ${staffCount} staff ${staffCount === 1 ? 'member' : 'members'}. Delete or move them first.`;
     }
-    setDivisions(prev => prev.filter(d => d.id !== id));
-    if (filters.divisionId === id) setFilters(prev => ({ ...prev, divisionId: '' }));
-    if (supabase) persist(supabase.from('divisions').delete().eq('id', id));
+    deleteDivisions([id]);
     return null;
   };
 
@@ -518,27 +539,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (emp) commitEmployee({ ...emp, ...updates });
   };
 
-  const deleteEmployee = (id: string) => {
-    const emp = employees.find(e => e.id === id);
-    removeStaffFiles((emp?.documents || []).map(d => d.storagePath).filter((p): p is string => !!p));
-    setEmployees(prev => prev.filter(emp => emp.id !== id));
-    if (selectedEmployee?.id === id) {
-      setSelectedEmployee(employees.find(e => e.id !== id) || null);
+  const deleteEmployees = (ids: string[]) => {
+    const removed = employees.filter(e => ids.includes(e.id));
+    if (removed.length === 0) return;
+    removeStaffFiles(removed.flatMap(e => e.documents.map(d => d.storagePath)).filter((p): p is string => !!p));
+    setEmployees(prev => prev.filter(e => !ids.includes(e.id)));
+    if (selectedEmployee && ids.includes(selectedEmployee.id)) {
+      setSelectedEmployee(employees.find(e => !ids.includes(e.id)) || null);
     }
-    if (supabase) persist(supabase.from('employees').delete().eq('id', id));
+    if (supabase) persist(supabase.from('employees').delete().in('id', ids));
 
-    // Clear the principal on any division this person headed
-    if (emp) {
-      saveDivisions(
-        divisions
-          .filter(d =>
-            d.principalEmployeeId === id ||
+    // Clear the principal on any division these people headed
+    saveDivisions(
+      divisions
+        .filter(d =>
+          removed.some(emp =>
+            d.principalEmployeeId === emp.id ||
             (d.id === emp.divisionId && !!d.principalName && d.principalName.trim().toLowerCase() === emp.fullName.trim().toLowerCase())
           )
-          .map(blankPrincipal)
-      );
-    }
+        )
+        .map(blankPrincipal)
+    );
   };
+
+  const deleteEmployee = (id: string) => deleteEmployees([id]);
 
   const renewContract = (employeeId: string, contractUpdates: Partial<EmployeeContract>) => {
     const emp = employees.find(e => e.id === employeeId);
@@ -614,6 +638,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       value={{
         employees,
         divisions,
+        scopedEmployees,
+        scopedDivisions,
         selectedEmployee,
         setSelectedEmployee,
         activePage,
@@ -645,6 +671,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addEmployee,
         updateEmployee,
         deleteEmployee,
+        deleteEmployees,
+        deleteDivisions,
         renewContract,
         addDocument,
         deleteDocument,

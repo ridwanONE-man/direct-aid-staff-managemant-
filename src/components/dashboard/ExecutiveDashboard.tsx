@@ -20,7 +20,7 @@ import {
 export const ExecutiveDashboard: React.FC = () => {
   const {
     employees,
-    divisions,
+    scopedDivisions: divisions,
     notifications,
     regionalScope,
     setActivePage,

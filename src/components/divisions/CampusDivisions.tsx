@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { SchoolDivisionCategory, LocationCity, SchoolLevel, GenderDivision } from '../../types';
+import { BulkActionBar, ConfirmDeleteDialog, SelectBox } from '../common/BulkActions';
 import {
   Building2,
   MapPin,
@@ -30,8 +31,13 @@ const emptyDivisionForm = {
 
 export const CampusDivisions: React.FC = () => {
   const {
-    divisions,
+    divisions: allDivisions,
+    scopedDivisions: divisions,
     employees,
+    scopedEmployees,
+    regionalScope,
+    setRegionalScope,
+    deleteDivisions,
     navigateToDivisionStaff,
     navigateToProfile,
     addDivision,
@@ -41,7 +47,9 @@ export const CampusDivisions: React.FC = () => {
     setActivePage
   } = useApp();
 
-  const [selectedCity, setSelectedCity] = useState<'all' | 'Hargeisa' | 'Gabiley'>('all');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkDelete, setBulkDelete] = useState<{ ids: string[]; all: boolean } | null>(null);
+  const [bulkResult, setBulkResult] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<'all' | 'Secondary' | 'Primary'>('all');
   const [modalDivision, setModalDivision] = useState<SchoolDivisionCategory | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -54,7 +62,7 @@ export const CampusDivisions: React.FC = () => {
   const principalStaff = employees.filter(e => e.jobTitle === 'Principal');
   const selectedPrincipal = principalStaff.find(e => e.id === divisionForm.principalEmployeeId);
   const principalOfOther = (employeeId: string) =>
-    divisions.find(d => d.id !== editingId && d.principalEmployeeId === employeeId);
+    allDivisions.find(d => d.id !== editingId && d.principalEmployeeId === employeeId);
   const [formError, setFormError] = useState('');
 
   const isOperations = divisionForm.level === 'Central Operations';
@@ -100,7 +108,7 @@ export const CampusDivisions: React.FC = () => {
       setFormError('Division name and code are required.');
       return;
     }
-    if (divisions.some(d => d.id !== editingId && d.code.toUpperCase() === code)) {
+    if (allDivisions.some(d => d.id !== editingId && d.code.toUpperCase() === code)) {
       setFormError(`A division with code ${code} already exists.`);
       return;
     }
@@ -130,20 +138,28 @@ export const CampusDivisions: React.FC = () => {
     addDivision(details);
 
     // Reset filters so the new division is visible
-    setSelectedCity('all');
+    setRegionalScope('all');
     setSelectedLevel('all');
     closeCreateModal();
   };
 
   // Filter divisions
   const filteredDivisions = divisions.filter(div => {
-    if (selectedCity !== 'all' && div.city !== selectedCity) return false;
     if (selectedLevel !== 'all' && div.level !== selectedLevel && div.level !== 'Central Operations') return false;
     return true;
   });
 
   const totalStudents = divisions.reduce((acc, d) => acc + d.studentCount, 0);
-  const totalSchoolTeachers = employees.filter(e => e.jobTitle === 'Teacher').length;
+  const totalSchoolTeachers = scopedEmployees.filter(e => e.jobTitle === 'Teacher').length;
+
+  // Only cards currently on screen count as selected
+  const visibleSelected = selectedIds.filter(id => filteredDivisions.some(d => d.id === id));
+  const isSelected = (id: string) => visibleSelected.includes(id);
+  const toggleSelected = (id: string) =>
+    setSelectedIds(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
+  const bulkBlocked = bulkDelete
+    ? bulkDelete.ids.filter(id => employees.some(e => e.divisionId === id))
+    : [];
   const avgRatio = totalSchoolTeachers > 0 ? Math.round(totalStudents / totalSchoolTeachers) : 0;
 
   return (
@@ -161,7 +177,9 @@ export const CampusDivisions: React.FC = () => {
             </span>
           </div>
           <p className="text-xs text-[#57685D] mt-1 max-w-2xl">
-            Campus divisions across Hargeisa and Gabiley organized by school level and wing.
+            {regionalScope === 'all'
+              ? 'Campus divisions across Hargeisa and Gabiley organized by school level and wing.'
+              : `Showing ${regionalScope === 'hargeisa' ? 'Hargeisa' : 'Gabiley'} divisions only (regional scope).`}
           </p>
         </div>
 
@@ -194,17 +212,17 @@ export const CampusDivisions: React.FC = () => {
             Campus City:
           </span>
           <div className="flex p-0.5 bg-slate-100 rounded-xl">
-            {(['all', 'Hargeisa', 'Gabiley'] as const).map(city => (
+            {(['all', 'hargeisa', 'gabiley'] as const).map(city => (
               <button
                 key={city}
-                onClick={() => setSelectedCity(city)}
+                onClick={() => setRegionalScope(city)}
                 className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
-                  selectedCity === city
+                  regionalScope === city
                     ? 'bg-white text-[#147D4A] shadow-xs'
                     : 'text-[#57685D] hover:text-[#192C21]'
                 }`}
               >
-                {city === 'all' ? 'All' : city}
+                {city === 'all' ? 'All' : city === 'hargeisa' ? 'Hargeisa' : 'Gabiley'}
               </button>
             ))}
           </div>
@@ -230,19 +248,40 @@ export const CampusDivisions: React.FC = () => {
         </div>
       </div>
 
+      {bulkResult && (
+        <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-xs font-semibold flex items-start justify-between gap-3">
+          <span>{bulkResult}</span>
+          <button onClick={() => setBulkResult('')} className="shrink-0">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      <BulkActionBar
+        noun={{ one: 'division', many: 'divisions' }}
+        visibleCount={filteredDivisions.length}
+        selectedCount={visibleSelected.length}
+        onToggleAll={() =>
+          setSelectedIds(visibleSelected.length === filteredDivisions.length ? [] : filteredDivisions.map(d => d.id))
+        }
+        onClearSelection={() => setSelectedIds([])}
+        onDeleteSelected={() => setBulkDelete({ ids: visibleSelected, all: false })}
+        onDeleteAll={() => setBulkDelete({ ids: filteredDivisions.map(d => d.id), all: true })}
+      />
+
       {/* Empty State */}
       {filteredDivisions.length === 0 && (
         <div className="bg-white border border-dashed border-[#C5E8D2] rounded-2xl p-12 text-center shadow-xs">
           <Building2 className="w-8 h-8 text-[#147D4A] mx-auto" />
           <h3 className="text-base font-bold text-[#192C21] mt-3">
-            {divisions.length === 0 ? 'No School Divisions Yet' : 'No Divisions Match These Filters'}
+            {allDivisions.length === 0 ? 'No School Divisions Yet' : 'No Divisions Match These Filters'}
           </h3>
           <p className="text-xs text-[#57685D] mt-1">
-            {divisions.length === 0
+            {allDivisions.length === 0
               ? 'Create your first school division to start assigning staff.'
               : 'Try a different city or school level.'}
           </p>
-          {divisions.length === 0 && (
+          {allDivisions.length === 0 && (
             <button
               type="button"
               onClick={() => setIsCreateOpen(true)}
@@ -269,13 +308,23 @@ export const CampusDivisions: React.FC = () => {
             <div
               key={div.id}
               className={`bg-white border rounded-2xl p-4.5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between group hover:-translate-y-1 ${
-                isHQ ? 'border-indigo-200 bg-indigo-50/15' : 'border-[#E2EAE4] hover:border-[#147D4A]'
+                isSelected(div.id)
+                  ? 'border-[#147D4A] ring-2 ring-[#147D4A]/20'
+                  : isHQ
+                  ? 'border-indigo-200 bg-indigo-50/15'
+                  : 'border-[#E2EAE4] hover:border-[#147D4A]'
               }`}
             >
               <div>
                 {/* Header Tag */}
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-1.5">
+                    <SelectBox
+                      checked={isSelected(div.id)}
+                      onChange={() => toggleSelected(div.id)}
+                      label={`Select ${div.name}`}
+                      className="mr-0.5"
+                    />
                     <span className="w-5 h-5 rounded-full bg-[#147D4A] text-white text-[10px] font-bold flex items-center justify-center font-mono">
                       {div.canonicalIndex}
                     </span>
@@ -526,6 +575,44 @@ export const CampusDivisions: React.FC = () => {
           </div>
         </div>
       )}
+      {bulkDelete && (
+        <ConfirmDeleteDialog
+          title={bulkDelete.all ? 'Delete all divisions shown?' : `Delete ${bulkDelete.ids.length} selected divisions?`}
+          message={
+            bulkBlocked.length === bulkDelete.ids.length ? (
+              <>None of these divisions can be deleted because they all still have staff. Delete or move their staff first.</>
+            ) : (
+              <>
+                This permanently removes <strong className="text-[#192C21]">{bulkDelete.ids.length - bulkBlocked.length}</strong>{' '}
+                {bulkDelete.ids.length - bulkBlocked.length === 1 ? 'division' : 'divisions'}. This cannot be undone.
+              </>
+            )
+          }
+          confirmLabel={`Delete ${bulkDelete.ids.length - bulkBlocked.length}`}
+          confirmDisabled={bulkBlocked.length === bulkDelete.ids.length}
+          onCancel={() => setBulkDelete(null)}
+          onConfirm={() => {
+            const { blocked } = deleteDivisions(bulkDelete.ids);
+            setBulkResult(
+              blocked.length > 0
+                ? `Skipped ${blocked.length} ${blocked.length === 1 ? 'division' : 'divisions'} that still have staff: ${blocked.join(', ')}.`
+                : ''
+            );
+            setSelectedIds([]);
+            setBulkDelete(null);
+          }}
+        >
+          {bulkBlocked.length > 0 && bulkBlocked.length < bulkDelete.ids.length && (
+            <p className="mt-3 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-2.5">
+              {bulkBlocked.length} {bulkBlocked.length === 1 ? 'division has' : 'divisions have'} staff and will be skipped.
+            </p>
+          )}
+          {bulkDelete.all && regionalScope !== 'all' && (
+            <p className="mt-2 text-xs text-[#57685D]">Only divisions in the current regional scope are included.</p>
+          )}
+        </ConfirmDeleteDialog>
+      )}
+
       {/* Delete Division Confirmation */}
       {pendingDelete && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
