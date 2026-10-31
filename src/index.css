@@ -153,12 +153,17 @@
   }
 }
 
-/* Register success notice: bar empties over the 8 seconds it stays visible */
-@keyframes register-notice-timer {
-  from { width: 100%; }
-  to { width: 0%; }
+/* Register success notice: tick pops in */
+@keyframes register-tick {
+  0% { transform: scale(0); }
+  70% { transform: scale(1.15); }
+  100% { transform: scale(1); }
 }
 
-.register-notice-timer {
-  animation: register-notice-timer 8s linear forwards;
+.register-tick {
+  animation: register-tick 0.45s ease-out 0.15s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .register-tick { animation: none; }
 }

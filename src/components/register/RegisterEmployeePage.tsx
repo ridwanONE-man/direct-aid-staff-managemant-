@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { JobRole, DegreeLevel, EmploymentType, DocumentAttachment, DocumentType, EmployeeRecord } from '../../types';
 import { REQUIRED_DOCUMENTS } from '../../data/documentTypes';
@@ -1074,11 +1074,6 @@ const RegisteredNotice: React.FC<{ employee: EmployeeRecord; onClose: () => void
   onClose,
   onView
 }) => {
-  useEffect(() => {
-    const timer = window.setTimeout(onClose, 8000);
-    return () => window.clearTimeout(timer);
-  }, [employee.id, onClose]);
-
   const docCount = employee.documents.length;
 
   return (
@@ -1089,15 +1084,11 @@ const RegisteredNotice: React.FC<{ employee: EmployeeRecord; onClose: () => void
       <div className="relative overflow-hidden bg-white border border-[#C5E8D2] rounded-2xl shadow-[0_20px_50px_-15px_rgba(20,125,74,0.45)]">
         <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#147D4A]" />
         <div className="p-4 pl-5 flex items-start gap-3">
-          <img
-            src={employee.avatarUrl}
-            alt={employee.fullName}
-            className="w-12 h-12 rounded-xl object-cover border-2 border-[#EBF7EE] shrink-0"
-          />
+          <span className="register-tick w-12 h-12 rounded-full bg-[#147D4A] text-white flex items-center justify-center shrink-0 shadow-md ring-4 ring-[#EBF7EE]">
+            <Check className="w-6 h-6" strokeWidth={3} />
+          </span>
           <div className="min-w-0 flex-1">
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#147D4A]">
-              <CheckCircle2 className="w-3.5 h-3.5" /> Staff registered
-            </span>
+            <span className="text-[11px] font-bold text-[#147D4A] block">Staff registered</span>
             <span className="font-bold text-sm text-[#192C21] block truncate">{employee.fullName}</span>
             <span className="text-xs text-[#57685D] block truncate">
               {roleLabel(employee)} · {employee.divisionName}
@@ -1117,10 +1108,6 @@ const RegisteredNotice: React.FC<{ employee: EmployeeRecord; onClose: () => void
           >
             <X className="w-4 h-4" />
           </button>
-        </div>
-        {/* Countdown bar */}
-        <div className="h-1 bg-[#EBF7EE]">
-          <div className="h-full bg-[#147D4A] register-notice-timer" />
         </div>
       </div>
     </div>
