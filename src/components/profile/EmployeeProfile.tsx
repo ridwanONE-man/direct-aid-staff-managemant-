@@ -227,13 +227,13 @@ export const EmployeeProfile: React.FC = () => {
 
       {/* Hero */}
       <div className="rounded-3xl overflow-hidden shadow-[0_20px_50px_-24px_rgba(20,125,74,0.55)] bg-white border border-[#E2EAE4]">
-        <div className="relative bg-linear-to-br from-[#0E6139] via-[#147D4A] to-[#2D9A48] px-4 py-4 sm:px-5">
+        <div className="relative bg-linear-to-br from-[#0E6139] via-[#147D4A] to-[#2D9A48] px-4 py-4 sm:pr-5 sm:pl-[12rem]">
           <div className="absolute -top-20 -right-14 w-56 h-56 rounded-full border-[22px] border-white/10 pointer-events-none" />
           <div className="absolute -bottom-24 left-1/3 w-44 h-44 rounded-full bg-white/10 blur-2xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="relative shrink-0 self-start">
+              <div className="relative shrink-0 self-start z-20 sm:absolute sm:top-0 sm:-left-[10.75rem]">
                 <img
                   src={employee.avatarUrl}
                   alt={employee.fullName}
@@ -289,7 +289,7 @@ export const EmployeeProfile: React.FC = () => {
         </div>
 
         {/* Completeness */}
-        <div className="px-5 py-3.5 flex flex-col lg:flex-row lg:items-center gap-3">
+        <div className="px-5 py-3.5 sm:pl-[12rem] sm:min-h-[84px] flex flex-col lg:flex-row lg:items-center gap-3">
           <div className="flex items-center gap-3 lg:w-64 shrink-0">
             <div className="flex-1">
               <div className="flex items-center justify-between text-xs mb-1.5">
