@@ -60,6 +60,7 @@ interface AppContextType {
   // Actions
   addDivision: (divData: Omit<SchoolDivisionCategory, 'id' | 'canonicalIndex'>) => SchoolDivisionCategory;
   deleteDivision: (id: string) => string | null;
+  clearDivisionPrincipal: (id: string) => void;
   addEmployee: (empData: Partial<EmployeeRecord>) => EmployeeRecord;
   updateEmployee: (id: string, updates: Partial<EmployeeRecord>) => void;
   deleteEmployee: (id: string) => void;
@@ -177,8 +178,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (failed?.error) {
         setSyncError(`Could not load data from Supabase: ${failed.error.message}`);
       }
-      setDivisions((divRes.data || []).map(r => r.data as SchoolDivisionCategory));
-      setEmployees((empRes.data || []).map(r => r.data as EmployeeRecord));
+      const loadedEmployees = (empRes.data || []).map(r => r.data as EmployeeRecord);
+      let loadedDivisions = (divRes.data || []).map(r => r.data as SchoolDivisionCategory);
+
+      // Clear principals whose linked staff record was deleted
+      if (!divRes.error && !empRes.error) {
+        const orphaned = loadedDivisions.filter(
+          d => d.principalEmployeeId && !loadedEmployees.some(e => e.id === d.principalEmployeeId)
+        );
+        if (orphaned.length > 0) {
+          const cleared = orphaned.map(d => ({
+            ...d,
+            principalName: '',
+            principalPhone: '',
+            principalAvatar: '',
+            principalEmployeeId: undefined
+          }));
+          loadedDivisions = loadedDivisions.map(d => cleared.find(c => c.id === d.id) || d);
+          supabase?.from('divisions').upsert(cleared.map(d => ({ id: d.id, code: d.code, data: d }))).then(({ error }) => {
+            if (error) console.error('Failed to clear deleted principals:', error);
+          });
+        }
+      }
+
+      setDivisions(loadedDivisions);
+      setEmployees(loadedEmployees);
       setNotifications((notifRes.data || []).map(r => r.data as HRAlertNotification));
       setComplianceItems((compRes.data || []).map(r => r.data as ComplianceAuditItem));
       setIsDataLoading(false);
@@ -280,6 +304,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     principalAvatar: '',
     principalEmployeeId: undefined
   });
+
+  const clearDivisionPrincipal = (id: string) => {
+    const div = divisions.find(d => d.id === id);
+    if (div) saveDivisions([blankPrincipal(div)]);
+  };
 
   // Returns an error message when the division still has staff assigned
   const deleteDivision = (id: string): string | null => {
@@ -470,7 +499,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         divisions
           .filter(d =>
             d.principalEmployeeId === id ||
-            (emp.jobTitle === 'Principal' && d.id === emp.divisionId && d.principalName.trim().toLowerCase() === emp.fullName.trim().toLowerCase())
+            (d.id === emp.divisionId && !!d.principalName && d.principalName.trim().toLowerCase() === emp.fullName.trim().toLowerCase())
           )
           .map(blankPrincipal)
       );
@@ -577,6 +606,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsUploadDocOpen,
         addDivision,
         deleteDivision,
+        clearDivisionPrincipal,
         addEmployee,
         updateEmployee,
         deleteEmployee,

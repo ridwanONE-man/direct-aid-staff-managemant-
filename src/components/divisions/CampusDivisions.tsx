@@ -34,7 +34,8 @@ export const CampusDivisions: React.FC = () => {
     navigateToDivisionStaff,
     navigateToProfile,
     addDivision,
-    deleteDivision
+    deleteDivision,
+    clearDivisionPrincipal
   } = useApp();
 
   const [selectedCity, setSelectedCity] = useState<'all' | 'Hargeisa' | 'Gabiley'>('all');
@@ -269,7 +270,7 @@ export const CampusDivisions: React.FC = () => {
                       <UserCheck className="w-4 h-4" />
                     </div>
                   )}
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <span className="text-[9px] font-bold uppercase tracking-wider text-[#798C80] block">
                       {isHQ ? 'Director' : 'Principal'}
                     </span>
@@ -280,6 +281,21 @@ export const CampusDivisions: React.FC = () => {
                       </span>
                     )}
                   </div>
+                  {div.principalName && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`Remove ${div.principalName} as ${isHQ ? 'director' : 'principal'} of ${div.name}?`)) {
+                          clearDivisionPrincipal(div.id);
+                        }
+                      }}
+                      className="p-1 rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-colors self-start shrink-0"
+                      title={`Remove ${isHQ ? 'director' : 'principal'}`}
+                      aria-label={`Remove ${isHQ ? 'director' : 'principal'}`}
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
 
                 {/* Staff Breakdown */}
