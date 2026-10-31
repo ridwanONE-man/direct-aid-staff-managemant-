@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { JobRole, DegreeLevel, EmploymentType, DocumentAttachment, DocumentType } from '../../types';
+import { JobRole, DegreeLevel, EmploymentType, DocumentAttachment, DocumentType, EmployeeRecord } from '../../types';
 import { REQUIRED_DOCUMENTS } from '../../data/documentTypes';
 import { formatFileSize, removeStaffFiles, uploadStaffFile, validateFile } from '../../lib/storage';
 import { initialsAvatar, resizePhoto } from '../../lib/photo';
@@ -17,7 +17,8 @@ import {
   ArrowLeft,
   Check,
   Upload,
-  User
+  User,
+  X
 } from 'lucide-react';
 
 const inputClass =
@@ -207,8 +208,8 @@ const SelectWithOther: React.FC<SelectWithOtherProps> = ({
   );
 };
 
-export const RegisterEmployeePage: React.FC = () => {
-  const { divisions, employees, addEmployee, navigateToProfile, setActivePage } = useApp();
+const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = ({ onRegistered }) => {
+  const { divisions, employees, addEmployee, setActivePage } = useApp();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [error, setError] = useState('');
@@ -434,7 +435,7 @@ export const RegisterEmployeePage: React.FC = () => {
     });
 
     setIsSubmitting(false);
-    navigateToProfile(newEmp.id);
+    onRegistered(newEmp);
   };
 
   return (
@@ -1061,5 +1062,95 @@ export const RegisterEmployeePage: React.FC = () => {
         </div>
       </form>
     </div>
+  );
+};
+
+const roleLabel = (emp: EmployeeRecord) =>
+  emp.jobTitle === 'Other' && emp.customJobTitle ? emp.customJobTitle : emp.jobTitle;
+
+// Short summary of the staff member just registered, shown above a fresh form
+const RegisteredNotice: React.FC<{ employee: EmployeeRecord; onClose: () => void; onView: () => void }> = ({
+  employee,
+  onClose,
+  onView
+}) => {
+  useEffect(() => {
+    const timer = window.setTimeout(onClose, 8000);
+    return () => window.clearTimeout(timer);
+  }, [employee.id, onClose]);
+
+  const docCount = employee.documents.length;
+
+  return (
+    <div
+      role="status"
+      className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md login-card-enter"
+    >
+      <div className="relative overflow-hidden bg-white border border-[#C5E8D2] rounded-2xl shadow-[0_20px_50px_-15px_rgba(20,125,74,0.45)]">
+        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#147D4A]" />
+        <div className="p-4 pl-5 flex items-start gap-3">
+          <img
+            src={employee.avatarUrl}
+            alt={employee.fullName}
+            className="w-12 h-12 rounded-xl object-cover border-2 border-[#EBF7EE] shrink-0"
+          />
+          <div className="min-w-0 flex-1">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#147D4A]">
+              <CheckCircle2 className="w-3.5 h-3.5" /> Staff registered
+            </span>
+            <span className="font-bold text-sm text-[#192C21] block truncate">{employee.fullName}</span>
+            <span className="text-xs text-[#57685D] block truncate">
+              {roleLabel(employee)} · {employee.divisionName}
+            </span>
+            <span className="text-[11px] text-slate-500 block mt-0.5">
+              <span className="font-mono">{employee.id}</span> · {docCount} {docCount === 1 ? 'document' : 'documents'} uploaded
+            </span>
+            <button type="button" onClick={onView} className="mt-1.5 text-xs font-bold text-[#147D4A] hover:underline">
+              View profile →
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 shrink-0"
+            aria-label="Close"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        {/* Countdown bar */}
+        <div className="h-1 bg-[#EBF7EE]">
+          <div className="h-full bg-[#147D4A] register-notice-timer" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const RegisterEmployeePage: React.FC = () => {
+  const { navigateToProfile } = useApp();
+  const [formKey, setFormKey] = useState(0);
+  const [lastRegistered, setLastRegistered] = useState<EmployeeRecord | null>(null);
+  const closeNotice = React.useCallback(() => setLastRegistered(null), []);
+
+  return (
+    <>
+      {lastRegistered && (
+        <RegisteredNotice
+          key={lastRegistered.id}
+          employee={lastRegistered}
+          onClose={closeNotice}
+          onView={() => navigateToProfile(lastRegistered.id)}
+        />
+      )}
+      <RegisterForm
+        key={formKey}
+        onRegistered={(emp) => {
+          setLastRegistered(emp);
+          setFormKey(k => k + 1);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+      />
+    </>
   );
 };
