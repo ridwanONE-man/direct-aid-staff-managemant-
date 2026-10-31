@@ -9,7 +9,9 @@ import {
   Filter,
   X,
   Plus,
-  UserCheck
+  UserCheck,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 
 const emptyDivisionForm = {
@@ -31,13 +33,17 @@ export const CampusDivisions: React.FC = () => {
     employees,
     navigateToDivisionStaff,
     navigateToProfile,
-    addDivision
+    addDivision,
+    deleteDivision
   } = useApp();
 
   const [selectedCity, setSelectedCity] = useState<'all' | 'Hargeisa' | 'Gabiley'>('all');
   const [selectedLevel, setSelectedLevel] = useState<'all' | 'Secondary' | 'Primary'>('all');
   const [modalDivision, setModalDivision] = useState<SchoolDivisionCategory | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<SchoolDivisionCategory | null>(null);
+  const [deleteError, setDeleteError] = useState('');
+  const pendingDeleteStaff = pendingDelete ? employees.filter(e => e.divisionId === pendingDelete.id).length : 0;
   const [divisionForm, setDivisionForm] = useState(emptyDivisionForm);
   const [formError, setFormError] = useState('');
 
@@ -318,13 +324,27 @@ export const CampusDivisions: React.FC = () => {
 
               {/* Bottom Actions */}
               <div className="mt-4 pt-2.5 border-t border-[#E2EAE4] flex items-center justify-between text-xs">
-                <button
-                  type="button"
-                  onClick={() => setModalDivision(div)}
-                  className="font-semibold text-[#57685D] hover:text-[#192C21]"
-                >
-                  Overview
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setModalDivision(div)}
+                    className="font-semibold text-[#57685D] hover:text-[#192C21]"
+                  >
+                    Overview
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDeleteError('');
+                      setPendingDelete(div);
+                    }}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                    title="Delete division"
+                    aria-label={`Delete ${div.name}`}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
 
                 <button
                   type="button"
@@ -440,6 +460,77 @@ export const CampusDivisions: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Delete Division Confirmation */}
+      {pendingDelete && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full border border-[#E2EAE4] shadow-2xl overflow-hidden">
+            <div className="p-5 flex items-start gap-4">
+              <span className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-bold text-base text-[#192C21]">Delete school division?</h3>
+                <div className="mt-3 p-3 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl">
+                  <span className="font-mono text-[11px] font-bold text-[#147D4A] bg-[#EBF7EE] px-2 py-0.5 rounded-md">
+                    {pendingDelete.code}
+                  </span>
+                  <span className="font-bold text-sm text-[#192C21] block mt-1.5">{pendingDelete.name}</span>
+                  <span className="text-xs text-[#57685D]">
+                    {pendingDelete.city} · {pendingDeleteStaff} {pendingDeleteStaff === 1 ? 'staff member' : 'staff members'}
+                  </span>
+                </div>
+                {pendingDeleteStaff > 0 ? (
+                  <p className="mt-3 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                    This division still has staff assigned. Delete or move them first, then delete the division.
+                  </p>
+                ) : (
+                  <p className="mt-3 text-sm text-[#57685D]">This permanently removes the division. This cannot be undone.</p>
+                )}
+                {deleteError && <p className="mt-2 text-xs font-semibold text-rose-600">{deleteError}</p>}
+              </div>
+            </div>
+            <div className="px-5 py-3.5 border-t border-[#E2EAE4] bg-[#F9FBFA] flex items-center justify-end gap-2">
+              {pendingDeleteStaff > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const divId = pendingDelete.id;
+                    setPendingDelete(null);
+                    navigateToDivisionStaff(divId);
+                  }}
+                  className="mr-auto px-3 py-2 text-sm font-semibold text-[#147D4A] hover:underline"
+                >
+                  View staff
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setPendingDelete(null)}
+                className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={pendingDeleteStaff > 0}
+                onClick={() => {
+                  const err = deleteDivision(pendingDelete.id);
+                  if (err) {
+                    setDeleteError(err);
+                    return;
+                  }
+                  if (modalDivision?.id === pendingDelete.id) setModalDivision(null);
+                  setPendingDelete(null);
+                }}
+                className="px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Trash2 className="w-4 h-4" /> Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Create Division Modal */}
       {isCreateOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">

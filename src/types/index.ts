@@ -143,6 +143,7 @@ export interface SchoolDivisionCategory {
   principalName: string;
   principalAvatar: string;
   principalPhone: string;
+  principalEmployeeId?: string; // staff record linked as this division's principal
   studentCount: number;
   description: string;
   campusAddress: string;

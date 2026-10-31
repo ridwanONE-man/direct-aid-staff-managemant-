@@ -59,6 +59,7 @@ interface AppContextType {
 
   // Actions
   addDivision: (divData: Omit<SchoolDivisionCategory, 'id' | 'canonicalIndex'>) => SchoolDivisionCategory;
+  deleteDivision: (id: string) => string | null;
   addEmployee: (empData: Partial<EmployeeRecord>) => EmployeeRecord;
   updateEmployee: (id: string, updates: Partial<EmployeeRecord>) => void;
   deleteEmployee: (id: string) => void;
@@ -264,6 +265,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { score, missing };
   };
 
+  const saveDivisions = (updated: SchoolDivisionCategory[]) => {
+    if (updated.length === 0) return;
+    setDivisions(prev => prev.map(d => updated.find(u => u.id === d.id) || d));
+    if (supabase) {
+      persist(supabase.from('divisions').upsert(updated.map(d => ({ id: d.id, code: d.code, data: d }))));
+    }
+  };
+
+  const blankPrincipal = (div: SchoolDivisionCategory): SchoolDivisionCategory => ({
+    ...div,
+    principalName: '',
+    principalPhone: '',
+    principalAvatar: '',
+    principalEmployeeId: undefined
+  });
+
+  // Returns an error message when the division still has staff assigned
+  const deleteDivision = (id: string): string | null => {
+    const div = divisions.find(d => d.id === id);
+    if (!div) return null;
+    const staffCount = employees.filter(e => e.divisionId === id).length;
+    if (staffCount > 0) {
+      return `${div.name} still has ${staffCount} staff ${staffCount === 1 ? 'member' : 'members'}. Delete or move them first.`;
+    }
+    setDivisions(prev => prev.filter(d => d.id !== id));
+    if (filters.divisionId === id) setFilters(prev => ({ ...prev, divisionId: '' }));
+    if (supabase) persist(supabase.from('divisions').delete().eq('id', id));
+    return null;
+  };
+
   const addDivision = (data: Omit<SchoolDivisionCategory, 'id' | 'canonicalIndex'>): SchoolDivisionCategory => {
     const newDivision: SchoolDivisionCategory = {
       ...data,
@@ -368,6 +399,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setEmployees(prev => [newRecord, ...prev]);
     if (supabase) persist(supabase.from('employees').insert(employeeRow(newRecord)));
 
+    // A newly registered principal becomes the principal shown on their division
+    if (newRecord.jobTitle === 'Principal') {
+      saveDivisions([{
+        ...divisionObj,
+        principalName: newRecord.fullName,
+        principalPhone: newRecord.phoneNumber,
+        principalAvatar: newRecord.avatarUrl,
+        principalEmployeeId: newRecord.id
+      }]);
+    }
+
     // Add alert notification
     const newNotif: HRAlertNotification = {
       id: `notif-${Date.now()}`,
@@ -394,6 +436,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setSelectedEmployee(finalEmp);
     }
     if (supabase) persist(supabase.from('employees').update(employeeRow(finalEmp)).eq('id', finalEmp.id));
+
+    // Keep the division's principal details in step with the linked staff record
+    saveDivisions(
+      divisions
+        .filter(d => d.principalEmployeeId === finalEmp.id)
+        .map(d => ({
+          ...d,
+          principalName: finalEmp.fullName,
+          principalPhone: finalEmp.phoneNumber,
+          principalAvatar: finalEmp.avatarUrl
+        }))
+    );
   };
 
   const updateEmployee = (id: string, updates: Partial<EmployeeRecord>) => {
@@ -409,6 +463,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setSelectedEmployee(employees.find(e => e.id !== id) || null);
     }
     if (supabase) persist(supabase.from('employees').delete().eq('id', id));
+
+    // Clear the principal on any division this person headed
+    if (emp) {
+      saveDivisions(
+        divisions
+          .filter(d =>
+            d.principalEmployeeId === id ||
+            (emp.jobTitle === 'Principal' && d.id === emp.divisionId && d.principalName.trim().toLowerCase() === emp.fullName.trim().toLowerCase())
+          )
+          .map(blankPrincipal)
+      );
+    }
   };
 
   const renewContract = (employeeId: string, contractUpdates: Partial<EmployeeContract>) => {
@@ -510,6 +576,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isUploadDocOpen,
         setIsUploadDocOpen,
         addDivision,
+        deleteDivision,
         addEmployee,
         updateEmployee,
         deleteEmployee,
