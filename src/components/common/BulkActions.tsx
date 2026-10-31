@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, Trash2, X } from 'lucide-react';
+import { AlertTriangle, Trash2 } from 'lucide-react';
 
 // Checkbox used on cards and table rows; clicks don't open the item underneath
 export const SelectBox: React.FC<{ checked: boolean; onChange: () => void; label: string; className?: string }> = ({
@@ -23,7 +23,6 @@ interface BulkActionBarProps {
   visibleCount: number;
   selectedCount: number;
   onToggleAll: () => void;
-  onClearSelection: () => void;
   onDeleteSelected: () => void;
   onDeleteAll: () => void;
 }
@@ -34,7 +33,6 @@ export const BulkActionBar: React.FC<BulkActionBarProps> = ({
   visibleCount,
   selectedCount,
   onToggleAll,
-  onClearSelection,
   onDeleteSelected,
   onDeleteAll
 }) => {
@@ -70,22 +68,13 @@ export const BulkActionBar: React.FC<BulkActionBarProps> = ({
 
       <div className="flex items-center gap-2">
         {selectedCount > 0 && (
-          <>
-            <button
-              type="button"
-              onClick={onClearSelection}
-              className="px-3 py-1.5 font-semibold text-[#57685D] hover:text-[#192C21] hover:bg-white rounded-lg flex items-center gap-1 transition-colors"
-            >
-              <X className="w-3.5 h-3.5" /> Clear
-            </button>
-            <button
-              type="button"
-              onClick={onDeleteSelected}
-              className="px-3.5 py-1.5 font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-lg flex items-center gap-1.5 transition-colors"
-            >
-              <Trash2 className="w-3.5 h-3.5" /> Delete selected ({selectedCount})
-            </button>
-          </>
+          <button
+            type="button"
+            onClick={onDeleteSelected}
+            className="px-3.5 py-1.5 font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-lg flex items-center gap-1.5 transition-colors"
+          >
+            <Trash2 className="w-3.5 h-3.5" /> Delete selected ({selectedCount})
+          </button>
         )}
         <button
           type="button"

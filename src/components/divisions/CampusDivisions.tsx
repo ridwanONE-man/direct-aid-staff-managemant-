@@ -264,7 +264,6 @@ export const CampusDivisions: React.FC = () => {
         onToggleAll={() =>
           setSelectedIds(visibleSelected.length === filteredDivisions.length ? [] : filteredDivisions.map(d => d.id))
         }
-        onClearSelection={() => setSelectedIds([])}
         onDeleteSelected={() => setBulkDelete({ ids: visibleSelected, all: false })}
         onDeleteAll={() => setBulkDelete({ ids: filteredDivisions.map(d => d.id), all: true })}
       />

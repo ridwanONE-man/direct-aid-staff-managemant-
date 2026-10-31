@@ -408,7 +408,6 @@ export const StaffDirectory: React.FC = () => {
         visibleCount={filteredEmployees.length}
         selectedCount={visibleSelected.length}
         onToggleAll={toggleAllVisible}
-        onClearSelection={() => setSelectedIds([])}
         onDeleteSelected={() => setBulkDelete({ ids: visibleSelected, all: false })}
         onDeleteAll={() => setBulkDelete({ ids: filteredEmployees.map(e => e.id), all: true })}
       />
