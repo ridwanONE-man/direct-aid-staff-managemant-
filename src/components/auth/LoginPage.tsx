@@ -53,18 +53,12 @@ export const LoginPage: React.FC = () => {
       <div className="relative z-10 w-full max-w-[440px] bg-white rounded-[36px] shadow-[0_30px_80px_-20px_rgba(30,60,110,0.35)] px-6 py-10 sm:px-12 sm:py-12">
         <div className="flex flex-col items-center text-center">
           <img
-            src="/directaid-logo.png"
-            alt="DirectAid"
-            className="h-14 w-auto object-contain"
-            onError={(e) => {
-              (e.target as HTMLElement).style.display = 'none';
-            }}
+            src="/directaid-logo-full.png"
+            alt="DirectAid - العون المباشر"
+            className="w-full max-w-[260px] h-auto object-contain -my-4"
           />
-          <span className="mt-2 text-2xl text-[#1F3447] tracking-tight" style={serif}>
-            directaid
-          </span>
 
-          <h1 className="mt-6 text-2xl text-[#141414]" style={serif}>
+          <h1 className="mt-2 text-2xl text-[#141414]" style={serif}>
             Welcome Back to DirectAid
           </h1>
           <p className="mt-3 text-sm text-[#5B6672] leading-relaxed max-w-[300px]">
