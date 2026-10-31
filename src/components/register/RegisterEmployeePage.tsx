@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { JobRole, DegreeLevel, EmploymentType, DocumentAttachment, DocumentType, EmployeeRecord } from '../../types';
 import { REQUIRED_DOCUMENTS } from '../../data/documentTypes';
@@ -1074,6 +1074,12 @@ const RegisteredNotice: React.FC<{ employee: EmployeeRecord; onClose: () => void
   onClose,
   onView
 }) => {
+  // Close automatically shortly after it appears
+  useEffect(() => {
+    const timer = window.setTimeout(onClose, 2000);
+    return () => window.clearTimeout(timer);
+  }, [employee.id, onClose]);
+
   const docCount = employee.documents.length;
 
   return (
