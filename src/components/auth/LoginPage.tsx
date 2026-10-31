@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import {
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  ArrowRight,
-  ShieldCheck,
-  Building2,
-  CheckCircle2,
-  Sparkles
-} from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
+
+const serif = { fontFamily: "'Libre Caslon Text', Georgia, serif" };
+
+// Soft cloud shapes layered over the sky gradient
+const clouds = [
+  'top-[-8%] left-[-10%] w-[45%] h-[38%] opacity-70',
+  'top-[8%] right-[-12%] w-[40%] h-[34%] opacity-60',
+  'top-[42%] left-[-15%] w-[50%] h-[40%] opacity-80',
+  'bottom-[-12%] right-[-8%] w-[55%] h-[42%] opacity-75',
+  'bottom-[18%] left-[30%] w-[35%] h-[22%] opacity-40',
+  'top-[25%] left-[35%] w-[30%] h-[20%] opacity-30'
+];
 
 export const LoginPage: React.FC = () => {
   const { login } = useApp();
@@ -18,9 +20,9 @@ export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [showResetHelp, setShowResetHelp] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,156 +39,125 @@ export const LoginPage: React.FC = () => {
     if (error) setErrorMsg(error);
   };
 
+  const inputClass =
+    'w-full px-4 py-3 bg-[#EFF6FD] border border-[#DCE8F5] rounded-lg text-sm text-[#1E2B37] placeholder:text-[#8A99A8] focus:outline-none focus:bg-white focus:border-[#2B3F52] focus:ring-2 focus:ring-[#2B3F52]/10 transition-all';
+
   return (
-    <div className="min-h-screen bg-linear-to-br from-[#EEF7F1] via-[#F6FAF7] to-[#E3F2E9] flex flex-col justify-center items-center p-4 sm:p-6 relative overflow-hidden font-sans">
-      {/* Background Decorative Ambient Blurs */}
-      <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#147D4A]/10 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-[#35B86B]/15 blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-white/40 blur-2xl pointer-events-none" />
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center px-4 py-10 bg-linear-to-b from-[#6E9DDA] via-[#93B9EA] to-[#C4DAF4]">
+      {/* Sky clouds */}
+      {clouds.map((pos, i) => (
+        <div key={i} className={`absolute rounded-full bg-white blur-3xl pointer-events-none ${pos}`} />
+      ))}
 
-      {/* Main Container */}
-      <div className="w-full max-w-md relative z-10 space-y-6">
-        {/* Brand Header */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center p-3 bg-white border border-[#C5E8D2] rounded-3xl shadow-md mb-1 group hover:scale-105 transition-transform duration-300">
-            <img
-              src="/directaid-logo.png"
-              alt="DirectAid Logo"
-              className="w-16 h-16 object-contain"
-              onError={(e) => {
-                // Fallback in case of image load delay
-                (e.target as HTMLElement).style.display = 'none';
-              }}
-            />
-          </div>
+      {/* Login card */}
+      <div className="relative z-10 w-full max-w-[440px] bg-white rounded-[36px] shadow-[0_30px_80px_-20px_rgba(30,60,110,0.35)] px-6 py-10 sm:px-12 sm:py-12">
+        <div className="flex flex-col items-center text-center">
+          <img
+            src="/directaid-logo.png"
+            alt="DirectAid"
+            className="h-14 w-auto object-contain"
+            onError={(e) => {
+              (e.target as HTMLElement).style.display = 'none';
+            }}
+          />
+          <span className="mt-2 text-2xl text-[#1F3447] tracking-tight" style={serif}>
+            directaid
+          </span>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-[#192C21] tracking-tight">
-            DirectAid
+          <h1 className="mt-6 text-2xl text-[#141414]" style={serif}>
+            Welcome Back to DirectAid
           </h1>
-          <div className="flex items-center justify-center gap-2 text-xs font-semibold text-[#147D4A]">
-            <span className="w-2 h-2 rounded-full bg-[#147D4A] animate-pulse" />
-            <span>Somaliland Staff &amp; HR Portal</span>
-          </div>
-          <p className="text-xs text-[#57685D] max-w-xs mx-auto">
-            Hargeisa &amp; Gabiley Campus Divisions Operations
+          <p className="mt-3 text-sm text-[#5B6672] leading-relaxed max-w-[300px]">
+            Sign in to manage staff records, school divisions, and contracts.
           </p>
         </div>
 
-        {/* Login Card */}
-        <div className="bg-white/95 backdrop-blur-md border border-[#E2EAE4] rounded-3xl shadow-xl p-6 sm:p-8 relative overflow-hidden">
-          {/* Top Emerald Accent Bar */}
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-linear-to-r from-[#147D4A] via-[#35B86B] to-[#147D4A]" />
-
-          {errorMsg && (
-            <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-medium">
-              {errorMsg}
-            </div>
-          )}
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            {/* Email / Username Input */}
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-[#192C21]">
-                Email
-              </label>
-              <div className="relative">
-                <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7E9185]" />
-                <input
-                  type="email"
-                  autoComplete="username"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@directaid.org"
-                  className="w-full pl-10 pr-4 py-2.5 bg-[#F6FAF7] border border-[#E2EAE4] rounded-xl text-xs text-[#192C21] placeholder:text-[#8D9F94] focus:outline-none focus:ring-2 focus:ring-[#147D4A]/20 focus:border-[#147D4A] focus:bg-white transition-all font-medium"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Password Input */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-bold text-[#192C21]">
-                  Password
-                </label>
-                <span className="text-[11px] text-[#6B7E72] hover:text-[#147D4A] cursor-pointer">
-                  Hargeisa HQ Helpdesk
-                </span>
-              </div>
-              <div className="relative">
-                <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7E9185]" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 bg-[#F6FAF7] border border-[#E2EAE4] rounded-xl text-xs text-[#192C21] placeholder:text-[#8D9F94] focus:outline-none focus:ring-2 focus:ring-[#147D4A]/20 focus:border-[#147D4A] focus:bg-white transition-all font-mono"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#7E9185] hover:text-[#192C21] transition-colors"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            {/* Remember Me */}
-            <div className="flex items-center justify-between text-xs pt-1">
-              <label className="flex items-center gap-2 cursor-pointer select-none text-[#57685D]">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="rounded border-[#C5E8D2] text-[#147D4A] focus:ring-[#147D4A] w-3.5 h-3.5 cursor-pointer accent-[#147D4A]"
-                />
-                <span>Remember this terminal</span>
-              </label>
-
-              <span className="text-[11px] font-semibold text-[#147D4A] bg-[#EBF7EE] px-2 py-0.5 rounded-full">
-                Encrypted
-              </span>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full mt-2 py-3 px-4 bg-linear-to-r from-[#147D4A] to-[#2DA25D] hover:from-[#0E6139] hover:to-[#248B4E] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer disabled:opacity-70 group"
-            >
-              {isLoading ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  <span>Sign In to Portal</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Secure Gateway Badge */}
-          <div className="mt-6 pt-4 border-t border-[#E2EAE4] flex items-center justify-center gap-2 text-[11px] text-[#6B7E72]">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#147D4A]" />
-            <span>Ministry of Education &amp; DirectAid Certified HR Hub</span>
+        {errorMsg && (
+          <div className="mt-6 p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 font-medium">
+            {errorMsg}
           </div>
+        )}
+
+        <form onSubmit={handleLogin} className="mt-7 space-y-5">
+          <div>
+            <label htmlFor="login-email" className="block text-sm font-medium text-[#1E2B37] mb-1.5">
+              Email<span className="text-rose-600">*</span>
+            </label>
+            <input
+              id="login-email"
+              type="email"
+              autoComplete="username"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Type your email"
+              className={inputClass}
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="login-password" className="block text-sm font-medium text-[#1E2B37] mb-1.5">
+              Password<span className="text-rose-600">*</span>
+            </label>
+            <div className="relative">
+              <input
+                id="login-password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Type your password"
+                className={`${inputClass} pr-11`}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#2B3F52] hover:text-black transition-colors"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+
+            <div className="mt-2.5 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowResetHelp(!showResetHelp)}
+                className="text-xs text-[#1E2B37] underline underline-offset-2 hover:text-black"
+              >
+                Forgot Password?
+              </button>
+            </div>
+            {showResetHelp && (
+              <p className="mt-2 text-xs text-[#5B6672] bg-[#EFF6FD] border border-[#DCE8F5] rounded-lg p-2.5">
+                Ask your HR administrator to reset your password in the Supabase dashboard.
+              </p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-3 rounded-full bg-[#2B3F52] hover:bg-[#1F2F3E] text-white text-sm font-medium flex items-center justify-center shadow-sm transition-colors disabled:opacity-70 cursor-pointer"
+          >
+            {isLoading ? (
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              'Sign In'
+            )}
+          </button>
+        </form>
+
+        <div className="mt-7 flex items-center gap-3 text-xs text-[#8A99A8]">
+          <span className="flex-1 h-px bg-[#E6ECF2]" />
+          <span>Hargeisa &amp; Gabiley Staff Portal</span>
+          <span className="flex-1 h-px bg-[#E6ECF2]" />
         </div>
 
-        {/* Footer info */}
-        <div className="text-center text-[11px] text-[#6B7E72] space-y-1">
-          <p>DirectAid Somaliland © 2025 · Academic Term 2024/25</p>
-          <div className="flex items-center justify-center gap-3 text-[10px] text-slate-400">
-            <span>Hargeisa Central HQ</span>
-            <span>·</span>
-            <span>Gabiley Regional Campus</span>
-            <span>·</span>
-            <span>v2.5</span>
-          </div>
-        </div>
+        <p className="mt-5 text-center text-sm text-[#5B6672]">
+          Don&apos;t have an account? <span className="text-[#1E2B37] font-medium">Contact your HR administrator</span>
+        </p>
       </div>
     </div>
   );
