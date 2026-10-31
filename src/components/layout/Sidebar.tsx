@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp, AppPage } from '../../context/AppContext';
+import { needsRenewal } from '../../lib/contracts';
 import {
   LayoutDashboard,
   Users,
@@ -43,7 +44,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     userEmail
   } = useApp();
 
-  const unreadAlerts = notifications.filter(n => !n.read).length;
+  const contractsDue = employees.filter(needsRenewal).length;
 
   const navItems: { id: AppPage; label: string; icon: React.ReactNode; badge?: string | number; badgeColor?: string }[] = [
     {
@@ -81,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'contracts',
       label: 'Contracts & HR',
       icon: <FileText className="w-4.5 h-4.5 shrink-0" />,
-      badge: unreadAlerts > 0 ? `${unreadAlerts}` : undefined,
+      badge: contractsDue > 0 ? contractsDue : undefined,
       badgeColor: 'bg-amber-100 text-amber-800 font-semibold'
     },
     {

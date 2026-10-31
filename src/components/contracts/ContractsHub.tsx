@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { needsRenewal } from '../../lib/contracts';
 import {
   FileText,
   AlertTriangle,
@@ -31,7 +32,7 @@ export const ContractsHub: React.FC = () => {
   });
 
   const expiringList = scopedEmployees.filter(e => 
-    e.contract.renewalStatus === 'Approaching Renewal' || e.contract.renewalStatus === 'Renewal Pending Sign-off'
+    needsRenewal(e)
   );
 
   const pendingList = scopedEmployees.filter(e => e.contract.renewalStatus === 'Renewal Pending Sign-off');
@@ -196,7 +197,7 @@ export const ContractsHub: React.FC = () => {
                 </tr>
               ) : (
                 displayedList.map((emp) => {
-                  const isExpiring = emp.contract.renewalStatus === 'Approaching Renewal' || emp.contract.renewalStatus === 'Renewal Pending Sign-off';
+                  const isExpiring = needsRenewal(emp);
                   return (
                     <tr key={emp.id} className="hover:bg-[#F9FBFA] transition-colors">
                       <td className="py-3 px-3.5 font-mono font-medium text-[#147D4A]">

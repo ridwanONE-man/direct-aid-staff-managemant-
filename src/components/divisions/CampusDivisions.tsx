@@ -22,8 +22,7 @@ const emptyDivisionForm = {
   city: 'Hargeisa' as LocationCity,
   level: 'Secondary' as SchoolLevel,
   gender: 'Boys' as GenderDivision,
-  principalName: '',
-  principalPhone: '',
+  principalEmployeeId: '',
   studentCount: '',
   description: '',
   campusAddress: ''
@@ -38,7 +37,8 @@ export const CampusDivisions: React.FC = () => {
     addDivision,
     deleteDivision,
     clearDivisionPrincipal,
-    updateDivision
+    updateDivision,
+    setActivePage
   } = useApp();
 
   const [selectedCity, setSelectedCity] = useState<'all' | 'Hargeisa' | 'Gabiley'>('all');
@@ -46,10 +46,15 @@ export const CampusDivisions: React.FC = () => {
   const [modalDivision, setModalDivision] = useState<SchoolDivisionCategory | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [unlinkedPrincipal, setUnlinkedPrincipal] = useState('');
   const [pendingDelete, setPendingDelete] = useState<SchoolDivisionCategory | null>(null);
   const [deleteError, setDeleteError] = useState('');
   const pendingDeleteStaff = pendingDelete ? employees.filter(e => e.divisionId === pendingDelete.id).length : 0;
   const [divisionForm, setDivisionForm] = useState(emptyDivisionForm);
+  const principalStaff = employees.filter(e => e.jobTitle === 'Principal');
+  const selectedPrincipal = principalStaff.find(e => e.id === divisionForm.principalEmployeeId);
+  const principalOfOther = (employeeId: string) =>
+    divisions.find(d => d.id !== editingId && d.principalEmployeeId === employeeId);
   const [formError, setFormError] = useState('');
 
   const isOperations = divisionForm.level === 'Central Operations';
@@ -65,13 +70,15 @@ export const CampusDivisions: React.FC = () => {
       city: div.city,
       level: div.level,
       gender: div.gender,
-      principalName: div.principalName,
-      principalPhone: div.principalPhone,
+      principalEmployeeId: principalStaff.some(e => e.id === div.principalEmployeeId) ? div.principalEmployeeId! : '',
       studentCount: div.studentCount ? String(div.studentCount) : '',
       description: div.description,
       campusAddress: div.campusAddress
     });
     setFormError('');
+    setUnlinkedPrincipal(
+      div.principalName && !principalStaff.some(e => e.id === div.principalEmployeeId) ? div.principalName : ''
+    );
     setEditingId(div.id);
     setIsCreateOpen(true);
   };
@@ -79,6 +86,7 @@ export const CampusDivisions: React.FC = () => {
   const closeCreateModal = () => {
     setIsCreateOpen(false);
     setEditingId(null);
+    setUnlinkedPrincipal('');
     setDivisionForm(emptyDivisionForm);
     setFormError('');
   };
@@ -103,9 +111,10 @@ export const CampusDivisions: React.FC = () => {
       city: divisionForm.city,
       level: divisionForm.level,
       gender: isOperations ? 'Operations' : divisionForm.gender,
-      principalName: divisionForm.principalName.trim(),
-      principalAvatar: '',
-      principalPhone: divisionForm.principalPhone.trim(),
+      principalName: selectedPrincipal?.fullName || '',
+      principalAvatar: selectedPrincipal?.avatarUrl || '',
+      principalPhone: selectedPrincipal?.phoneNumber || '',
+      principalEmployeeId: selectedPrincipal?.id,
       studentCount: isOperations ? 0 : Number(divisionForm.studentCount) || 0,
       description: divisionForm.description.trim(),
       campusAddress: divisionForm.campusAddress.trim()
@@ -689,24 +698,49 @@ export const CampusDivisions: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-slate-700 font-semibold mb-1">{isOperations ? 'Director' : 'Principal'} Name</label>
-                  <input
-                    type="text"
-                    value={divisionForm.principalName}
-                    onChange={(e) => updateForm('principalName', e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#147D4A] focus:border-[#147D4A]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-700 font-semibold mb-1">{isOperations ? 'Director' : 'Principal'} Phone</label>
-                  <input
-                    type="tel"
-                    value={divisionForm.principalPhone}
-                    onChange={(e) => updateForm('principalPhone', e.target.value)}
-                    placeholder="+252 63 ..."
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#147D4A] focus:border-[#147D4A] font-mono"
-                  />
+                <div className="sm:col-span-2">
+                  <label className="block text-slate-700 font-semibold mb-1">{isOperations ? 'Director' : 'Principal'}</label>
+                  <select
+                    value={divisionForm.principalEmployeeId}
+                    onChange={(e) => updateForm('principalEmployeeId', e.target.value)}
+                    disabled={principalStaff.length === 0}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#147D4A] focus:border-[#147D4A] bg-white disabled:bg-slate-100"
+                  >
+                    <option value="">No {isOperations ? 'director' : 'principal'} assigned</option>
+                    {principalStaff.map(p => {
+                      const other = principalOfOther(p.id);
+                      return (
+                        <option key={p.id} value={p.id}>
+                          {p.fullName}{p.phoneNumber ? ` · ${p.phoneNumber}` : ''}{other ? ` (now at ${other.name})` : ''}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  {principalStaff.length === 0 ? (
+                    <p className="mt-1.5 text-[11px] text-amber-700">
+                      No staff with the Principal role yet.{' '}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          closeCreateModal();
+                          setActivePage('register');
+                        }}
+                        className="font-bold underline"
+                      >
+                        Register a principal
+                      </button>
+                    </p>
+                  ) : selectedPrincipal && principalOfOther(selectedPrincipal.id) ? (
+                    <p className="mt-1.5 text-[11px] text-amber-700">
+                      {selectedPrincipal.fullName} will be removed as principal of {principalOfOther(selectedPrincipal.id)!.name}.
+                    </p>
+                  ) : unlinkedPrincipal && !selectedPrincipal ? (
+                    <p className="mt-1.5 text-[11px] text-amber-700">
+                      &quot;{unlinkedPrincipal}&quot; was typed in by hand and isn&apos;t a staff record. Choose a principal from the list; saving without one leaves the school unassigned.
+                    </p>
+                  ) : (
+                    <p className="mt-1.5 text-[11px] text-slate-500">Only staff registered with the Principal role are listed.</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">Student Count</label>

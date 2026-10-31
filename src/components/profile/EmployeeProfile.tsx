@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { needsRenewal } from '../../lib/contracts';
 import { EmployeeRecord, DocumentAttachment, DocumentType } from '../../types';
 import { REQUIRED_DOCUMENTS } from '../../data/documentTypes';
 import { formatFileSize, getStaffFileUrl, uploadStaffFile, validateFile } from '../../lib/storage';
@@ -115,7 +116,7 @@ export const EmployeeProfile: React.FC = () => {
   }
 
   const isContractExpiring =
-    employee.contract.renewalStatus === 'Approaching Renewal' || employee.contract.renewalStatus === 'Renewal Pending Sign-off';
+    needsRenewal(employee);
   const requiredTypes = REQUIRED_DOCUMENTS.map(d => d.type);
   const requiredOnFile = REQUIRED_DOCUMENTS.filter(d => employee.documents.some(doc => doc.type === d.type)).length;
   const shownRequiredIds = REQUIRED_DOCUMENTS

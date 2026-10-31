@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
+import { needsRenewal } from '../../lib/contracts';
 import {
   Users,
   UserCheck,
@@ -39,7 +40,7 @@ export const ExecutiveDashboard: React.FC = () => {
 
   const activeStaffCount = scopedEmployees.filter(e => e.employmentStatus === 'Active').length;
   const expiringContractsCount = scopedEmployees.filter(e => 
-    e.contract.renewalStatus === 'Approaching Renewal' || e.contract.renewalStatus === 'Renewal Pending Sign-off'
+    needsRenewal(e)
   ).length;
   const missingDocsCount = scopedEmployees.filter(e => e.missingRequirements.length > 0).length;
 
@@ -274,7 +275,7 @@ export const ExecutiveDashboard: React.FC = () => {
           {divisions.filter(d => d.level !== 'Central Operations').map((div) => {
             const divStaff = employees.filter(e => e.divisionId === div.id);
             const expiringInDiv = divStaff.filter(e => 
-              e.contract.renewalStatus === 'Approaching Renewal' || e.contract.renewalStatus === 'Renewal Pending Sign-off'
+              needsRenewal(e)
             ).length;
 
             return (
@@ -392,7 +393,7 @@ export const ExecutiveDashboard: React.FC = () => {
 
           <div className="space-y-2">
             {scopedEmployees
-              .filter(e => e.missingRequirements.length > 0 || e.contract.renewalStatus === 'Approaching Renewal')
+              .filter(e => e.missingRequirements.length > 0 || needsRenewal(e))
               .slice(0, 4)
               .map((emp) => (
                 <div

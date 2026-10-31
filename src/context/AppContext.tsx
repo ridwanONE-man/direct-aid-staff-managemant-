@@ -12,6 +12,7 @@ import {
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { removeStaffFiles } from '../lib/storage';
+import { withLiveContractStatus } from '../lib/contracts';
 import { REQUIRED_DOCUMENTS } from '../data/documentTypes';
 
 export type AppPage = 'dashboard' | 'directory' | 'divisions' | 'profile' | 'contracts' | 'reports' | 'register';
@@ -179,7 +180,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (failed?.error) {
         setSyncError(`Could not load data from Supabase: ${failed.error.message}`);
       }
-      const loadedEmployees = (empRes.data || []).map(r => r.data as EmployeeRecord);
+      const loadedEmployees = (empRes.data || []).map(r => withLiveContractStatus(r.data as EmployeeRecord));
       let loadedDivisions = (divRes.data || []).map(r => r.data as SchoolDivisionCategory);
 
       // Clear principals whose linked staff record was deleted
@@ -306,19 +307,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     principalEmployeeId: undefined
   });
 
+  // A principal heads one school: clear them from any other division
+  const releasePrincipalElsewhere = (employeeId: string | undefined, keepDivisionId: string) =>
+    employeeId
+      ? divisions.filter(d => d.id !== keepDivisionId && d.principalEmployeeId === employeeId).map(blankPrincipal)
+      : [];
+
   const updateDivision = (id: string, updates: Omit<SchoolDivisionCategory, 'id' | 'canonicalIndex'>) => {
     const div = divisions.find(d => d.id === id);
     if (!div) return;
 
-    // A principal typed by hand is no longer the linked staff member
-    const principalChanged = updates.principalName.trim() !== div.principalName.trim();
-    const updated: SchoolDivisionCategory = {
-      ...div,
-      ...updates,
-      principalAvatar: principalChanged ? '' : div.principalAvatar,
-      principalEmployeeId: principalChanged ? undefined : div.principalEmployeeId
-    };
-    saveDivisions([updated]);
+    const updated: SchoolDivisionCategory = { ...div, ...updates };
+    saveDivisions([updated, ...releasePrincipalElsewhere(updated.principalEmployeeId, id)]);
 
     // Staff records keep a copy of their division's details
     const affected = employees
@@ -367,6 +367,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (supabase) {
       persist(supabase.from('divisions').insert({ id: newDivision.id, code: newDivision.code, data: newDivision }));
     }
+    saveDivisions(releasePrincipalElsewhere(newDivision.principalEmployeeId, newDivision.id));
 
     saveNotification({
       id: `notif-${Date.now()}`,
@@ -395,7 +396,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const { score, missing } = calculateCompleteness({ ...data, id: newId });
 
-    const newRecord: EmployeeRecord = {
+    const draftRecord: EmployeeRecord = {
       id: newId,
       fullName: data.fullName || 'Unnamed Employee',
       somaliName: data.somaliName || '',
@@ -457,6 +458,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       notes: data.notes || ''
     };
 
+    const newRecord = withLiveContractStatus(draftRecord);
     setEmployees(prev => [newRecord, ...prev]);
     if (supabase) persist(supabase.from('employees').insert(employeeRow(newRecord)));
 
@@ -491,7 +493,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Recalculate completeness, update local state, and save one employee record
   const commitEmployee = (emp: EmployeeRecord) => {
     const { score, missing } = calculateCompleteness(emp);
-    const finalEmp = { ...emp, profileCompleteness: score, missingRequirements: missing };
+    const finalEmp = withLiveContractStatus({ ...emp, profileCompleteness: score, missingRequirements: missing });
     setEmployees(prev => prev.map(e => e.id === finalEmp.id ? finalEmp : e));
     if (selectedEmployee?.id === finalEmp.id) {
       setSelectedEmployee(finalEmp);

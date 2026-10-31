@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
+import { needsRenewal } from '../../lib/contracts';
 import { EmployeeRecord } from '../../types';
 import {
   Search,
@@ -90,7 +91,7 @@ export const StaffDirectory: React.FC = () => {
 
       // Contract status filter
       if (filters.contractStatus) {
-        if (filters.contractStatus === 'expiring' && emp.contract.renewalStatus !== 'Approaching Renewal' && emp.contract.renewalStatus !== 'Renewal Pending Sign-off') {
+        if (filters.contractStatus === 'expiring' && !needsRenewal(emp)) {
           return false;
         }
         if (filters.contractStatus === 'active' && emp.contract.renewalStatus !== 'Not Due' && emp.contract.renewalStatus !== 'Renewed') {
@@ -395,7 +396,7 @@ export const StaffDirectory: React.FC = () => {
         /* Grid Card View - Beautiful & Attractive */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredEmployees.map((emp) => {
-            const isExpiring = emp.contract.renewalStatus === 'Approaching Renewal' || emp.contract.renewalStatus === 'Renewal Pending Sign-off';
+            const isExpiring = needsRenewal(emp);
             return (
               <div
                 key={emp.id}
@@ -545,7 +546,7 @@ export const StaffDirectory: React.FC = () => {
                   </tr>
                 ) : (
                   filteredEmployees.map((emp) => {
-                    const isExpiring = emp.contract.renewalStatus === 'Approaching Renewal' || emp.contract.renewalStatus === 'Renewal Pending Sign-off';
+                    const isExpiring = needsRenewal(emp);
                     return (
                       <tr
                         key={emp.id}
