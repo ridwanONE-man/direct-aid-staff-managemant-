@@ -254,7 +254,7 @@ export const StaffDirectory: React.FC = () => {
 
           <button
             onClick={() => setActivePage('register')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-[#147D4A] hover:bg-[#0E6139] rounded-xl transition-all shadow-xs"
+            className="edit-only inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-[#147D4A] hover:bg-[#0E6139] rounded-xl transition-all shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Register</span>
@@ -476,7 +476,7 @@ export const StaffDirectory: React.FC = () => {
                         e.stopPropagation();
                         setPendingDelete(emp);
                       }}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                      className="edit-only p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                       title="Delete staff"
                       aria-label={`Delete ${emp.fullName}`}
                     >
@@ -675,7 +675,7 @@ export const StaffDirectory: React.FC = () => {
                                 setContractRenewalTarget(emp);
                                 setIsRenewContractOpen(true);
                               }}
-                              className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-700 transition-colors"
+                              className="edit-only p-1.5 rounded-lg hover:bg-amber-50 text-amber-700 transition-colors"
                               title="Renew Contract"
                             >
                               <FileText className="w-4 h-4" />
@@ -683,7 +683,7 @@ export const StaffDirectory: React.FC = () => {
 
                             <button
                               onClick={() => setPendingDelete(emp)}
-                              className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors"
+                              className="edit-only p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors"
                               title="Delete staff"
                               aria-label={`Delete ${emp.fullName}`}
                             >

@@ -264,7 +264,7 @@ export const ReportsCenter: React.FC = () => {
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => toggleComplianceStatus(item.id)}
-                      className={`px-3 py-1.5 rounded-xl font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer ${
+                      className={`edit-lock px-3 py-1.5 rounded-xl font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer ${
                         item.status === 'Resolved' ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' :
                         item.status === 'In Progress' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' :
                         'bg-amber-100 text-amber-800 hover:bg-amber-200'

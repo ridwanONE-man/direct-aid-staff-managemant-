@@ -31,26 +31,52 @@ create table if not exists public.compliance_items (
 
 create index if not exists employees_division_id_idx on public.employees (division_id);
 
--- Only signed-in portal users (created under Authentication -> Users) can read or write.
+-- Roles: each login's role lives in auth.users.app_metadata.role ('admin', 'hr' or 'staff').
+-- Only the server (service role, api/admin-users.ts) can set it, and it travels inside the session token.
+-- Every signed-in account can read; only admin and HR accounts can change data. Accounts without a role are read-only.
+create or replace function public.can_edit_portal()
+returns boolean
+language sql
+stable
+as $$
+  select coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '') in ('admin', 'hr');
+$$;
+
 alter table public.divisions enable row level security;
 alter table public.employees enable row level security;
 alter table public.notifications enable row level security;
 alter table public.compliance_items enable row level security;
 
+-- Policies from the first version of this schema (full access for any signed-in user)
 drop policy if exists "Signed-in users manage divisions" on public.divisions;
-create policy "Signed-in users manage divisions" on public.divisions
-  for all to authenticated using (true) with check (true);
-
 drop policy if exists "Signed-in users manage employees" on public.employees;
-create policy "Signed-in users manage employees" on public.employees
-  for all to authenticated using (true) with check (true);
-
 drop policy if exists "Signed-in users manage notifications" on public.notifications;
-create policy "Signed-in users manage notifications" on public.notifications
-  for all to authenticated using (true) with check (true);
-
 drop policy if exists "Signed-in users manage compliance items" on public.compliance_items;
-create policy "Signed-in users manage compliance items" on public.compliance_items
+
+drop policy if exists "Signed-in users read divisions" on public.divisions;
+create policy "Signed-in users read divisions" on public.divisions
+  for select to authenticated using (true);
+drop policy if exists "Editors change divisions" on public.divisions;
+create policy "Editors change divisions" on public.divisions
+  for all to authenticated using (public.can_edit_portal()) with check (public.can_edit_portal());
+
+drop policy if exists "Signed-in users read employees" on public.employees;
+create policy "Signed-in users read employees" on public.employees
+  for select to authenticated using (true);
+drop policy if exists "Editors change employees" on public.employees;
+create policy "Editors change employees" on public.employees
+  for all to authenticated using (public.can_edit_portal()) with check (public.can_edit_portal());
+
+drop policy if exists "Signed-in users read compliance items" on public.compliance_items;
+create policy "Signed-in users read compliance items" on public.compliance_items
+  for select to authenticated using (true);
+drop policy if exists "Editors change compliance items" on public.compliance_items;
+create policy "Editors change compliance items" on public.compliance_items
+  for all to authenticated using (public.can_edit_portal()) with check (public.can_edit_portal());
+
+-- Alerts: everyone signed in can read them and mark them as read
+drop policy if exists "Signed-in users use notifications" on public.notifications;
+create policy "Signed-in users use notifications" on public.notifications
   for all to authenticated using (true) with check (true);
 
 -- File storage for staff documents (CV, contract, CID clearance, ID, certificates, photos).
@@ -64,9 +90,11 @@ create policy "Signed-in users read staff documents" on storage.objects
   for select to authenticated using (bucket_id = 'staff-documents');
 
 drop policy if exists "Signed-in users upload staff documents" on storage.objects;
-create policy "Signed-in users upload staff documents" on storage.objects
-  for insert to authenticated with check (bucket_id = 'staff-documents');
+drop policy if exists "Editors upload staff documents" on storage.objects;
+create policy "Editors upload staff documents" on storage.objects
+  for insert to authenticated with check (bucket_id = 'staff-documents' and public.can_edit_portal());
 
 drop policy if exists "Signed-in users delete staff documents" on storage.objects;
-create policy "Signed-in users delete staff documents" on storage.objects
-  for delete to authenticated using (bucket_id = 'staff-documents');
+drop policy if exists "Editors delete staff documents" on storage.objects;
+create policy "Editors delete staff documents" on storage.objects
+  for delete to authenticated using (bucket_id = 'staff-documents' and public.can_edit_portal());

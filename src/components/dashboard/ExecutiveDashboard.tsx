@@ -131,7 +131,7 @@ export const ExecutiveDashboard: React.FC = () => {
             <button
               type="button"
               onClick={() => setActivePage('register')}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#147D4A] bg-white hover:bg-[#EBF7EE] rounded-xl transition-all shadow-md"
+              className="edit-only inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#147D4A] bg-white hover:bg-[#EBF7EE] rounded-xl transition-all shadow-md"
             >
               <UserPlus className="w-3.5 h-3.5" />
               <span>Register Staff</span>

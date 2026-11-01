@@ -251,7 +251,7 @@ export const ContractsHub: React.FC = () => {
                               setContractRenewalTarget(emp);
                               setIsRenewContractOpen(true);
                             }}
-                            className="px-2.5 py-1 text-xs text-white bg-[#147D4A] hover:bg-[#0E6139] rounded-lg font-semibold transition-colors shadow-2xs"
+                            className="edit-only px-2.5 py-1 text-xs text-white bg-[#147D4A] hover:bg-[#0E6139] rounded-lg font-semibold transition-colors shadow-2xs"
                           >
                             Renew
                           </button>

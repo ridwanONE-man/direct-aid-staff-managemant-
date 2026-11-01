@@ -177,3 +177,124 @@
   .register-tick { animation: none; }
   .save-notice-enter { animation: none; }
 }
+
+/* Read-only accounts: edit controls are hidden or locked (the database also refuses their changes) */
+[data-readonly] .edit-only { display: none !important; }
+[data-readonly] .edit-lock { pointer-events: none; }
+
+/* ---- Dark theme (Settings -> Appearance), signed-in app only ---- */
+.dark .app-shell {
+  color-scheme: dark;
+  background-color: #0D1511;
+  color: #E4ECE7;
+}
+.dark .app-shell .app-backdrop {
+  background:
+    radial-gradient(ellipse 60% 50% at 0% 0%, rgba(45, 154, 72, 0.14), transparent 70%),
+    radial-gradient(ellipse 55% 45% at 100% 100%, rgba(45, 154, 72, 0.12), transparent 70%),
+    linear-gradient(180deg, #0F1813 0%, #0B130F 100%);
+}
+/* Invert the watermark so its white background turns black, then screen it out */
+.dark .app-shell .app-backdrop-logo {
+  mix-blend-mode: screen;
+  filter: invert(1) hue-rotate(180deg);
+  opacity: 0.07;
+}
+.dark .app-shell .directaid-card,
+.dark .app-shell .directaid-card-interactive {
+  background: #16211B;
+  border-color: #2A3931;
+}
+.dark .app-shell aside,
+.dark .app-shell header {
+  background-color: #16211B;
+  border-color: #2A3931;
+}
+.dark .app-shell .shadow-xs,
+.dark .app-shell .shadow-sm {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+.dark .app-shell ::-webkit-scrollbar-track { background: #0D1511; }
+.dark .app-shell ::-webkit-scrollbar-thumb { background: #2A3931; }
+.dark .app-shell .bg-white { background-color: #16211B; }
+.dark .app-shell .bg-\[\#F9FBFA\] { background-color: #111A15; }
+.dark .app-shell .bg-\[\#F6FAF7\] { background-color: #111A15; }
+.dark .app-shell .bg-\[\#F5F8F6\] { background-color: #0D1511; }
+.dark .app-shell .bg-\[\#F8FAF9\] { background-color: #111A15; }
+.dark .app-shell .bg-slate-50 { background-color: #111A15; }
+.dark .app-shell .bg-slate-100 { background-color: #1D2A23; }
+.dark .app-shell .bg-\[\#EBF7EE\] { background-color: #173323; }
+.dark .app-shell .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.12); }
+.dark .app-shell .bg-emerald-100 { background-color: rgba(16, 185, 129, 0.18); }
+.dark .app-shell .bg-amber-50 { background-color: rgba(245, 158, 11, 0.12); }
+.dark .app-shell .bg-amber-100 { background-color: rgba(245, 158, 11, 0.18); }
+.dark .app-shell .bg-rose-50 { background-color: rgba(244, 63, 94, 0.12); }
+.dark .app-shell .bg-sky-50 { background-color: rgba(14, 165, 233, 0.12); }
+.dark .app-shell .bg-\[\#F3F9F5\] { background-color: #1D2A23; }
+.dark .app-shell .bg-\[\#F3F7F4\] { background-color: #1D2A23; }
+.dark .app-shell .hover\:bg-\[\#F3F7F4\]:hover { background-color: #1D2A23; }
+.dark .app-shell .hover\:bg-\[\#F6FAF7\]:hover { background-color: #1D2A23; }
+.dark .app-shell .hover\:bg-\[\#F9FBFA\]:hover { background-color: #1D2A23; }
+.dark .app-shell .hover\:bg-\[\#F3F9F5\]:hover { background-color: #1D2A23; }
+.dark .app-shell .hover\:bg-slate-50:hover { background-color: #1D2A23; }
+.dark .app-shell .hover\:bg-slate-100:hover { background-color: #1D2A23; }
+.dark .app-shell .hover\:bg-\[\#EBF7EE\]:hover { background-color: #173323; }
+.dark .app-shell .hover\:bg-rose-50:hover { background-color: rgba(244, 63, 94, 0.15); }
+.dark .app-shell .hover\:bg-amber-50:hover { background-color: rgba(245, 158, 11, 0.15); }
+.dark .app-shell .text-\[\#192C21\] { color: #E4ECE7; }
+.dark .app-shell .text-\[\#1E2B37\] { color: #E4ECE7; }
+.dark .app-shell .text-slate-800 { color: #E4ECE7; }
+.dark .app-shell .text-slate-700 { color: #E4ECE7; }
+.dark .app-shell .text-\[\#384C3F\] { color: #A3B5AA; }
+.dark .app-shell .text-\[\#57685D\] { color: #A3B5AA; }
+.dark .app-shell .text-\[\#44564B\] { color: #A3B5AA; }
+.dark .app-shell .text-\[\#55675B\] { color: #A3B5AA; }
+.dark .app-shell .text-slate-600 { color: #A3B5AA; }
+.dark .app-shell .text-slate-500 { color: #A3B5AA; }
+.dark .app-shell .text-\[\#6B7E72\] { color: #7C9084; }
+.dark .app-shell .text-\[\#64776C\] { color: #7C9084; }
+.dark .app-shell .text-\[\#798C80\] { color: #7C9084; }
+.dark .app-shell .text-\[\#788C7F\] { color: #7C9084; }
+.dark .app-shell .text-\[\#718478\] { color: #7C9084; }
+.dark .app-shell .text-slate-400 { color: #7C9084; }
+.dark .app-shell .text-slate-300 { color: #5C6E63; }
+.dark .app-shell .text-\[\#147D4A\] { color: #4FCB86; }
+.dark .app-shell .text-emerald-700 { color: #6EE7B7; }
+.dark .app-shell .text-emerald-800 { color: #6EE7B7; }
+.dark .app-shell .text-amber-700 { color: #FCD34D; }
+.dark .app-shell .text-amber-800 { color: #FCD34D; }
+.dark .app-shell .text-amber-900 { color: #FDE68A; }
+.dark .app-shell .text-rose-600 { color: #FB7185; }
+.dark .app-shell .text-rose-700 { color: #FDA4AF; }
+.dark .app-shell .text-rose-800 { color: #FDA4AF; }
+.dark .app-shell .text-sky-700 { color: #7DD3FC; }
+.dark .app-shell .hover\:text-\[\#192C21\]:hover { color: #E4ECE7; }
+.dark .app-shell .hover\:text-\[\#147D4A\]:hover { color: #4FCB86; }
+.dark .app-shell .hover\:text-slate-600:hover { color: #E4ECE7; }
+.dark .app-shell .hover\:text-slate-700:hover { color: #E4ECE7; }
+.dark .app-shell .hover\:text-slate-800:hover { color: #E4ECE7; }
+.dark .app-shell .border-\[\#E2EAE4\] { border-color: #2A3931; }
+.dark .app-shell .border-slate-100 { border-color: #2A3931; }
+.dark .app-shell .border-slate-200 { border-color: #2A3931; }
+.dark .app-shell .border-slate-300 { border-color: #2A3931; }
+.dark .app-shell .border-\[\#C5E8D2\] { border-color: #2E5A41; }
+.dark .app-shell .border-amber-200 { border-color: rgba(245, 158, 11, 0.35); }
+.dark .app-shell .border-rose-200 { border-color: rgba(244, 63, 94, 0.35); }
+.dark .app-shell .border-sky-200 { border-color: rgba(14, 165, 233, 0.35); }
+.dark .app-shell .border-white { border-color: #16211B; }
+.dark .app-shell .divide-\[\#EEF3EF\] > :not(:last-child) { border-color: #2A3931; }
+.dark .app-shell .divide-\[\#EBF1ED\] > :not(:last-child) { border-color: #2A3931; }
+.dark .app-shell .divide-slate-100 > :not(:last-child) { border-color: #2A3931; }
+.dark .app-shell .placeholder\:text-slate-400::placeholder { color: #5F7367; }
+.dark .app-shell .focus\:bg-white:focus { background-color: #111A15; }
+
+.dark .app-shell .hover\:text-white:hover { color: #FFFFFF; }
+.dark .app-shell .text-white { color: #FFFFFF; }
+
+/* Theme previews in Settings */
+.theme-preview-light { background: #F6FAF7; border-color: #E2EAE4; }
+.theme-preview-light .theme-preview-card { background: #FFFFFF; }
+.theme-preview-dark { background: #0D1511; border-color: #2A3931; }
+.theme-preview-dark .theme-preview-card { background: #16211B; }
+.theme-preview-split { background: linear-gradient(135deg, #F6FAF7 50%, #0D1511 50%); border-color: #C5D3CA; }
+.theme-preview-split .theme-preview-card { background: linear-gradient(135deg, #FFFFFF 50%, #16211B 50%); }

@@ -14,8 +14,10 @@ import { supabase } from '../lib/supabase';
 import { removeStaffFiles } from '../lib/storage';
 import { withLiveContractStatus } from '../lib/contracts';
 import { REQUIRED_DOCUMENTS } from '../data/documentTypes';
+import { isUserRole, UserRole } from '../lib/roles';
+import { syncOwnRole } from '../lib/adminApi';
 
-export type AppPage = 'dashboard' | 'directory' | 'divisions' | 'profile' | 'contracts' | 'reports' | 'register';
+export type AppPage = 'dashboard' | 'directory' | 'divisions' | 'profile' | 'contracts' | 'reports' | 'register' | 'settings';
 
 export interface DirectoryFilters {
   searchQuery: string;
@@ -85,6 +87,9 @@ interface AppContextType {
   isAuthenticated: boolean;
   isAuthReady: boolean;
   userEmail: string | null;
+  userRole: UserRole | null;
+  canEdit: boolean;
+  isAdmin: boolean;
   login: (email: string, password: string) => Promise<string | null>;
   logout: () => Promise<void>;
   isDataLoading: boolean;
@@ -165,6 +170,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const userId = session?.user.id;
+
+  // Role comes from app_metadata (set only by the server); accounts without one are read-only
+  const metaRole = session?.user.app_metadata?.role;
+  const userRole: UserRole | null = isUserRole(metaRole) ? metaRole : null;
+  const canEdit = userRole === 'admin' || userRole === 'hr';
+  const isAdmin = userRole === 'admin';
+
+  // Accounts listed in ADMIN_EMAILS get the admin role on first sign-in; refresh so the token carries it
+  useEffect(() => {
+    if (!supabase || !userId || userRole) return;
+    let cancelled = false;
+    syncOwnRole()
+      .then(({ changed }) => {
+        if (changed && !cancelled) supabase?.auth.refreshSession();
+      })
+      .catch(() => {
+        // Admin service unavailable (e.g. local dev); the account stays read-only
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, userRole]);
+
+  // Every change goes through here first; read-only accounts are stopped (the database refuses them too)
+  const blockReadOnly = () => {
+    if (canEdit) return false;
+    setSyncError('Your account is read-only. Ask an admin if you need to make changes.');
+    return true;
+  };
 
   const inScope = (city: LocationCity) =>
     regionalScope === 'all' || city.toLowerCase() === regionalScope;
@@ -299,6 +333,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const toggleComplianceStatus = (id: string) => {
+    if (blockReadOnly()) return;
     const item = complianceItems.find(i => i.id === id);
     if (!item) return;
     const nextStatus: ComplianceAuditItem['status'] =
@@ -350,6 +385,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       : [];
 
   const updateDivision = (id: string, updates: Omit<SchoolDivisionCategory, 'id' | 'canonicalIndex'>) => {
+    if (blockReadOnly()) return;
     const div = divisions.find(d => d.id === id);
     if (!div) return;
 
@@ -374,12 +410,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const clearDivisionPrincipal = (id: string) => {
+    if (blockReadOnly()) return;
     const div = divisions.find(d => d.id === id);
     if (div) saveDivisions([blankPrincipal(div)]);
   };
 
   // Divisions that still have staff are skipped and reported back
   const deleteDivisions = (ids: string[]): { deleted: number; blocked: string[] } => {
+    if (blockReadOnly()) return { deleted: 0, blocked: [] };
     const targets = divisions.filter(d => ids.includes(d.id));
     const blocked = targets.filter(d => employees.some(e => e.divisionId === d.id));
     const deletable = targets.filter(d => !blocked.includes(d)).map(d => d.id);
@@ -393,6 +431,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Returns an error message when the division still has staff assigned
   const deleteDivision = (id: string): string | null => {
+    if (blockReadOnly()) return 'Your account is read-only.';
     const div = divisions.find(d => d.id === id);
     if (!div) return null;
     const staffCount = employees.filter(e => e.divisionId === id).length;
@@ -404,6 +443,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addDivision = (data: Omit<SchoolDivisionCategory, 'id' | 'canonicalIndex'>): SchoolDivisionCategory => {
+    if (blockReadOnly()) throw new Error('Your account is read-only.');
     const newDivision: SchoolDivisionCategory = {
       ...data,
       id: `div-${Date.now()}`,
@@ -432,6 +472,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addEmployee = (data: Partial<EmployeeRecord>): EmployeeRecord => {
+    if (blockReadOnly()) throw new Error('Your account is read-only.');
     const cityCode = data.campusLocation === 'Gabiley' ? 'GBL' : 'HRG';
     const randomSuffix = Math.floor(2000 + Math.random() * 8000);
     const newId = `DA-${cityCode}-${randomSuffix}`;
@@ -539,6 +580,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Recalculate completeness, update local state, and save one employee record
   const commitEmployee = (emp: EmployeeRecord) => {
+    if (blockReadOnly()) return;
     const { score, missing } = calculateCompleteness(emp);
     const finalEmp = withLiveContractStatus({ ...emp, profileCompleteness: score, missingRequirements: missing });
     setEmployees(prev => prev.map(e => e.id === finalEmp.id ? finalEmp : e));
@@ -571,6 +613,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteEmployees = (ids: string[]) => {
+    if (blockReadOnly()) return;
     const removed = employees.filter(e => ids.includes(e.id));
     if (removed.length === 0) return;
     removeStaffFiles(removed.flatMap(e => e.documents.map(d => d.storagePath)).filter((p): p is string => !!p));
@@ -596,6 +639,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const deleteEmployee = (id: string) => deleteEmployees([id]);
 
   const renewContract = (employeeId: string, contractUpdates: Partial<EmployeeContract>) => {
+    if (blockReadOnly()) return;
     const emp = employees.find(e => e.id === employeeId);
     if (!emp) return;
 
@@ -627,6 +671,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     docData: Omit<DocumentAttachment, 'id' | 'uploadedAt'>,
     options: { replaceId?: string; avatarUrl?: string } = {}
   ) => {
+    if (blockReadOnly()) return;
     const emp = employees.find(e => e.id === employeeId);
     if (!emp) return;
     const newDoc: DocumentAttachment = {
@@ -644,6 +689,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteDocument = (employeeId: string, docId: string) => {
+    if (blockReadOnly()) return;
     const emp = employees.find(e => e.id === employeeId);
     if (!emp) return;
     const doc = emp.documents.find(d => d.id === docId);
@@ -712,6 +758,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isAuthenticated: !!session,
         isAuthReady,
         userEmail: session?.user.email ?? null,
+        userRole,
+        canEdit,
+        isAdmin,
         login,
         logout,
         isDataLoading,

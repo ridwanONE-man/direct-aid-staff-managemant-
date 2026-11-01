@@ -12,9 +12,20 @@ import { ReportsCenter } from './components/reports/ReportsCenter';
 import { RegisterEmployeePage } from './components/register/RegisterEmployeePage';
 import { RenewContractModal } from './components/modals/RenewContractModal';
 import { SaveNotice } from './components/common/SaveNotice';
+import { SettingsPage } from './components/settings/SettingsPage';
+
+const ReadOnlyNotice: React.FC<{ onBack: () => void }> = ({ onBack }) => (
+  <div className="bg-white border border-[#E2EAE4] rounded-2xl p-12 text-center shadow-xs">
+    <h3 className="text-base font-bold text-[#192C21]">Read-only account</h3>
+    <p className="text-xs text-[#57685D] mt-1">Registering staff needs an Admin or HR account.</p>
+    <button onClick={onBack} className="mt-4 px-4 py-2 bg-[#147D4A] hover:bg-[#0E6139] text-white text-xs font-semibold rounded-xl">
+      Back to Dashboard
+    </button>
+  </div>
+);
 
 const AppContent: React.FC = () => {
-  const { activePage, isAuthenticated, isAuthReady, isDataLoading, syncError, clearSyncError } = useApp();
+  const { activePage, isAuthenticated, isAuthReady, isDataLoading, syncError, clearSyncError, canEdit, setActivePage } = useApp();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
@@ -31,7 +42,7 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F8F6] text-[#192C21] flex flex-col font-sans">
+    <div className="app-shell min-h-screen bg-[#F5F8F6] text-[#192C21] flex flex-col font-sans" data-readonly={canEdit ? undefined : ''}>
       {/* Branded background: soft green tints with a faint DirectAid logo watermark */}
       <div className="app-backdrop" aria-hidden="true">
         <img
@@ -69,6 +80,11 @@ const AppContent: React.FC = () => {
               </button>
             </div>
           )}
+          {!canEdit && (
+            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-xs font-medium">
+              You have <span className="font-bold">read-only</span> access. You can view everything, but only Admin and HR accounts can make changes.
+            </div>
+          )}
           {isDataLoading && (
             <div className="mb-4 p-3 bg-[#EBF7EE] border border-[#C5E8D2] text-[#147D4A] rounded-xl text-xs font-semibold">
               Loading data from Supabase...
@@ -80,7 +96,8 @@ const AppContent: React.FC = () => {
           {activePage === 'profile' && <EmployeeProfile />}
           {activePage === 'contracts' && <ContractsHub />}
           {activePage === 'reports' && <ReportsCenter />}
-          {activePage === 'register' && <RegisterEmployeePage />}
+          {activePage === 'register' && (canEdit ? <RegisterEmployeePage /> : <ReadOnlyNotice onBack={() => setActivePage('dashboard')} />)}
+          {activePage === 'settings' && <SettingsPage />}
         </div>
       </main>
 

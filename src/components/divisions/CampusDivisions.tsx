@@ -195,7 +195,7 @@ export const CampusDivisions: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsCreateOpen(true)}
-            className="px-3.5 py-2 text-xs font-semibold text-white bg-[#147D4A] hover:bg-[#0E6139] rounded-xl transition-colors flex items-center gap-1.5"
+            className="edit-only px-3.5 py-2 text-xs font-semibold text-white bg-[#147D4A] hover:bg-[#0E6139] rounded-xl transition-colors flex items-center gap-1.5"
           >
             <Plus className="w-4 h-4" />
             <span>Create Division</span>
@@ -283,7 +283,7 @@ export const CampusDivisions: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsCreateOpen(true)}
-              className="mt-4 px-4 py-2 bg-[#147D4A] hover:bg-[#0E6139] text-white text-xs font-semibold rounded-xl inline-flex items-center gap-1.5"
+              className="edit-only mt-4 px-4 py-2 bg-[#147D4A] hover:bg-[#0E6139] text-white text-xs font-semibold rounded-xl inline-flex items-center gap-1.5"
             >
               <Plus className="w-4 h-4" />
               Create Division
@@ -424,7 +424,7 @@ export const CampusDivisions: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => openEditModal(div)}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-[#147D4A] hover:bg-[#EBF7EE] transition-colors"
+                    className="edit-only p-1.5 rounded-lg text-slate-400 hover:text-[#147D4A] hover:bg-[#EBF7EE] transition-colors"
                     title="Edit division"
                     aria-label={`Edit ${div.name}`}
                   >
@@ -436,7 +436,7 @@ export const CampusDivisions: React.FC = () => {
                       setDeleteError('');
                       setPendingDelete(div);
                     }}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                    className="edit-only p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                     title="Delete division"
                     aria-label={`Delete ${div.name}`}
                   >

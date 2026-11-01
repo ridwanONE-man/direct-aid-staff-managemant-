@@ -239,7 +239,7 @@ export const Header: React.FC<HeaderProps> = ({ isCollapsed, onOpenMobileNav }) 
         {/* Quick Add Button */}
         <button
           onClick={() => setActivePage('register')}
-          className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#147D4A] hover:bg-[#0E6139] text-white text-xs font-semibold shadow-xs transition-colors"
+          className="edit-only hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#147D4A] hover:bg-[#0E6139] text-white text-xs font-semibold shadow-xs transition-colors"
         >
           <UserPlus className="w-3.5 h-3.5" />
           <span>New Staff</span>

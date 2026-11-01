@@ -249,7 +249,7 @@ export const EmployeeProfile: React.FC = () => {
               </button>
               <button
                 onClick={startEditing}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-lg transition-all"
+                className="edit-only inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-lg transition-all"
               >
                 <Edit className="w-3.5 h-3.5" /> Edit
               </button>
@@ -258,7 +258,7 @@ export const EmployeeProfile: React.FC = () => {
                   setContractRenewalTarget(employee);
                   setIsRenewContractOpen(true);
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-[#147D4A] bg-white hover:bg-[#EBF7EE] rounded-lg transition-all shadow-md"
+                className="edit-only inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-[#147D4A] bg-white hover:bg-[#EBF7EE] rounded-lg transition-all shadow-md"
               >
                 <FileText className="w-3.5 h-3.5" /> Renew Contract
               </button>
@@ -503,7 +503,7 @@ export const EmployeeProfile: React.FC = () => {
                   setContractRenewalTarget(employee);
                   setIsRenewContractOpen(true);
                 }}
-                className="px-4 py-2 bg-[#147D4A] hover:bg-[#0E6139] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors shrink-0"
+                className="edit-only px-4 py-2 bg-[#147D4A] hover:bg-[#0E6139] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors shrink-0"
               >
                 Renew Contract
               </button>
@@ -613,7 +613,7 @@ export const EmployeeProfile: React.FC = () => {
               </div>
             )}
 
-            <AddOtherDocument busy={busyKey === 'other'} onAdd={(name, file) => uploadDocument('other', name, file)} />
+            <div className="edit-only"><AddOtherDocument busy={busyKey === 'other'} onAdd={(name, file) => uploadDocument('other', name, file)} /></div>
           </div>
         )}
       </div>

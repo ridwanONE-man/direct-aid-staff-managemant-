@@ -36,7 +36,7 @@ export const StaffProfileList: React.FC = () => {
         <p className="text-xs text-[#57685D] mt-1">Register a staff member and they will appear here.</p>
         <button
           onClick={() => setActivePage('register')}
-          className="mt-4 px-4 py-2 bg-[#147D4A] hover:bg-[#0E6139] text-white text-xs font-semibold rounded-xl"
+          className="edit-only mt-4 px-4 py-2 bg-[#147D4A] hover:bg-[#0E6139] text-white text-xs font-semibold rounded-xl"
         >
           Register Staff
         </button>

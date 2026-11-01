@@ -14,7 +14,7 @@ export const SelectBox: React.FC<{ checked: boolean; onChange: () => void; label
     onChange={onChange}
     onClick={(e) => e.stopPropagation()}
     aria-label={label}
-    className={`w-4 h-4 rounded border-[#C5E8D2] accent-[#147D4A] cursor-pointer shrink-0 ${className}`}
+    className={`edit-only w-4 h-4 rounded border-[#C5E8D2] accent-[#147D4A] cursor-pointer shrink-0 ${className}`}
   />
 );
 
@@ -41,7 +41,7 @@ export const BulkActionBar: React.FC<BulkActionBarProps> = ({
 
   return (
     <div
-      className={`rounded-2xl border px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs transition-colors ${
+      className={`edit-only rounded-2xl border px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs transition-colors ${
         selectedCount > 0 ? 'bg-[#EBF7EE] border-[#C5E8D2]' : 'bg-white border-[#E2EAE4] shadow-xs'
       }`}
     >

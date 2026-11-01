@@ -1,7 +1,9 @@
 import React from 'react';
 import { useApp, AppPage } from '../../context/AppContext';
 import { needsRenewal } from '../../lib/contracts';
+import { roleLabel } from '../../lib/roles';
 import {
+  Settings,
   LayoutDashboard,
   Users,
   Building2,
@@ -42,7 +44,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     notifications,
     setIsAddEmployeeOpen,
     logout,
-    userEmail
+    userEmail,
+    userRole,
+    canEdit
   } = useApp();
 
   const contractsDue = employees.filter(needsRenewal).length;
@@ -90,6 +94,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'reports',
       label: 'Audit & Reports',
       icon: <ShieldCheck className="w-4.5 h-4.5 shrink-0" />
+    },
+    {
+      id: 'settings',
+      label: 'Settings',
+      icon: <Settings className="w-4.5 h-4.5 shrink-0" />
     }
   ];
 
@@ -157,7 +166,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Quick Add Button */}
-        <div className="p-3">
+        <div className="p-3 edit-only">
           <button
             onClick={() => setActivePage('register')}
             className={`w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-[#147D4A] hover:bg-[#0E6139] text-white font-semibold text-xs transition-all shadow-xs ${
@@ -176,7 +185,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {!isCollapsed ? 'Navigation' : 'Menu'}
           </div>
 
-          {navItems.map((item) => {
+          {navItems.filter(item => canEdit || item.id !== 'register').map((item) => {
             const isActive = activePage === item.id;
             return (
               <button
@@ -288,7 +297,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold text-[#192C21] truncate">
-                  HR Administrator
+                  {roleLabel(userRole)}
                 </h4>
                 <button
                   type="button"
@@ -304,7 +313,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </p>
               <div className="flex items-center gap-1 mt-0.5">
                 <span className="text-[9px] font-bold text-[#147D4A] bg-[#EBF7EE] px-1.5 py-0.2 rounded-full">
-                  Admin Active
+                  {canEdit ? 'Can edit' : 'Read-only'}
                 </span>
               </div>
             </div>
@@ -320,7 +329,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             {/* Collapsed Tooltip */}
             <div className="absolute left-full ml-2 px-2.5 py-1 bg-[#192C21] text-white text-xs rounded-lg shadow-md opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-opacity">
-              HR Administrator
+              {roleLabel(userRole)}
             </div>
           </div>
         )}

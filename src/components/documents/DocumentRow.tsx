@@ -102,7 +102,7 @@ export const DocumentRow: React.FC<DocumentRowProps> = ({
               type="button"
               disabled={busy}
               onClick={() => inputRef.current?.click()}
-              className="p-1.5 text-slate-400 hover:text-[#147D4A] rounded-lg transition-colors disabled:opacity-50"
+              className="edit-only p-1.5 text-slate-400 hover:text-[#147D4A] rounded-lg transition-colors disabled:opacity-50"
               title="Replace file"
             >
               <RefreshCw className="w-4 h-4" />
@@ -112,7 +112,7 @@ export const DocumentRow: React.FC<DocumentRowProps> = ({
                 type="button"
                 disabled={busy}
                 onClick={onRemove}
-                className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition-colors disabled:opacity-50"
+                className="edit-only p-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition-colors disabled:opacity-50"
                 title="Remove"
               >
                 <Trash2 className="w-4 h-4" />
@@ -124,7 +124,7 @@ export const DocumentRow: React.FC<DocumentRowProps> = ({
             type="button"
             disabled={busy}
             onClick={() => inputRef.current?.click()}
-            className="px-3.5 py-2 text-xs font-semibold text-[#147D4A] bg-white border border-[#C5E8D2] hover:bg-[#EBF7EE] rounded-xl flex items-center gap-1.5 transition-colors disabled:opacity-50"
+            className="edit-only px-3.5 py-2 text-xs font-semibold text-[#147D4A] bg-white border border-[#C5E8D2] hover:bg-[#EBF7EE] rounded-xl flex items-center gap-1.5 transition-colors disabled:opacity-50"
           >
             <Upload className="w-3.5 h-3.5" /> Upload
           </button>
