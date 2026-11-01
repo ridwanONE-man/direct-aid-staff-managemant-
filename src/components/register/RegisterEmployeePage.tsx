@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { JobRole, DegreeLevel, EmploymentType, DocumentAttachment, DocumentType, EmployeeRecord } from '../../types';
 import { REQUIRED_DOCUMENTS } from '../../data/documentTypes';
-import { JOB_ROLES, EMPLOYMENT_TYPES, TEACHING_SUBJECTS, CONTRACT_DURATIONS, SHIFT_SCHEDULES, PAYMENT_METHODS } from '../../data/staffOptions';
+import { JOB_ROLES, EMPLOYMENT_TYPES, TEACHING_SUBJECTS, SHIFT_SCHEDULES, PAYMENT_METHODS } from '../../data/staffOptions';
 import { formatFileSize, removeStaffFiles, uploadStaffFile, validateFile } from '../../lib/storage';
 import { initialsAvatar, resizePhoto } from '../../lib/photo';
 import { DocumentRow } from '../documents/DocumentRow';
@@ -35,10 +35,17 @@ const STEPS = [
   { num: 4, label: 'Contract', icon: FileText }
 ] as const;
 
+const DEGREE_TITLE_HINTS: Record<DegreeLevel, string> = {
+  Diploma: 'Diploma in Education',
+  Bachelor: 'Bachelor of Education (B.Ed)',
+  Master: 'Master of Science / Education',
+  PhD: 'Doctor of Philosophy (PhD)',
+  Vocational: 'Certified Technical License'
+};
+
 interface SelectWithOtherProps {
   id: string;
   label: string;
-  required?: boolean;
   options: { value: string; label: string }[];
   extraValues?: string[];
   value: string;
@@ -53,7 +60,6 @@ interface SelectWithOtherProps {
 const SelectWithOther: React.FC<SelectWithOtherProps> = ({
   id,
   label,
-  required,
   options,
   extraValues = [],
   value,
@@ -93,29 +99,12 @@ const SelectWithOther: React.FC<SelectWithOtherProps> = ({
   return (
     <div>
       <label htmlFor={id} className={labelClass}>
-        {label} {required && <span className="text-rose-500">*</span>}
+        {label}
       </label>
-      <select
-        id={id}
-        value={isAdding ? OTHER : value}
-        onChange={(e) => {
-          if (e.target.value === OTHER) {
-            setIsAdding(true);
-          } else {
-            setIsAdding(false);
-            onChange(e.target.value);
-          }
-        }}
-        className={inputClass}
-      >
-        {allOptions.map(o => (
-          <option key={o.value} value={o.value}>{o.label}</option>
-        ))}
-        <option value={OTHER}>{otherLabel}</option>
-      </select>
-      {isAdding && (
-        <div className="mt-2 flex items-center gap-2">
+      {isAdding ? (
+        <div className="relative">
           <input
+            id={id}
             type={inputType}
             min={inputType === 'number' ? 1 : undefined}
             max={inputType === 'number' ? 30 : undefined}
@@ -129,28 +118,52 @@ const SelectWithOther: React.FC<SelectWithOtherProps> = ({
                 cancel();
               }
             }}
-            onBlur={commit}
+            onBlur={() => (draft.trim() ? commit() : cancel())}
             placeholder={placeholder}
-            className={`${inputClass} border-[#147D4A]/40 bg-white`}
+            className={`${inputClass} pr-16 border-[#147D4A] ring-1 ring-[#147D4A]/30 bg-white`}
             autoFocus
           />
-          <button
-            type="button"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={commit}
-            className="px-3.5 py-2.5 bg-[#147D4A] hover:bg-[#0E6139] text-white rounded-xl text-xs font-bold shrink-0 transition-colors"
-          >
-            Add
-          </button>
-          <button
-            type="button"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={cancel}
-            className="px-2.5 py-2.5 text-xs font-semibold text-slate-500 hover:text-slate-800 shrink-0"
-          >
-            Cancel
-          </button>
+          <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={commit}
+              className="p-1.5 rounded-lg text-[#147D4A] hover:bg-[#EBF7EE]"
+              title="Add"
+              aria-label="Add"
+            >
+              <Check className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={cancel}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              title="Cancel"
+              aria-label="Cancel"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
+      ) : (
+        <select
+          id={id}
+          value={value}
+          onChange={(e) => {
+            if (e.target.value === OTHER) {
+              setIsAdding(true);
+            } else {
+              onChange(e.target.value);
+            }
+          }}
+          className={inputClass}
+        >
+          {allOptions.map(o => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+          <option value={OTHER}>{otherLabel}</option>
+        </select>
       )}
     </div>
   );
@@ -182,17 +195,27 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
 
   // 3. Qualifications & Degree Assignment
   const [degreeLevel, setDegreeLevel] = useState<DegreeLevel>('Bachelor');
-  const [highestDegree, setHighestDegree] = useState('Bachelor of Education');
-  const [institution, setInstitution] = useState('University of Hargeisa');
-  const [fieldOfStudy, setFieldOfStudy] = useState('Secondary Education & Pedagogy');
-  const [graduationYear, setGraduationYear] = useState(2019);
-  const [yearsOfExperience, setYearsOfExperience] = useState(4);
+  const [highestDegree, setHighestDegree] = useState('');
+  const [institution, setInstitution] = useState('');
+  const [fieldOfStudy, setFieldOfStudy] = useState('');
+  const [graduationYear, setGraduationYear] = useState('');
+  const [yearsOfExperience, setYearsOfExperience] = useState('');
 
   // 4. Contract & Documents
-  const [monthlyBaseSalary, setMonthlyBaseSalary] = useState(600);
-  const [contractYears, setContractYears] = useState('2');
+  const [monthlyBaseSalary, setMonthlyBaseSalary] = useState('');
+  const [durationValue, setDurationValue] = useState('');
+  const [durationUnit, setDurationUnit] = useState<'months' | 'years'>('years');
   const [startDate] = useState(new Date().toISOString().split('T')[0]);
-  const [contractRefNo] = useState(`CTR-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`);
+  // References count up within the year: CTR-2026-1, CTR-2026-2, ...
+  const contractRefNo = useMemo(() => {
+    const prefix = `CTR-${new Date().getFullYear()}-`;
+    const highest = employees.reduce((max, e) => {
+      const ref = e.contract?.referenceNo || '';
+      const n = ref.startsWith(prefix) ? Number(ref.slice(prefix.length)) : NaN;
+      return Number.isInteger(n) && n > max ? n : max;
+    }, 0);
+    return `${prefix}${highest + 1}`;
+  }, [employees]);
 
   const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS[0].value);
   const [paymentAccountNo, setPaymentAccountNo] = useState('');
@@ -281,19 +304,20 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
     const selectedDiv = divisions.find(d => d.id === divisionId) || divisions[0];
     if (!selectedDiv) return;
 
-    const years = Number(contractYears);
+    const duration = Number(durationValue);
     if (!jobRole.trim() || !employmentType.trim()) {
       setError('Please choose or type the job role and employment type.');
       setStep(2);
       return;
     }
-    if (!Number.isFinite(years) || years < 1) {
-      setError('Please enter a contract duration of at least 1 year.');
+    if (!Number.isInteger(duration) || duration < 1) {
+      setError('Please enter the contract duration in months or years.');
       return;
     }
 
     const end = new Date(startDate);
-    end.setFullYear(end.getFullYear() + Math.round(years));
+    if (durationUnit === 'months') end.setMonth(end.getMonth() + duration);
+    else end.setFullYear(end.getFullYear() + duration);
     const endDate = end.toISOString().split('T')[0];
     const today = new Date().toISOString().split('T')[0];
 
@@ -361,11 +385,11 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
       teachingSubjects: isTeacher && teachingSubject.trim() ? [teachingSubject.trim()] : undefined,
       qualifications: {
         degreeLevel,
-        highestDegree,
-        institution,
-        fieldOfStudy,
-        graduationYear: Number(graduationYear),
-        yearsOfExperience: Number(yearsOfExperience)
+        highestDegree: highestDegree.trim(),
+        institution: institution.trim(),
+        fieldOfStudy: fieldOfStudy.trim(),
+        graduationYear: Number(graduationYear) || 0,
+        yearsOfExperience: Number(yearsOfExperience) || 0
       },
       contract: {
         referenceNo: contractRefNo,
@@ -374,7 +398,7 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
         endDate,
         renewalStatus: 'Not Due',
         salaryGrade: `Grade ${jobTitle === 'Principal' ? 'E-1' : jobTitle === 'Teacher' ? 'T-2' : 'S-1'}`,
-        monthlyBaseSalary: Number(monthlyBaseSalary),
+        monthlyBaseSalary: Number(monthlyBaseSalary) || 0,
         currency: 'USD',
         benefits: ['Medical Insurance', 'Housing Stipend'],
         noticePeriodDays: 30
@@ -519,7 +543,7 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
                 <label htmlFor="reg-name" className={labelClass}>
-                  Full Name <span className="text-rose-500">*</span>
+                  Full Name
                 </label>
                 <input
                   id="reg-name"
@@ -634,7 +658,7 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
 
             <div>
               <span className={labelClass}>
-                School Division <span className="text-rose-500">*</span>
+                School Division
               </span>
               {divisions.length === 0 && (
                 <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-xs">
@@ -677,7 +701,6 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
               <SelectWithOther
                 id="reg-role"
                 label="Job Role"
-                required
                 options={JOB_ROLES}
                 extraValues={savedRoles}
                 value={jobRole}
@@ -689,7 +712,6 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
               <SelectWithOther
                 id="reg-employment"
                 label="Employment Type"
-                required
                 options={EMPLOYMENT_TYPES}
                 extraValues={savedEmploymentTypes}
                 value={employmentType}
@@ -745,14 +767,7 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
                   <button
                     key={tier}
                     type="button"
-                    onClick={() => {
-                      setDegreeLevel(tier);
-                      if (tier === 'PhD') setHighestDegree('Doctor of Philosophy (PhD)');
-                      if (tier === 'Master') setHighestDegree('Master of Science / Education');
-                      if (tier === 'Bachelor') setHighestDegree('Bachelor of Education (B.Ed)');
-                      if (tier === 'Diploma') setHighestDegree('Diploma in Education');
-                      if (tier === 'Vocational') setHighestDegree('Certified Technical License');
-                    }}
+                    onClick={() => setDegreeLevel(tier)}
                     className={`py-2.5 px-3 rounded-xl border text-sm text-center transition-all font-semibold ${
                       degreeLevel === tier
                         ? 'border-[#147D4A] bg-[#147D4A] text-white shadow-sm'
@@ -773,6 +788,7 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
                   type="text"
                   value={highestDegree}
                   onChange={(e) => setHighestDegree(e.target.value)}
+                  placeholder={`e.g. ${DEGREE_TITLE_HINTS[degreeLevel]}`}
                   className={inputClass}
                 />
               </div>
@@ -806,9 +822,12 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
                   <label htmlFor="reg-grad" className={labelClass}>Graduation Year</label>
                   <input
                     id="reg-grad"
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={4}
                     value={graduationYear}
-                    onChange={(e) => setGraduationYear(Number(e.target.value))}
+                    onChange={(e) => setGraduationYear(e.target.value.replace(/\D/g, ''))}
+                    placeholder="e.g. 2019"
                     className={`${inputClass} font-mono`}
                   />
                 </div>
@@ -817,10 +836,12 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
                   <label htmlFor="reg-exp" className={labelClass}>Experience (Years)</label>
                   <input
                     id="reg-exp"
-                    type="number"
-                    min={0}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={2}
                     value={yearsOfExperience}
-                    onChange={(e) => setYearsOfExperience(Number(e.target.value))}
+                    onChange={(e) => setYearsOfExperience(e.target.value.replace(/\D/g, '').replace(/^0+(?=\d)/, ''))}
+                    placeholder="0"
                     className={`${inputClass} font-mono`}
                   />
                 </div>
@@ -850,34 +871,46 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
 
               <div>
                 <label htmlFor="reg-salary" className={labelClass}>
-                  Monthly Salary (USD) <span className="text-rose-500">*</span>
+                  Monthly Salary (USD)
                 </label>
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
                   <input
                     id="reg-salary"
-                    type="number"
-                    min={0}
+                    type="text"
+                    inputMode="decimal"
                     value={monthlyBaseSalary}
-                    onChange={(e) => setMonthlyBaseSalary(Number(e.target.value))}
+                    onChange={(e) => setMonthlyBaseSalary(e.target.value.replace(/[^\d.]/g, '').replace(/^0+(?=\d)/, ''))}
+                    placeholder="600"
                     className={`${inputClass} pl-7 font-mono font-semibold`}
-                    required
                   />
                 </div>
               </div>
 
-              <SelectWithOther
-                id="reg-duration"
-                label="Contract Duration"
-                required
-                options={CONTRACT_DURATIONS}
-                value={contractYears}
-                onChange={setContractYears}
-                otherLabel="+ Enter years manually..."
-                placeholder="Number of years"
-                inputType="number"
-                formatLabel={(v) => `${v} ${Number(v) === 1 ? 'Year' : 'Years'}`}
-              />
+              <div>
+                <label htmlFor="reg-duration" className={labelClass}>Contract Duration</label>
+                <div className="flex">
+                  <input
+                    id="reg-duration"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={3}
+                    value={durationValue}
+                    onChange={(e) => setDurationValue(e.target.value.replace(/\D/g, '').replace(/^0+/, ''))}
+                    placeholder={durationUnit === 'months' ? 'e.g. 6' : 'e.g. 2'}
+                    className={`${inputClass} rounded-r-none font-mono font-semibold min-w-0`}
+                  />
+                  <select
+                    value={durationUnit}
+                    onChange={(e) => setDurationUnit(e.target.value as 'months' | 'years')}
+                    aria-label="Duration unit"
+                    className={`${inputClass} w-28 shrink-0 rounded-l-none border-l-0 font-semibold`}
+                  >
+                    <option value="months">{Number(durationValue) === 1 ? 'Month' : 'Months'}</option>
+                    <option value="years">{Number(durationValue) === 1 ? 'Year' : 'Years'}</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
             {/* Payment account */}

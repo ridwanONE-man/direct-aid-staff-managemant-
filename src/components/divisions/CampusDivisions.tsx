@@ -42,7 +42,6 @@ export const CampusDivisions: React.FC = () => {
     navigateToProfile,
     addDivision,
     deleteDivision,
-    clearDivisionPrincipal,
     updateDivision,
     setActivePage
   } = useApp();
@@ -370,21 +369,6 @@ export const CampusDivisions: React.FC = () => {
                       </span>
                     )}
                   </div>
-                  {div.principalName && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (window.confirm(`Remove ${div.principalName} as ${isHQ ? 'director' : 'principal'} of ${div.name}?`)) {
-                          clearDivisionPrincipal(div.id);
-                        }
-                      }}
-                      className="p-1 rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-colors self-start shrink-0"
-                      title={`Remove ${isHQ ? 'director' : 'principal'}`}
-                      aria-label={`Remove ${isHQ ? 'director' : 'principal'}`}
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  )}
                 </div>
 
                 {/* Staff Breakdown */}
@@ -720,7 +704,7 @@ export const CampusDivisions: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-2">
-                  <label className="block text-slate-700 font-semibold mb-1">Division Name *</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Division Name</label>
                   <input
                     type="text"
                     value={divisionForm.name}
@@ -731,7 +715,7 @@ export const CampusDivisions: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Division Code *</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Division Code</label>
                   <input
                     type="text"
                     value={divisionForm.code}
@@ -745,7 +729,7 @@ export const CampusDivisions: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">City *</label>
+                  <label className="block text-slate-700 font-semibold mb-1">City</label>
                   <select
                     value={divisionForm.city}
                     onChange={(e) => updateForm('city', e.target.value)}
@@ -756,7 +740,7 @@ export const CampusDivisions: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">School Level *</label>
+                  <label className="block text-slate-700 font-semibold mb-1">School Level</label>
                   <select
                     value={divisionForm.level}
                     onChange={(e) => updateForm('level', e.target.value)}
@@ -768,7 +752,7 @@ export const CampusDivisions: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Wing *</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Wing</label>
                   <select
                     value={isOperations ? 'Operations' : divisionForm.gender}
                     onChange={(e) => updateForm('gender', e.target.value)}
@@ -785,14 +769,28 @@ export const CampusDivisions: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-2">
-                  <label className="block text-slate-700 font-semibold mb-1">{isOperations ? 'Director' : 'Principal'}</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-slate-700 font-semibold">{isOperations ? 'Director' : 'Principal'}</label>
+                    {(selectedPrincipal || unlinkedPrincipal) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          updateForm('principalEmployeeId', '');
+                          setUnlinkedPrincipal('');
+                        }}
+                        className="text-[11px] font-semibold text-rose-600 hover:underline"
+                      >
+                        Set as not assigned
+                      </button>
+                    )}
+                  </div>
                   <select
                     value={divisionForm.principalEmployeeId}
                     onChange={(e) => updateForm('principalEmployeeId', e.target.value)}
                     disabled={principalStaff.length === 0}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#147D4A] focus:border-[#147D4A] bg-white disabled:bg-slate-100"
                   >
-                    <option value="">No {isOperations ? 'director' : 'principal'} assigned</option>
+                    <option value="">Not assigned</option>
                     {principalStaff.map(p => {
                       const other = principalOfOther(p.id);
                       return (

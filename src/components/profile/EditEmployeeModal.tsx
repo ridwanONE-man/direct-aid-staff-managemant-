@@ -253,7 +253,7 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, 
 
               <div className="sm:col-span-2">
                 <label className={labelClass}>
-                  Full Name <span className="text-rose-500">*</span>
+                  Full Name
                 </label>
                 <input type="text" value={form.fullName} onChange={(e) => set('fullName', e.target.value)} className={inputClass} />
               </div>
