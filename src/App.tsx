@@ -11,6 +11,7 @@ import { ContractsHub } from './components/contracts/ContractsHub';
 import { ReportsCenter } from './components/reports/ReportsCenter';
 import { RegisterEmployeePage } from './components/register/RegisterEmployeePage';
 import { RenewContractModal } from './components/modals/RenewContractModal';
+import { SaveNotice } from './components/common/SaveNotice';
 
 const AppContent: React.FC = () => {
   const { activePage, isAuthenticated, isAuthReady, isDataLoading, syncError, clearSyncError } = useApp();
@@ -82,6 +83,8 @@ const AppContent: React.FC = () => {
           {activePage === 'register' && <RegisterEmployeePage />}
         </div>
       </main>
+
+      <SaveNotice />
 
       {/* Interactive Global Modals */}
       <RenewContractModal />

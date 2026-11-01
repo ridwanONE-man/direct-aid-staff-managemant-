@@ -8,6 +8,7 @@ import { resizePhoto } from '../../lib/photo';
 import { DocumentRow } from '../documents/DocumentRow';
 import { AddOtherDocument } from '../documents/AddOtherDocument';
 import { EditEmployeeModal } from './EditEmployeeModal';
+import { StaffProfileList } from './StaffProfileList';
 import {
   MapPin,
   FileText,
@@ -88,32 +89,9 @@ export const EmployeeProfile: React.FC = () => {
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const [docError, setDocError] = useState('');
 
-  // Fallback to first employee if none selected
-  const employee = selectedEmployee || employees[0];
+  const employee = selectedEmployee;
 
-  if (!employee) {
-    return (
-      <div className="bg-white border border-[#E2EAE4] rounded-2xl p-12 text-center shadow-xs">
-        <User className="w-8 h-8 text-[#147D4A] mx-auto" />
-        <h3 className="text-base font-bold text-[#192C21] mt-3">No Staff Selected</h3>
-        <p className="text-xs text-[#57685D] mt-1">Register a staff member or pick one from the directory.</p>
-        <div className="mt-4 flex items-center justify-center gap-2">
-          <button
-            onClick={() => setActivePage('register')}
-            className="px-4 py-2 bg-[#147D4A] hover:bg-[#0E6139] text-white text-xs font-semibold rounded-xl"
-          >
-            Register Staff
-          </button>
-          <button
-            onClick={() => setActivePage('directory')}
-            className="px-4 py-2 border border-[#E2EAE4] hover:bg-[#F3F7F4] text-[#384C3F] text-xs font-semibold rounded-xl"
-          >
-            Staff Directory
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (!employee) return <StaffProfileList />;
 
   const isContractExpiring =
     needsRenewal(employee);
@@ -197,10 +175,10 @@ export const EmployeeProfile: React.FC = () => {
       {/* Top bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <button
-          onClick={() => setActivePage('directory')}
+          onClick={() => setSelectedEmployee(null)}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#57685D] hover:text-[#192C21] self-start"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to Directory
+          <ArrowLeft className="w-4 h-4" /> Back to Staff List
         </button>
 
         <div className="flex items-center gap-2">

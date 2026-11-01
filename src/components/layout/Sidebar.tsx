@@ -34,6 +34,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const {
     activePage,
     setActivePage,
+    setSelectedEmployee,
     scopedEmployees: employees,
     scopedDivisions: divisions,
     regionalScope,
@@ -93,6 +94,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   const handleNavClick = (page: AppPage) => {
+    if (page === 'profile') setSelectedEmployee(null);
     setActivePage(page);
     setIsMobileOpen(false);
   };

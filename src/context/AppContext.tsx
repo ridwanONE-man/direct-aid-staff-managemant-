@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import {
   EmployeeRecord,
   SchoolDivisionCategory,
@@ -89,6 +89,7 @@ interface AppContextType {
   logout: () => Promise<void>;
   isDataLoading: boolean;
   syncError: string | null;
+  saveStatus: 'idle' | 'saving' | 'saved';
   clearSyncError: () => void;
 }
 
@@ -146,6 +147,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isAuthReady, setIsAuthReady] = useState(!supabase);
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const pendingSaves = useRef(0);
+  const saveFailed = useRef(false);
+  const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!supabase) return;
@@ -226,13 +231,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [userId]);
 
   // Changes apply to the screen immediately; a failed save is reported in the sync banner
+  // The bottom notice shows "Saving..." while writes are in flight, then "saved" for 2 seconds
   const persist = (op: DbResult) => {
-    Promise.resolve(op).then(({ error }) => {
-      if (error) {
-        console.error('Supabase save failed:', error);
-        setSyncError(`Could not save to Supabase: ${error.message}`);
-      }
-    });
+    pendingSaves.current += 1;
+    if (savedTimer.current) clearTimeout(savedTimer.current);
+    setSaveStatus('saving');
+    Promise.resolve(op)
+      .then(({ error }) => {
+        if (error) {
+          console.error('Supabase save failed:', error);
+          saveFailed.current = true;
+          setSyncError(`Could not save to Supabase: ${error.message}`);
+        }
+      })
+      .catch((err: unknown) => {
+        saveFailed.current = true;
+        setSyncError(`Could not save to Supabase: ${err instanceof Error ? err.message : String(err)}`);
+      })
+      .finally(() => {
+        pendingSaves.current -= 1;
+        if (pendingSaves.current > 0) return;
+        if (saveFailed.current) {
+          saveFailed.current = false;
+          setSaveStatus('idle');
+          return;
+        }
+        setSaveStatus('saved');
+        savedTimer.current = setTimeout(() => setSaveStatus('idle'), 2000);
+      });
   };
 
   const saveNotification = (notif: HRAlertNotification) => {
@@ -550,7 +576,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     removeStaffFiles(removed.flatMap(e => e.documents.map(d => d.storagePath)).filter((p): p is string => !!p));
     setEmployees(prev => prev.filter(e => !ids.includes(e.id)));
     if (selectedEmployee && ids.includes(selectedEmployee.id)) {
-      setSelectedEmployee(employees.find(e => !ids.includes(e.id)) || null);
+      setSelectedEmployee(null);
     }
     if (supabase) persist(supabase.from('employees').delete().in('id', ids));
 
@@ -690,6 +716,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         logout,
         isDataLoading,
         syncError,
+        saveStatus,
         clearSyncError: () => setSyncError(null)
       }}
     >
