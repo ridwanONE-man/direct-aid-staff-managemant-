@@ -206,15 +206,14 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
   const [durationValue, setDurationValue] = useState('');
   const [durationUnit, setDurationUnit] = useState<'months' | 'years'>('years');
   const [startDate] = useState(new Date().toISOString().split('T')[0]);
-  // References count up within the year: CTR-2026-1, CTR-2026-2, ...
+  // References count up within the year from 1 (CTR-2026-1, CTR-2026-2, ...), using the lowest free number
+  // so older random references such as CTR-2026-936 don't push the count up
   const contractRefNo = useMemo(() => {
     const prefix = `CTR-${new Date().getFullYear()}-`;
-    const highest = employees.reduce((max, e) => {
-      const ref = e.contract?.referenceNo || '';
-      const n = ref.startsWith(prefix) ? Number(ref.slice(prefix.length)) : NaN;
-      return Number.isInteger(n) && n > max ? n : max;
-    }, 0);
-    return `${prefix}${highest + 1}`;
+    const taken = new Set(employees.map(e => e.contract?.referenceNo || '').filter(ref => ref.startsWith(prefix)));
+    let n = 1;
+    while (taken.has(`${prefix}${n}`)) n++;
+    return `${prefix}${n}`;
   }, [employees]);
 
   const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS[0].value);
