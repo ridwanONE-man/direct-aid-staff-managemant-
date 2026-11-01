@@ -116,21 +116,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
         } ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         {/* Brand Header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-[#E2EAE4] bg-[#F9FBFA]">
+        <div
+          className={`relative h-16 flex items-center border-b border-[#E2EAE4] bg-linear-to-r from-[#F3FAF5] to-white ${
+            isCollapsed ? 'justify-center px-2' : 'px-4'
+          }`}
+        >
           <div
-            className="flex items-center gap-2.5 overflow-hidden cursor-pointer"
+            className="flex items-center gap-2.5 min-w-0 cursor-pointer group"
             onClick={() => handleNavClick('dashboard')}
+            title="DirectAid · Dashboard"
           >
-            <div className="w-9 h-9 rounded-xl bg-white border border-[#C5E8D2] flex items-center justify-center shrink-0 shadow-2xs overflow-hidden p-0.5">
-              <img
-                src="/directaid-logo.png"
-                alt="DirectAid"
-                className="w-7 h-7 object-contain"
-              />
-            </div>
+            <img
+              src="/favicon-192.png"
+              alt="DirectAid"
+              className={`shrink-0 drop-shadow-sm transition-all duration-300 group-hover:scale-105 ${
+                isCollapsed ? 'w-11 h-11' : 'w-10 h-10'
+              }`}
+            />
             {!isCollapsed && (
               <div className="flex flex-col min-w-0">
-                <span className="font-bold text-[#147D4A] text-sm leading-tight tracking-tight">
+                <span className="font-extrabold text-[#147D4A] text-base leading-tight tracking-tight">
                   DirectAid
                 </span>
                 <span className="text-[11px] font-medium text-[#6B7E72] truncate">
@@ -140,12 +145,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </div>
 
+          {/* Collapse toggle sits on the sidebar edge so the logo keeps its space */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden lg:flex w-7 h-7 rounded-lg border border-[#E2EAE4] bg-white text-[#57685D] hover:text-[#147D4A] hover:bg-[#EBF7EE] items-center justify-center transition-colors"
+            className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full border border-[#C5E8D2] bg-white text-[#57685D] hover:text-white hover:bg-[#147D4A] hover:border-[#147D4A] items-center justify-center shadow-sm transition-colors"
             title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+            aria-label={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
           >
-            {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
           </button>
         </div>
 
