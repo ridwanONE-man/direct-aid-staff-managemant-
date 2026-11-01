@@ -204,7 +204,7 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
   // 4. Contract & Documents
   const [monthlyBaseSalary, setMonthlyBaseSalary] = useState('');
   const [durationValue, setDurationValue] = useState('');
-  const [durationUnit, setDurationUnit] = useState<'months' | 'years'>('years');
+  const [durationUnit, setDurationUnit] = useState<'' | 'months' | 'years'>('');
   const [startDate] = useState(new Date().toISOString().split('T')[0]);
   // References count up within the year from 1 (CTR-2026-1, CTR-2026-2, ...), using the lowest free number
   // so older random references such as CTR-2026-936 don't push the count up
@@ -309,8 +309,12 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
       setStep(2);
       return;
     }
+    if (!durationUnit) {
+      setError('Please choose months or years for the contract duration.');
+      return;
+    }
     if (!Number.isInteger(duration) || duration < 1) {
-      setError('Please enter the contract duration in months or years.');
+      setError(`Please enter the number of ${durationUnit} for the contract duration.`);
       return;
     }
 
@@ -888,26 +892,37 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
 
               <div>
                 <label htmlFor="reg-duration" className={labelClass}>Contract Duration</label>
-                <div className="flex">
-                  <input
-                    id="reg-duration"
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={3}
-                    value={durationValue}
-                    onChange={(e) => setDurationValue(e.target.value.replace(/\D/g, '').replace(/^0+/, ''))}
-                    placeholder={durationUnit === 'months' ? 'e.g. 6' : 'e.g. 2'}
-                    className={`${inputClass} rounded-r-none font-mono font-semibold min-w-0`}
-                  />
+                {/* One box: choose months or years first, then type how many */}
+                <div className="flex items-center bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl transition-all focus-within:bg-white focus-within:border-[#147D4A] focus-within:ring-2 focus-within:ring-[#147D4A]/15">
                   <select
+                    id="reg-duration"
                     value={durationUnit}
                     onChange={(e) => setDurationUnit(e.target.value as 'months' | 'years')}
-                    aria-label="Duration unit"
-                    className={`${inputClass} w-28 shrink-0 rounded-l-none border-l-0 font-semibold`}
+                    className={`bg-transparent pl-3.5 pr-2 py-2.5 text-sm font-semibold focus:outline-none cursor-pointer ${
+                      durationUnit ? 'text-[#147D4A] shrink-0' : 'text-slate-400 w-full'
+                    }`}
                   >
-                    <option value="months">{Number(durationValue) === 1 ? 'Month' : 'Months'}</option>
-                    <option value="years">{Number(durationValue) === 1 ? 'Year' : 'Years'}</option>
+                    <option value="" disabled>Select months or years</option>
+                    <option value="months">Months</option>
+                    <option value="years">Years</option>
                   </select>
+                  {durationUnit && (
+                    <>
+                      <span className="w-px h-5 bg-[#E2EAE4] shrink-0" />
+                      <input
+                        key={durationUnit}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={3}
+                        value={durationValue}
+                        onChange={(e) => setDurationValue(e.target.value.replace(/\D/g, '').replace(/^0+/, ''))}
+                        placeholder={durationUnit === 'months' ? 'Number of months, e.g. 6' : 'Number of years, e.g. 2'}
+                        aria-label={durationUnit === 'months' ? 'Number of months' : 'Number of years'}
+                        className="flex-1 min-w-0 bg-transparent px-3 py-2.5 text-sm font-mono font-semibold text-[#192C21] placeholder:font-sans placeholder:font-normal placeholder:text-slate-400 focus:outline-none"
+                        autoFocus
+                      />
+                    </>
+                  )}
                 </div>
               </div>
             </div>
