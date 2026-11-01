@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { needsRenewal } from '../../lib/contracts';
 import { EmployeeRecord } from '../../types';
 import { BulkActionBar, ConfirmDeleteDialog, SelectBox } from '../common/BulkActions';
+import { RoleFilter } from './RoleFilter';
 import {
   Search,
   Download,
@@ -45,6 +46,27 @@ export const StaffDirectory: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [sortField, setSortField] = useState<'fullName' | 'id' | 'hireDate' | 'jobTitle'>('fullName');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  // Roles held by registered staff in the current region, most common first
+  const rolesInUse = useMemo(() => {
+    const counts = new Map<string, number>();
+    employees.forEach(emp => {
+      if (regionalScope === 'hargeisa' && emp.campusLocation !== 'Hargeisa') return;
+      if (regionalScope === 'gabiley' && emp.campusLocation !== 'Gabiley') return;
+      const role = emp.jobTitle?.trim();
+      if (role) counts.set(role, (counts.get(role) || 0) + 1);
+    });
+    return [...counts.entries()]
+      .map(([role, count]) => ({ role, count }))
+      .sort((a, b) => b.count - a.count || a.role.localeCompare(b.role));
+  }, [employees, regionalScope]);
+
+  // Drop a role filter once nobody holds that role any more
+  useEffect(() => {
+    if (filters.jobRole && !rolesInUse.some(r => r.role === filters.jobRole)) {
+      setFilters(prev => ({ ...prev, jobRole: '' }));
+    }
+  }, [rolesInUse, filters.jobRole, setFilters]);
 
   // Filter employees
   const filteredEmployees = useMemo(() => {
@@ -270,25 +292,11 @@ export const StaffDirectory: React.FC = () => {
           </div>
 
           {/* Role Selector */}
-          <div>
-            <select
-              value={filters.jobRole}
-              onChange={(e) => setFilters(prev => ({ ...prev, jobRole: e.target.value }))}
-              className="w-full px-2.5 py-1.5 bg-[#F6FAF7] border border-[#E2EAE4] rounded-xl text-xs text-[#192C21] focus:outline-none focus:ring-1 focus:ring-[#147D4A] cursor-pointer"
-            >
-              <option value="">All Roles</option>
-              <option value="Principal">Principal</option>
-              <option value="Deputy Principal">Deputy Principal</option>
-              <option value="Teacher">Teacher</option>
-              <option value="Security Guard">Security Guard</option>
-              <option value="Cleaner">Cleaner</option>
-              <option value="Driver">Driver</option>
-              <option value="Secretary">Secretary</option>
-              <option value="Finance Officer">Finance Officer</option>
-              <option value="IT Support Officer">IT Support Officer</option>
-              <option value="Human Resources Officer">HR Officer</option>
-            </select>
-          </div>
+          <RoleFilter
+            roles={rolesInUse}
+            value={filters.jobRole}
+            onChange={(role) => setFilters(prev => ({ ...prev, jobRole: role }))}
+          />
 
           {/* School Level */}
           <div>
@@ -324,60 +332,19 @@ export const StaffDirectory: React.FC = () => {
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-[#57685D] text-[11px] font-semibold mr-1">Quick Filter:</span>
             
-            <button
-              onClick={() => setFilters(prev => ({ ...prev, jobRole: prev.jobRole === 'Teacher' ? '' : 'Teacher' }))}
-              className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border transition-colors ${
-                filters.jobRole === 'Teacher'
-                  ? 'bg-[#147D4A] text-white border-[#147D4A]'
-                  : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
-              }`}
-            >
-              Teachers ({employees.filter(e => e.jobTitle === 'Teacher').length})
-            </button>
-
-            <button
-              onClick={() => setFilters(prev => ({ ...prev, jobRole: prev.jobRole === 'Principal' ? '' : 'Principal' }))}
-              className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border transition-colors ${
-                filters.jobRole === 'Principal'
-                  ? 'bg-[#147D4A] text-white border-[#147D4A]'
-                  : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
-              }`}
-            >
-              Principals
-            </button>
-
-            <button
-              onClick={() => setFilters(prev => ({ ...prev, jobRole: prev.jobRole === 'Security Guard' ? '' : 'Security Guard' }))}
-              className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border transition-colors ${
-                filters.jobRole === 'Security Guard'
-                  ? 'bg-[#147D4A] text-white border-[#147D4A]'
-                  : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
-              }`}
-            >
-              Security
-            </button>
-
-            <button
-              onClick={() => setFilters(prev => ({ ...prev, jobRole: prev.jobRole === 'Cleaner' ? '' : 'Cleaner' }))}
-              className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border transition-colors ${
-                filters.jobRole === 'Cleaner'
-                  ? 'bg-[#147D4A] text-white border-[#147D4A]'
-                  : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
-              }`}
-            >
-              Cleaners
-            </button>
-
-            <button
-              onClick={() => setFilters(prev => ({ ...prev, jobRole: prev.jobRole === 'Driver' ? '' : 'Driver' }))}
-              className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border transition-colors ${
-                filters.jobRole === 'Driver'
-                  ? 'bg-[#147D4A] text-white border-[#147D4A]'
-                  : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
-              }`}
-            >
-              Drivers
-            </button>
+            {rolesInUse.slice(0, 5).map(({ role, count }) => (
+              <button
+                key={role}
+                onClick={() => setFilters(prev => ({ ...prev, jobRole: prev.jobRole === role ? '' : role }))}
+                className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border transition-colors ${
+                  filters.jobRole === role
+                    ? 'bg-[#147D4A] text-white border-[#147D4A]'
+                    : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                {role} ({count})
+              </button>
+            ))}
 
             <button
               onClick={() => setFilters(prev => ({ ...prev, contractStatus: prev.contractStatus === 'expiring' ? '' : 'expiring' }))}
