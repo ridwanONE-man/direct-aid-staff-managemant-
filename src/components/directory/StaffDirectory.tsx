@@ -4,6 +4,7 @@ import { needsRenewal } from '../../lib/contracts';
 import { EmployeeRecord } from '../../types';
 import { BulkActionBar, ConfirmDeleteDialog, SelectBox } from '../common/BulkActions';
 import { RoleFilter } from './RoleFilter';
+import { roleName, roleTheme } from '../../data/roleTheme';
 import {
   Search,
   Download,
@@ -385,59 +386,68 @@ export const StaffDirectory: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredEmployees.map((emp) => {
             const isExpiring = needsRenewal(emp);
+            const theme = roleTheme(emp);
+            const RoleIcon = theme.icon;
             return (
               <div
                 key={emp.id}
                 onClick={() => navigateToProfile(emp.id)}
-                className={`bg-white border rounded-2xl p-4 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between group hover:-translate-y-1 ${
-                  isSelected(emp.id) ? 'border-[#147D4A] ring-2 ring-[#147D4A]/20' : 'border-[#E2EAE4] hover:border-[#147D4A]'
+                className={`bg-white border rounded-2xl overflow-hidden shadow-xs hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between group hover:-translate-y-1 ${
+                  isSelected(emp.id) ? 'border-[#147D4A] ring-2 ring-[#147D4A]/20' : 'border-[#E2EAE4] hover:border-[#C5E8D2]'
                 }`}
               >
-                <div>
-                  {/* Card Header: ID & Location */}
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
+                {/* Colour band: one colour per kind of staff */}
+                <div className={`relative h-[68px] bg-linear-to-br ${theme.band} px-3 pt-2.5`}>
+                  <span className="absolute -top-8 -right-6 w-24 h-24 rounded-full border-[14px] border-white/10 pointer-events-none" />
+                  <span className="absolute -bottom-10 left-10 w-20 h-20 rounded-full bg-white/10 blur-xl pointer-events-none" />
+                  <div className="relative flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
                       <SelectBox
                         checked={isSelected(emp.id)}
                         onChange={() => toggleSelected(emp.id)}
                         label={`Select ${emp.fullName}`}
                       />
-                      <span className="font-mono text-[10px] font-bold text-[#147D4A] bg-[#EBF7EE] px-2 py-0.5 rounded-md">
+                      <span className="font-mono text-[10px] font-bold text-white bg-white/20 px-2 py-0.5 rounded-md truncate">
                         {emp.id}
                       </span>
                     </div>
-                    <span className="text-[11px] font-semibold text-[#57685D] flex items-center gap-1">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-white/20 backdrop-blur-sm px-2 py-0.5 rounded-full shrink-0">
+                      <RoleIcon className="w-3 h-3" /> {theme.group}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="px-4 pb-4 flex-1 flex flex-col justify-between">
+                <div>
+                  {/* Profile Info: photo overlaps the band */}
+                  <div className="flex items-end gap-3 -mt-7">
+                    <div className="relative shrink-0">
+                      <img
+                        src={emp.avatarUrl}
+                        alt={emp.fullName}
+                        className="w-14 h-14 rounded-2xl object-cover border-[3px] border-white shadow-md bg-white"
+                      />
+                      <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
+                        emp.employmentStatus === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'
+                      }`} />
+                    </div>
+                    <span className="mb-0.5 ml-auto text-[11px] font-semibold text-[#57685D] flex items-center gap-1">
                       <MapPin className="w-3 h-3 text-[#147D4A]" />
                       {emp.campusLocation}
                     </span>
                   </div>
 
-                  {/* Profile Info */}
-                  <div className="flex items-start gap-3">
-                    <div className="relative shrink-0">
-                      <img
-                        src={emp.avatarUrl}
-                        alt={emp.fullName}
-                        className="w-12 h-12 rounded-xl object-cover border border-[#C5E8D2] shadow-2xs"
-                      />
-                      <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${
-                        emp.employmentStatus === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'
-                      }`} />
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-bold text-xs text-[#192C21] group-hover:text-[#147D4A] transition-colors truncate">
-                        {emp.fullName}
-                      </h3>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="text-[11px] font-semibold text-[#147D4A] truncate">
-                          {emp.jobTitle}
-                        </span>
-                      </div>
-                      <span className="text-[10px] text-[#57685D] truncate block mt-0.5">
-                        {emp.divisionName}
-                      </span>
-                    </div>
+                  <div className="mt-2.5 min-w-0">
+                    <h3 className="font-bold text-sm text-[#192C21] group-hover:text-[#147D4A] transition-colors truncate">
+                      {emp.fullName}
+                    </h3>
+                    <span className={`inline-flex items-center gap-1 mt-1 text-[11px] font-semibold px-2 py-0.5 rounded-md ${theme.tint} ${theme.text} max-w-full`}>
+                      <RoleIcon className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{roleName(emp)}</span>
+                    </span>
+                    <span className="text-[10px] text-[#57685D] truncate block mt-1">
+                      {emp.divisionName}
+                    </span>
                   </div>
 
                   {/* Contact & Meta */}
@@ -486,6 +496,7 @@ export const StaffDirectory: React.FC = () => {
                       View Profile →
                     </span>
                   </div>
+                </div>
                 </div>
               </div>
             );
@@ -592,9 +603,15 @@ export const StaffDirectory: React.FC = () => {
 
                         {/* Role & Subject */}
                         <td className="py-3 px-4">
-                          <span className="font-semibold text-[#192C21] block">
-                            {emp.jobTitle}
-                          </span>
+                          {(() => {
+                            const theme = roleTheme(emp);
+                            const RoleIcon = theme.icon;
+                            return (
+                              <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md ${theme.tint} ${theme.text}`}>
+                                <RoleIcon className="w-3 h-3 shrink-0" /> {roleName(emp)}
+                              </span>
+                            );
+                          })()}
                           <span className="text-[11px] text-[#57685D] truncate block">
                             {emp.qualifications.highestDegree}
                           </span>

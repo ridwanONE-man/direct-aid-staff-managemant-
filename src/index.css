@@ -243,6 +243,13 @@
 .dim .app-shell .bg-blue-100 { background-color: rgba(59, 130, 246, 0.2); }
 .dim .app-shell .bg-\[\#F3F9F5\] { background-color: #313D37; }
 .dim .app-shell .bg-\[\#F3F7F4\] { background-color: #313D37; }
+.dim .app-shell .bg-\[\#E3F3E8\] { background-color: #1F3D2D; }
+.dim .app-shell .bg-\[\#E6F5EE\] { background-color: #1F3D2D; }
+.dim .app-shell .bg-\[\#E4F1F0\] { background-color: rgba(51, 130, 125, 0.22); }
+.dim .app-shell .bg-\[\#E2F4F5\] { background-color: rgba(31, 162, 168, 0.2); }
+.dim .app-shell .bg-\[\#FBF1DE\] { background-color: rgba(214, 158, 46, 0.18); }
+.dim .app-shell .bg-\[\#E8EFF6\] { background-color: rgba(79, 124, 163, 0.22); }
+.dim .app-shell .bg-\[\#EEF2EF\] { background-color: #313D37; }
 .dim .app-shell .hover\:bg-\[\#F3F7F4\]:hover { background-color: #313D37; }
 .dim .app-shell .hover\:bg-\[\#F6FAF7\]:hover { background-color: #313D37; }
 .dim .app-shell .hover\:bg-\[\#F9FBFA\]:hover { background-color: #313D37; }
@@ -301,6 +308,13 @@
 .dim .app-shell .text-blue-700 { color: #93C5FD; }
 .dim .app-shell .text-blue-800 { color: #BFDBFE; }
 .dim .app-shell .text-indigo-600 { color: #A5B4FC; }
+.dim .app-shell .text-\[\#0E6139\] { color: #5DD496; }
+.dim .app-shell .text-\[\#1C7A55\] { color: #6FD9A8; }
+.dim .app-shell .text-\[\#256663\] { color: #7FD1CA; }
+.dim .app-shell .text-\[\#13838C\] { color: #67D4DA; }
+.dim .app-shell .text-\[\#9A6412\] { color: #F2C46D; }
+.dim .app-shell .text-\[\#3B6386\] { color: #9DC0E3; }
+.dim .app-shell .text-\[\#4A5A50\] { color: #B4C3BA; }
 .dim .app-shell .hover\:text-\[\#192C21\]:hover { color: #EEF3F0; }
 .dim .app-shell .hover\:text-\[\#147D4A\]:hover { color: #5DD496; }
 .dim .app-shell .hover\:text-slate-600:hover { color: #EEF3F0; }
@@ -397,6 +411,13 @@
 .dark .app-shell .bg-blue-100 { background-color: rgba(59, 130, 246, 0.2); }
 .dark .app-shell .bg-\[\#F3F9F5\] { background-color: rgba(255, 255, 255, 0.08); }
 .dark .app-shell .bg-\[\#F3F7F4\] { background-color: rgba(255, 255, 255, 0.08); }
+.dark .app-shell .bg-\[\#E3F3E8\] { background-color: rgba(53, 184, 107, 0.14); }
+.dark .app-shell .bg-\[\#E6F5EE\] { background-color: rgba(53, 184, 107, 0.14); }
+.dark .app-shell .bg-\[\#E4F1F0\] { background-color: rgba(51, 130, 125, 0.22); }
+.dark .app-shell .bg-\[\#E2F4F5\] { background-color: rgba(31, 162, 168, 0.2); }
+.dark .app-shell .bg-\[\#FBF1DE\] { background-color: rgba(214, 158, 46, 0.18); }
+.dark .app-shell .bg-\[\#E8EFF6\] { background-color: rgba(79, 124, 163, 0.22); }
+.dark .app-shell .bg-\[\#EEF2EF\] { background-color: rgba(255, 255, 255, 0.08); }
 .dark .app-shell .hover\:bg-\[\#F3F7F4\]:hover { background-color: rgba(255, 255, 255, 0.08); }
 .dark .app-shell .hover\:bg-\[\#F6FAF7\]:hover { background-color: rgba(255, 255, 255, 0.08); }
 .dark .app-shell .hover\:bg-\[\#F9FBFA\]:hover { background-color: rgba(255, 255, 255, 0.08); }
@@ -455,6 +476,13 @@
 .dark .app-shell .text-blue-700 { color: #93C5FD; }
 .dark .app-shell .text-blue-800 { color: #BFDBFE; }
 .dark .app-shell .text-indigo-600 { color: #A5B4FC; }
+.dark .app-shell .text-\[\#0E6139\] { color: #5DD496; }
+.dark .app-shell .text-\[\#1C7A55\] { color: #6FD9A8; }
+.dark .app-shell .text-\[\#256663\] { color: #7FD1CA; }
+.dark .app-shell .text-\[\#13838C\] { color: #67D4DA; }
+.dark .app-shell .text-\[\#9A6412\] { color: #F2C46D; }
+.dark .app-shell .text-\[\#3B6386\] { color: #9DC0E3; }
+.dark .app-shell .text-\[\#4A5A50\] { color: #A9B4AE; }
 .dark .app-shell .hover\:text-\[\#192C21\]:hover { color: #F2F5F3; }
 .dark .app-shell .hover\:text-\[\#147D4A\]:hover { color: #5DD496; }
 .dark .app-shell .hover\:text-slate-600:hover { color: #F2F5F3; }
