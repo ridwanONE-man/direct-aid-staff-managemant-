@@ -733,7 +733,7 @@ export const CampusDivisions: React.FC = () => {
                     : editingId
                       ? 'Changes also update the division shown on its staff records.'
                       : divisionKind === 'hq'
-                        ? 'The head office, led by a General Director.'
+                        ? 'An office for central operations, led by a General Director.'
                         : 'A school campus, led by a Principal.'}
                 </p>
               </div>
@@ -759,8 +759,8 @@ export const CampusDivisions: React.FC = () => {
                   {
                     kind: 'hq' as const,
                     icon: Landmark,
-                    title: 'Headquarters',
-                    text: 'The head office for central operations, led by a General Director.',
+                    title: 'Office',
+                    text: 'An office for central operations, led by a General Director.',
                     band: 'from-[#0B4F2E] via-[#0E6139] to-[#147D4A]'
                   }
                 ]).map(option => (
