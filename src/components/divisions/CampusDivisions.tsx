@@ -4,8 +4,6 @@ import { SchoolDivisionCategory, LocationCity, SchoolLevel, GenderDivision } fro
 import { BulkActionBar, ConfirmDeleteDialog, SelectBox } from '../common/BulkActions';
 import { HQ_LEVEL, isHeadquarters, leaderRoleFor, leaderTitleFor } from '../../lib/divisions';
 import { DIVISION_COLORS, divisionColor, nextDivisionColor } from '../../data/divisionColors';
-import { roleTheme } from '../../data/roleTheme';
-import { EmployeeRecord } from '../../types';
 import {
   Building2,
   MapPin,
@@ -28,18 +26,6 @@ import {
   Check,
   Palette
 } from 'lucide-react';
-
-// Staff of a division grouped by type (Leadership, Teaching, ...), with the same icons as the staff cards
-const staffGroups = (staff: EmployeeRecord[]) => {
-  const groups = new Map<string, { count: number; icon: React.ElementType }>();
-  staff.forEach(emp => {
-    const theme = roleTheme(emp);
-    const entry = groups.get(theme.group);
-    if (entry) entry.count += 1;
-    else groups.set(theme.group, { count: 1, icon: theme.icon });
-  });
-  return [...groups.entries()].sort((a, b) => b[1].count - a[1].count);
-};
 
 const emptyDivisionForm = {
   name: '',
@@ -427,24 +413,19 @@ export const CampusDivisions: React.FC = () => {
                           { icon: School, value: div.studentCount, label: 'Students' }
                         ])
                   ].map(stat => (
-                    <div key={stat.label} className="rounded-xl bg-[#F6FAF7] border border-[#E2EAE4] px-2 py-2 text-center">
-                      <stat.icon className="w-3.5 h-3.5 mx-auto" style={{ color: color.swatch }} />
-                      <span className="block text-base font-black text-[#192C21] font-mono leading-tight mt-0.5">{stat.value}</span>
-                      <span className="block text-[9px] font-semibold uppercase tracking-wider text-[#798C80]">{stat.label}</span>
+                    <div
+                      key={stat.label}
+                      className="rounded-xl border px-2 py-2.5 text-center"
+                      style={{ backgroundColor: `${color.swatch}12`, borderColor: `${color.swatch}33` }}
+                    >
+                      <span className="w-7 h-7 mx-auto rounded-lg flex items-center justify-center text-white shadow-sm" style={{ backgroundColor: color.swatch }}>
+                        <stat.icon className="w-3.5 h-3.5" />
+                      </span>
+                      <span className="block text-lg font-black text-[#192C21] font-mono leading-tight mt-1">{stat.value}</span>
+                      <span className="block text-[9px] font-bold uppercase tracking-wider text-[#798C80]">{stat.label}</span>
                     </div>
                   ))}
                 </div>
-
-                {/* Staff by type */}
-                {divStaff.length > 0 && (
-                  <div className="mt-2.5 flex flex-wrap gap-1">
-                    {staffGroups(divStaff).map(([group, { count, icon: GroupIcon }]) => (
-                      <span key={group} className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#384C3F] bg-[#F6FAF7] border border-[#E2EAE4] px-2 py-0.5 rounded-md">
-                        <GroupIcon className="w-3 h-3" style={{ color: color.swatch }} /> {count} {group}
-                      </span>
-                    ))}
-                  </div>
-                )}
 
                 {/* Bottom Actions */}
                 <div className="mt-auto pt-3">
