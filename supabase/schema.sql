@@ -79,6 +79,31 @@ drop policy if exists "Signed-in users use notifications" on public.notification
 create policy "Signed-in users use notifications" on public.notifications
   for all to authenticated using (true) with check (true);
 
+-- One device per account: the latest sign-in stores its session id here; other devices see a
+-- different id and log themselves out. Each user can only see and change their own row.
+create table if not exists public.active_sessions (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  session_id text not null,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.active_sessions enable row level security;
+
+drop policy if exists "Users manage their own active session" on public.active_sessions;
+create policy "Users manage their own active session" on public.active_sessions
+  for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- Push changes to open browsers right away (they also re-check every 15 seconds)
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'active_sessions'
+  ) then
+    alter publication supabase_realtime add table public.active_sessions;
+  end if;
+end $$;
+
 -- File storage for staff documents (CV, contract, CID clearance, ID, certificates, photos).
 -- Private bucket: files are only reachable through short-lived signed links for signed-in users.
 insert into storage.buckets (id, name, public, file_size_limit)

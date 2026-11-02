@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useApp } from '../../context/AppContext';
 import { AdminApiError, AdminUser, createUser, deleteUser, listUsers, resetPassword, updateUser } from '../../lib/adminApi';
 import { roleLabel, USER_ROLES, UserRole } from '../../lib/roles';
 import { ConfirmDeleteDialog } from '../common/BulkActions';
@@ -42,8 +41,6 @@ const RolePicker: React.FC<{ value: UserRole; onChange: (r: UserRole) => void }>
 
 // Admin-only: portal logins, their roles and linked staff records, via the server-side admin function
 export const AccountsPanel: React.FC = () => {
-  const { employees } = useApp();
-  const staffName = (id: string | null) => (id ? employees.find(e => e.id === id)?.fullName : undefined);
 
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [currentUserId, setCurrentUserId] = useState('');
@@ -54,13 +51,11 @@ export const AccountsPanel: React.FC = () => {
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newRole, setNewRole] = useState<UserRole>('staff');
-  const [newEmployeeId, setNewEmployeeId] = useState('');
   const [createError, setCreateError] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
   const [editTarget, setEditTarget] = useState<AdminUser | null>(null);
   const [editRole, setEditRole] = useState<UserRole>('staff');
-  const [editEmployeeId, setEditEmployeeId] = useState('');
   const [editError, setEditError] = useState('');
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
@@ -101,25 +96,18 @@ export const AccountsPanel: React.FC = () => {
     return () => clearTimeout(timer);
   }, [notice]);
 
-  const pickStaffForNew = (id: string) => {
-    setNewEmployeeId(id);
-    const emp = employees.find(e => e.id === id);
-    if (emp?.email && !newEmail.trim()) setNewEmail(emp.email);
-  };
-
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isCreating) return;
     setCreateError('');
     setIsCreating(true);
     try {
-      const { user } = await createUser(newEmail, newPassword, newRole, newEmployeeId || null);
+      const { user } = await createUser(newEmail, newPassword, newRole, null);
       setUsers(prev => sortUsers([...prev, user]));
       setNotice(`${roleLabel(user.role)} login created for ${user.email}. Share the password with them privately.`);
       setNewEmail('');
       setNewPassword('');
       setNewRole('staff');
-      setNewEmployeeId('');
     } catch (err) {
       setCreateError(err instanceof Error ? err.message : 'Could not create the account.');
     } finally {
@@ -130,7 +118,6 @@ export const AccountsPanel: React.FC = () => {
   const openEdit = (u: AdminUser) => {
     setEditTarget(u);
     setEditRole(u.role ?? 'staff');
-    setEditEmployeeId(u.employeeId ?? '');
     setEditError('');
   };
 
@@ -139,7 +126,7 @@ export const AccountsPanel: React.FC = () => {
     setEditError('');
     setIsSavingEdit(true);
     try {
-      const { user } = await updateUser(editTarget.id, editRole, editEmployeeId || null);
+      const { user } = await updateUser(editTarget.id, editRole, editTarget.employeeId);
       setUsers(prev => sortUsers(prev.map(u => (u.id === user.id ? user : u))));
       setNotice(`${user.email} is now ${roleLabel(user.role)}. The change applies the next time they sign in.`);
       setEditTarget(null);
@@ -181,8 +168,6 @@ export const AccountsPanel: React.FC = () => {
     }
   };
 
-  const staffOptions = [...employees].sort((a, b) => a.fullName.localeCompare(b.fullName));
-
   return (
     <div className="space-y-4">
       {notice && (
@@ -214,16 +199,6 @@ export const AccountsPanel: React.FC = () => {
           <div>
             <label className="block text-xs font-semibold text-[#384C3F] mb-1.5">Role</label>
             <RolePicker value={newRole} onChange={setNewRole} />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-[#384C3F] mb-1.5">Link to staff record (optional)</label>
-            <select value={newEmployeeId} onChange={(e) => pickStaffForNew(e.target.value)} className={inputClass}>
-              <option value="">Not linked</option>
-              {staffOptions.map(emp => (
-                <option key={emp.id} value={emp.id}>{emp.fullName} · {emp.jobTitle}</option>
-              ))}
-            </select>
           </div>
 
           <div>
@@ -279,7 +254,6 @@ export const AccountsPanel: React.FC = () => {
             <ul className="divide-y divide-[#EEF3EF]">
               {users.map(u => {
                 const isSelf = u.id === currentUserId;
-                const linked = staffName(u.employeeId);
                 return (
                   <li key={u.id} className="px-5 py-3 flex items-center gap-3">
                     <span className="w-9 h-9 rounded-xl bg-[#EBF7EE] text-[#147D4A] font-bold text-sm flex items-center justify-center shrink-0 uppercase">
@@ -300,7 +274,6 @@ export const AccountsPanel: React.FC = () => {
                             No role · read-only
                           </span>
                         )}
-                        {linked && <span className="text-[10px] text-[#57685D]">· {linked}</span>}
                         <span className="text-[10px] text-[#798C80]">· Last sign-in {formatDate(u.lastSignInAt)}</span>
                       </div>
                     </div>
@@ -357,15 +330,6 @@ export const AccountsPanel: React.FC = () => {
               </h3>
               <p className="text-sm text-[#57685D] truncate">{editTarget.email}</p>
               <RolePicker value={editRole} onChange={setEditRole} />
-              <div>
-                <label className="block text-xs font-semibold text-[#384C3F] mb-1.5">Linked staff record</label>
-                <select value={editEmployeeId} onChange={(e) => setEditEmployeeId(e.target.value)} className={inputClass}>
-                  <option value="">Not linked</option>
-                  {staffOptions.map(emp => (
-                    <option key={emp.id} value={emp.id}>{emp.fullName} · {emp.jobTitle}</option>
-                  ))}
-                </select>
-              </div>
               {editError && <p className="text-xs text-rose-600 font-medium">{editError}</p>}
             </div>
             <div className="px-5 py-3.5 border-t border-[#E2EAE4] bg-[#F9FBFA] flex items-center justify-end gap-2">

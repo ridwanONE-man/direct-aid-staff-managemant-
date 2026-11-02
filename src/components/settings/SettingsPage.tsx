@@ -65,7 +65,7 @@ const AppearancePanel: React.FC = () => {
 };
 
 const SecurityPanel: React.FC = () => {
-  const { userEmail } = useApp();
+  const { userEmail, confirmPassword } = useApp();
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -84,8 +84,7 @@ const SecurityPanel: React.FC = () => {
 
     setIsSaving(true);
     // Confirm the current password before changing it
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email: userEmail, password: current });
-    if (signInError) {
+    if (!(await confirmPassword(current))) {
       setIsSaving(false);
       return setError('Your current password is not correct.');
     }

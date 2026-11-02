@@ -15,7 +15,7 @@ const clouds = [
 ];
 
 export const LoginPage: React.FC = () => {
-  const { login } = useApp();
+  const { login, logoutReason } = useApp();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -65,6 +65,12 @@ export const LoginPage: React.FC = () => {
             Sign in to manage staff records, school divisions, and contracts.
           </p>
         </div>
+
+        {logoutReason && !errorMsg && (
+          <div className="mt-6 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 font-medium">
+            {logoutReason}
+          </div>
+        )}
 
         {errorMsg && (
           <div className="mt-6 p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 font-medium">

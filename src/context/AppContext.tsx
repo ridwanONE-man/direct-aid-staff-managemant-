@@ -16,6 +16,7 @@ import { withLiveContractStatus } from '../lib/contracts';
 import { REQUIRED_DOCUMENTS } from '../data/documentTypes';
 import { isUserRole, UserRole } from '../lib/roles';
 import { syncOwnRole } from '../lib/adminApi';
+import { claimSession, fetchActiveSessionId, sessionIdOf, SIGNED_IN_ELSEWHERE } from '../lib/singleSession';
 
 export type AppPage = 'dashboard' | 'directory' | 'divisions' | 'profile' | 'contracts' | 'reports' | 'register' | 'settings';
 
@@ -92,6 +93,8 @@ interface AppContextType {
   isAdmin: boolean;
   login: (email: string, password: string) => Promise<string | null>;
   logout: () => Promise<void>;
+  confirmPassword: (password: string) => Promise<boolean>;
+  logoutReason: string | null;
   isDataLoading: boolean;
   syncError: string | null;
   saveStatus: 'idle' | 'saving' | 'saved';
@@ -176,6 +179,59 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const userRole: UserRole | null = isUserRole(metaRole) ? metaRole : null;
   const canEdit = userRole === 'admin' || userRole === 'hr';
   const isAdmin = userRole === 'admin';
+
+  // ---- One device per account ----
+  const [logoutReason, setLogoutReason] = useState<string | null>(null);
+  const isClaimingSession = useRef(false);
+  const mySessionId = sessionIdOf(session);
+
+  // Sign in and make this device the active one; checks are paused until the claim is recorded
+  const signInAndClaim = async (email: string, password: string) => {
+    if (!supabase) return 'Supabase is not configured.';
+    isClaimingSession.current = true;
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) return error.message;
+      if (data.session) await claimSession(data.session);
+      return null;
+    } finally {
+      isClaimingSession.current = false;
+    }
+  };
+
+  // Log out here if the account's active session belongs to another device
+  useEffect(() => {
+    if (!supabase || !userId || !mySessionId) return;
+    let stopped = false;
+
+    const check = async () => {
+      if (stopped || isClaimingSession.current) return;
+      const activeId = await fetchActiveSessionId(userId);
+      if (stopped || isClaimingSession.current || !activeId || activeId === mySessionId) return;
+      stopped = true;
+      setLogoutReason(SIGNED_IN_ELSEWHERE);
+      await supabase?.auth.signOut({ scope: 'local' });
+    };
+
+    check();
+    const timer = setInterval(check, 15000);
+    const onFocus = () => check();
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onFocus);
+    // Instant notice when another device signs in (needs active_sessions in the realtime publication)
+    const channel = supabase
+      .channel(`active-session-${userId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'active_sessions', filter: `user_id=eq.${userId}` }, check)
+      .subscribe();
+
+    return () => {
+      stopped = true;
+      clearInterval(timer);
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onFocus);
+      supabase?.removeChannel(channel);
+    };
+  }, [userId, mySessionId]);
 
   // Accounts listed in ADMIN_EMAILS get the admin role on first sign-in; refresh so the token carries it
   useEffect(() => {
@@ -304,12 +360,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!supabase) {
       return 'Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env.local.';
     }
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    return error ? error.message : null;
+    setLogoutReason(null);
+    return signInAndClaim(email, password);
+  };
+
+  // Re-checks the signed-in user's password (signing in again replaces this device's session, so it is re-claimed)
+  const confirmPassword = async (password: string) => {
+    if (!session?.user.email) return false;
+    return (await signInAndClaim(session.user.email, password)) === null;
   };
 
   const logout = async () => {
-    if (supabase) await supabase.auth.signOut();
+    if (supabase) await supabase.auth.signOut({ scope: 'local' });
     setActivePage('dashboard');
   };
 
@@ -763,6 +825,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isAdmin,
         login,
         logout,
+        confirmPassword,
+        logoutReason,
         isDataLoading,
         syncError,
         saveStatus,
