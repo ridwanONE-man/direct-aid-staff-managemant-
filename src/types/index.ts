@@ -145,6 +145,7 @@ export interface SchoolDivisionCategory {
   principalAvatar: string;
   principalPhone: string;
   principalEmployeeId?: string; // staff record linked as this division's principal
+  color?: string; // card colour key (src/data/divisionColors.ts), shared by its staff cards
   studentCount: number;
   description: string;
   campusAddress: string;

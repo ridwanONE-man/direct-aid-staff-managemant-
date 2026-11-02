@@ -3,6 +3,9 @@ import { useApp } from '../../context/AppContext';
 import { SchoolDivisionCategory, LocationCity, SchoolLevel, GenderDivision } from '../../types';
 import { BulkActionBar, ConfirmDeleteDialog, SelectBox } from '../common/BulkActions';
 import { HQ_LEVEL, isHeadquarters, leaderRoleFor, leaderTitleFor } from '../../lib/divisions';
+import { DIVISION_COLORS, divisionColor, nextDivisionColor } from '../../data/divisionColors';
+import { roleTheme } from '../../data/roleTheme';
+import { EmployeeRecord } from '../../types';
 import {
   Building2,
   MapPin,
@@ -19,8 +22,24 @@ import {
   Landmark,
   School,
   ArrowLeft,
-  ChevronRight
+  ChevronRight,
+  Users,
+  GraduationCap,
+  Check,
+  Palette
 } from 'lucide-react';
+
+// Staff of a division grouped by type (Leadership, Teaching, ...), with the same icons as the staff cards
+const staffGroups = (staff: EmployeeRecord[]) => {
+  const groups = new Map<string, { count: number; icon: React.ElementType }>();
+  staff.forEach(emp => {
+    const theme = roleTheme(emp);
+    const entry = groups.get(theme.group);
+    if (entry) entry.count += 1;
+    else groups.set(theme.group, { count: 1, icon: theme.icon });
+  });
+  return [...groups.entries()].sort((a, b) => b[1].count - a[1].count);
+};
 
 const emptyDivisionForm = {
   name: '',
@@ -31,7 +50,8 @@ const emptyDivisionForm = {
   principalEmployeeId: '',
   studentCount: '',
   description: '',
-  campusAddress: ''
+  campusAddress: '',
+  color: ''
 };
 
 export const CampusDivisions: React.FC = () => {
@@ -86,7 +106,8 @@ export const CampusDivisions: React.FC = () => {
       ...prev,
       level: kind === 'hq' ? HQ_LEVEL : prev.level === HQ_LEVEL ? 'Secondary' : prev.level,
       gender: kind === 'hq' ? 'Operations' : prev.gender === 'Operations' ? 'Boys' : prev.gender,
-      principalEmployeeId: ''
+      principalEmployeeId: '',
+      color: prev.color || nextDivisionColor(allDivisions)
     }));
   };
 
@@ -100,7 +121,8 @@ export const CampusDivisions: React.FC = () => {
       principalEmployeeId: staffWithLeaderRole(div.level).some(e => e.id === div.principalEmployeeId) ? div.principalEmployeeId! : '',
       studentCount: div.studentCount ? String(div.studentCount) : '',
       description: div.description,
-      campusAddress: div.campusAddress
+      campusAddress: div.campusAddress,
+      color: divisionColor(div).key
     });
     setFormError('');
     setUnlinkedPrincipal(
@@ -126,7 +148,7 @@ export const CampusDivisions: React.FC = () => {
     const code = divisionForm.code.trim().toUpperCase();
 
     if (!name || !code) {
-      setFormError(`${isOperations ? 'Headquarters' : 'School'} name and code are required.`);
+      setFormError(`${isOperations ? 'Office' : 'School'} name and code are required.`);
       return;
     }
     if (allDivisions.some(d => d.id !== editingId && d.code.toUpperCase() === code)) {
@@ -146,7 +168,8 @@ export const CampusDivisions: React.FC = () => {
       principalEmployeeId: selectedPrincipal?.id,
       studentCount: isOperations ? 0 : Number(divisionForm.studentCount) || 0,
       description: divisionForm.description.trim(),
-      campusAddress: divisionForm.campusAddress.trim()
+      campusAddress: divisionForm.campusAddress.trim(),
+      color: divisionForm.color || nextDivisionColor(allDivisions)
     };
 
     if (editingId) {
@@ -319,166 +342,155 @@ export const CampusDivisions: React.FC = () => {
         {filteredDivisions.map((div) => {
           const divStaff = employees.filter(e => e.divisionId === div.id);
           const teachers = divStaff.filter(e => e.jobTitle === 'Teacher').length;
-          const securities = divStaff.filter(e => e.jobTitle === 'Security Guard').length;
-          const cleaners = divStaff.filter(e => e.jobTitle === 'Cleaner').length;
-          const drivers = divStaff.filter(e => e.jobTitle === 'Driver').length;
-          const isHQ = div.level === 'Central Operations';
+          const isHQ = isHeadquarters(div);
+          const color = divisionColor(div);
+          const TypeIcon = isHQ ? Landmark : School;
 
           return (
             <div
               key={div.id}
-              className={`bg-white border rounded-2xl p-4.5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between group hover:-translate-y-1 ${
-                isSelected(div.id)
-                  ? 'border-[#147D4A] ring-2 ring-[#147D4A]/20'
-                  : isHQ
-                  ? 'border-[#C5E8D2] hover:border-[#147D4A]'
-                  : 'border-[#E2EAE4] hover:border-[#147D4A]'
+              className={`bg-white border rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col group hover:-translate-y-1 ${
+                isSelected(div.id) ? 'border-[#147D4A] ring-2 ring-[#147D4A]/20' : 'border-[#E2EAE4]'
               }`}
             >
-              <div>
-                {/* Header Tag */}
-                <div className="flex items-center justify-between mb-2.5">
-                  <div className="flex items-center gap-1.5">
+              {/* Colour band with the division name */}
+              <div className={`relative bg-linear-to-br ${color.band} px-4 pt-3 pb-4 text-white overflow-hidden`}>
+                <span className="absolute -top-10 -right-8 w-32 h-32 rounded-full border-[16px] border-white/10 pointer-events-none transition-transform duration-500 group-hover:scale-110" />
+                <span className="absolute -bottom-12 -left-6 w-28 h-28 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+                <div className="relative flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
                     <SelectBox
                       checked={isSelected(div.id)}
                       onChange={() => toggleSelected(div.id)}
                       label={`Select ${div.name}`}
-                      className="mr-0.5"
                     />
-                    <span className="w-5 h-5 rounded-full bg-[#147D4A] text-white text-[10px] font-bold flex items-center justify-center font-mono">
+                    <span className="w-5 h-5 rounded-full bg-white text-[10px] font-bold flex items-center justify-center font-mono shrink-0" style={{ color: color.swatch }}>
                       {div.canonicalIndex}
                     </span>
-                    <span className="font-mono text-[11px] font-bold text-[#147D4A] bg-[#EBF7EE] px-2 py-0.5 rounded-md">
+                    <span className="font-mono text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-md truncate">
                       {div.code}
                     </span>
-                    {isHQ && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-linear-to-r from-[#0E6139] to-[#147D4A] px-2 py-0.5 rounded-md">
-                        <Landmark className="w-3 h-3" /> HQ
-                      </span>
-                    )}
                   </div>
-
-                  <span className="text-[11px] font-semibold text-[#57685D] flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-[#147D4A]" />
-                    {div.city}
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-white/20 backdrop-blur-sm px-2 py-0.5 rounded-full shrink-0">
+                    <TypeIcon className="w-3 h-3" /> {isHQ ? 'Office' : div.level}
                   </span>
                 </div>
-
-                {/* Division Title */}
-                <h3 className="text-sm font-bold text-[#192C21] group-hover:text-[#147D4A] transition-colors leading-snug">
-                  {div.name}
-                </h3>
-                <p className="text-[11px] text-[#57685D] mt-1 line-clamp-2 leading-relaxed">
-                  {div.description}
+                <h3 className="relative mt-3 text-base font-extrabold leading-snug line-clamp-2">{div.name}</h3>
+                <p className="relative mt-1 text-[11px] text-white/85 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                  <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" /> {div.city}</span>
+                  {!isHQ && div.gender && <span>· {div.gender} wing</span>}
                 </p>
+              </div>
 
-                {/* Principal / Campus Head */}
-                <div className="mt-3 p-2.5 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl flex items-center gap-2.5">
+              <div className="px-4 py-3.5 flex-1 flex flex-col">
+                {/* Head of the division */}
+                <div className="flex items-center gap-2.5">
                   {div.principalAvatar ? (
                     <img
                       src={div.principalAvatar}
                       alt={div.principalName}
-                      className="w-9 h-9 rounded-xl object-cover border border-[#C5E8D2] shrink-0"
+                      className="w-10 h-10 rounded-xl object-cover border-2 shrink-0"
+                      style={{ borderColor: color.swatch }}
                     />
                   ) : (
-                    <div className="w-9 h-9 rounded-xl bg-[#EBF7EE] border border-[#C5E8D2] shrink-0 flex items-center justify-center text-[#147D4A]">
-                      <UserCheck className="w-4 h-4" />
+                    <div className="w-10 h-10 rounded-xl bg-[#F6FAF7] border-2 border-dashed shrink-0 flex items-center justify-center" style={{ borderColor: color.swatch, color: color.swatch }}>
+                      <UserCheck className="w-4.5 h-4.5" />
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
                     <span className="text-[9px] font-bold uppercase tracking-wider text-[#798C80] block">
                       {leaderTitleFor(div.level)}
                     </span>
-                    <span className="font-bold text-xs text-[#192C21] block truncate">{div.principalName || 'Not assigned'}</span>
+                    <span className={`text-xs block truncate ${div.principalName ? 'font-bold text-[#192C21]' : 'italic text-[#798C80]'}`}>
+                      {div.principalName || 'Not assigned'}
+                    </span>
                     {div.principalPhone && (
-                      <span className="text-[10px] text-[#57685D] flex items-center gap-1 font-mono mt-0.5">
-                        <Phone className="w-2.5 h-2.5 text-[#147D4A]" /> {div.principalPhone}
+                      <span className="text-[10px] text-[#57685D] flex items-center gap-1 font-mono">
+                        <Phone className="w-2.5 h-2.5" style={{ color: color.swatch }} /> {div.principalPhone}
                       </span>
                     )}
                   </div>
                 </div>
 
-                {/* Staff Breakdown */}
-                <div className="mt-3 space-y-1.5 text-xs">
-                  <div className="flex items-center justify-between text-[#384C3F]">
-                    <span className="text-[#57685D]">Assigned Staff:</span>
-                    <span className="font-bold font-mono text-xs text-[#192C21]">{divStaff.length} Staff</span>
-                  </div>
+                {div.description && (
+                  <p className="text-[11px] text-[#57685D] mt-2.5 line-clamp-2 leading-relaxed">{div.description}</p>
+                )}
 
-                  {!isHQ && (
-                    <div className="flex items-center justify-between text-[#57685D]">
-                      <span>Students:</span>
-                      <span className="font-semibold font-mono text-[#192C21]">{div.studentCount}</span>
+                {/* Key numbers */}
+                <div className={`mt-3 grid gap-2 ${isHQ ? 'grid-cols-1' : 'grid-cols-3'}`}>
+                  {[
+                    { icon: Users, value: divStaff.length, label: 'Staff' },
+                    ...(isHQ
+                      ? []
+                      : [
+                          { icon: GraduationCap, value: teachers, label: 'Teachers' },
+                          { icon: School, value: div.studentCount, label: 'Students' }
+                        ])
+                  ].map(stat => (
+                    <div key={stat.label} className="rounded-xl bg-[#F6FAF7] border border-[#E2EAE4] px-2 py-2 text-center">
+                      <stat.icon className="w-3.5 h-3.5 mx-auto" style={{ color: color.swatch }} />
+                      <span className="block text-base font-black text-[#192C21] font-mono leading-tight mt-0.5">{stat.value}</span>
+                      <span className="block text-[9px] font-semibold uppercase tracking-wider text-[#798C80]">{stat.label}</span>
                     </div>
-                  )}
+                  ))}
+                </div>
 
-                  {/* Role composition chips */}
-                  <div className="pt-1.5 flex flex-wrap gap-1 text-[10px]">
-                    {teachers > 0 && (
-                      <span className="bg-[#EBF7EE] text-[#147D4A] font-semibold px-2 py-0.5 rounded-md">
-                        {teachers} Teachers
+                {/* Staff by type */}
+                {divStaff.length > 0 && (
+                  <div className="mt-2.5 flex flex-wrap gap-1">
+                    {staffGroups(divStaff).map(([group, { count, icon: GroupIcon }]) => (
+                      <span key={group} className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#384C3F] bg-[#F6FAF7] border border-[#E2EAE4] px-2 py-0.5 rounded-md">
+                        <GroupIcon className="w-3 h-3" style={{ color: color.swatch }} /> {count} {group}
                       </span>
-                    )}
-                    {securities > 0 && (
-                      <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md">
-                        {securities} Security
-                      </span>
-                    )}
-                    {cleaners > 0 && (
-                      <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md">
-                        {cleaners} Cleaners
-                      </span>
-                    )}
-                    {drivers > 0 && (
-                      <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md">
-                        {drivers} Drivers
-                      </span>
-                    )}
+                    ))}
+                  </div>
+                )}
+
+                {/* Bottom Actions */}
+                <div className="mt-auto pt-3">
+                  <div className="pt-2.5 border-t border-[#E2EAE4] flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setModalDivision(div)}
+                        className="font-semibold text-[#57685D] hover:text-[#192C21] mr-1"
+                      >
+                        Overview
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(div)}
+                        className="edit-only p-1.5 rounded-lg text-slate-400 hover:text-[#147D4A] hover:bg-[#EBF7EE] transition-colors"
+                        title="Edit division"
+                        aria-label={`Edit ${div.name}`}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDeleteError('');
+                          setPendingDelete(div);
+                        }}
+                        className="edit-only p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        title="Delete division"
+                        aria-label={`Delete ${div.name}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => navigateToDivisionStaff(div.id)}
+                      className="inline-flex items-center gap-1 font-bold hover:underline"
+                      style={{ color: color.swatch }}
+                    >
+                      <span>Staff Roster</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                    </button>
                   </div>
                 </div>
-              </div>
-
-              {/* Bottom Actions */}
-              <div className="mt-4 pt-2.5 border-t border-[#E2EAE4] flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setModalDivision(div)}
-                    className="font-semibold text-[#57685D] hover:text-[#192C21]"
-                  >
-                    Overview
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => openEditModal(div)}
-                    className="edit-only p-1.5 rounded-lg text-slate-400 hover:text-[#147D4A] hover:bg-[#EBF7EE] transition-colors"
-                    title="Edit division"
-                    aria-label={`Edit ${div.name}`}
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDeleteError('');
-                      setPendingDelete(div);
-                    }}
-                    className="edit-only p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                    title="Delete division"
-                    aria-label={`Delete ${div.name}`}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => navigateToDivisionStaff(div.id)}
-                  className="inline-flex items-center gap-1 font-bold text-[#147D4A] hover:underline"
-                >
-                  <span>Staff Roster</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                </button>
               </div>
             </div>
           );
@@ -713,7 +725,7 @@ export const CampusDivisions: React.FC = () => {
                   )}
                   {!divisionKind
                     ? 'Create Division'
-                    : `${editingId ? 'Edit' : 'Create'} ${divisionKind === 'hq' ? 'Headquarters' : 'School'}`}
+                    : `${editingId ? 'Edit' : 'Create'} ${divisionKind === 'hq' ? 'Office' : 'School'}`}
                 </h3>
                 <p className="text-xs text-[#57685D] mt-0.5">
                   {!divisionKind
@@ -793,12 +805,12 @@ export const CampusDivisions: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-2">
-                  <label className="block text-slate-700 font-semibold mb-1">{isOperations ? 'Headquarters Name' : 'School Name'}</label>
+                  <label className="block text-slate-700 font-semibold mb-1">{isOperations ? 'Office Name' : 'School Name'}</label>
                   <input
                     type="text"
                     value={divisionForm.name}
                     onChange={(e) => updateForm('name', e.target.value)}
-                    placeholder={isOperations ? 'e.g. DirectAid Somaliland Headquarters' : 'e.g. Boys Secondary School - Hargeisa'}
+                    placeholder={isOperations ? 'e.g. DirectAid Hargeisa Office' : 'e.g. Boys Secondary School - Hargeisa'}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#147D4A] focus:border-[#147D4A]"
                     required
                   />
@@ -943,6 +955,35 @@ export const CampusDivisions: React.FC = () => {
               </div>
 
               <div>
+                <span className="block text-slate-700 font-semibold mb-1.5 flex items-center gap-1.5">
+                  <Palette className="w-3.5 h-3.5 text-[#147D4A]" /> Card Colour
+                  <span className="font-normal text-slate-500">· its staff cards use this colour too</span>
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {DIVISION_COLORS.map(c => {
+                    const active = divisionForm.color === c.key;
+                    const takenBy = allDivisions.find(d => d.id !== editingId && divisionColor(d).key === c.key);
+                    return (
+                      <button
+                        key={c.key}
+                        type="button"
+                        onClick={() => updateForm('color', c.key)}
+                        title={takenBy ? `${c.label} (also used by ${takenBy.name})` : c.label}
+                        aria-label={c.label}
+                        aria-pressed={active}
+                        className={`relative w-9 h-9 rounded-xl bg-linear-to-br ${c.band} shadow-sm transition-transform hover:scale-110 ${
+                          active ? 'ring-2 ring-offset-2 ring-[#192C21] scale-110' : ''
+                        }`}
+                      >
+                        {active && <Check className="w-4 h-4 text-white absolute inset-0 m-auto" />}
+                        {takenBy && !active && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-white border border-slate-300" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
                 <label className="block text-slate-700 font-semibold mb-1">Description</label>
                 <textarea
                   value={divisionForm.description}
@@ -968,7 +1009,7 @@ export const CampusDivisions: React.FC = () => {
                   className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#147D4A] hover:bg-[#0E6139] rounded-xl transition-colors flex items-center gap-1.5"
                 >
                   {editingId ? <Save className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                  <span>{editingId ? 'Save Changes' : `Create ${divisionKind === 'hq' ? 'Headquarters' : 'School'}`}</span>
+                  <span>{editingId ? 'Save Changes' : `Create ${divisionKind === 'hq' ? 'Office' : 'School'}`}</span>
                 </button>
               )}
             </div>

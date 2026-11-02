@@ -5,6 +5,7 @@ import { EmployeeRecord } from '../../types';
 import { BulkActionBar, ConfirmDeleteDialog, SelectBox } from '../common/BulkActions';
 import { RoleFilter } from './RoleFilter';
 import { roleName, roleTheme } from '../../data/roleTheme';
+import { divisionColor } from '../../data/divisionColors';
 import {
   Search,
   Download,
@@ -388,6 +389,8 @@ export const StaffDirectory: React.FC = () => {
             const isExpiring = needsRenewal(emp);
             const theme = roleTheme(emp);
             const RoleIcon = theme.icon;
+            const division = divisions.find(d => d.id === emp.divisionId);
+            const band = division ? divisionColor(division).band : theme.band;
             return (
               <div
                 key={emp.id}
@@ -396,8 +399,8 @@ export const StaffDirectory: React.FC = () => {
                   isSelected(emp.id) ? 'border-[#147D4A] ring-2 ring-[#147D4A]/20' : 'border-[#E2EAE4] hover:border-[#C5E8D2]'
                 }`}
               >
-                {/* Colour band: one colour per kind of staff */}
-                <div className={`relative h-[68px] bg-linear-to-br ${theme.band} px-3 pt-2.5`}>
+                {/* Colour band: the colour of the staff member's school division */}
+                <div className={`relative h-[68px] bg-linear-to-br ${band} px-3 pt-2.5`}>
                   <span className="absolute -top-8 -right-6 w-24 h-24 rounded-full border-[14px] border-white/10 pointer-events-none" />
                   <span className="absolute -bottom-10 left-10 w-20 h-20 rounded-full bg-white/10 blur-xl pointer-events-none" />
                   <div className="relative flex items-center justify-between gap-2">
