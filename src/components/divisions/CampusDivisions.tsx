@@ -389,12 +389,12 @@ export const CampusDivisions: React.FC = () => {
                     <img
                       src={div.principalAvatar}
                       alt={div.principalName}
-                      className="w-10 h-10 rounded-xl object-cover border-2 shrink-0"
+                      className="w-16 h-16 rounded-2xl shadow-sm object-cover border-2 shrink-0"
                       style={{ borderColor: color.swatch }}
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-xl bg-[#F6FAF7] border-2 border-dashed shrink-0 flex items-center justify-center" style={{ borderColor: color.swatch, color: color.swatch }}>
-                      <UserCheck className="w-4.5 h-4.5" />
+                    <div className="w-16 h-16 rounded-2xl bg-[#F6FAF7] border-2 border-dashed shrink-0 flex items-center justify-center" style={{ borderColor: color.swatch, color: color.swatch }}>
+                      <UserCheck className="w-7 h-7" />
                     </div>
                   )}
                   <div className="min-w-0 flex-1">

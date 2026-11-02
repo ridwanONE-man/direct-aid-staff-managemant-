@@ -423,14 +423,14 @@ export const StaffDirectory: React.FC = () => {
                 <div className="px-4 pb-4 flex-1 flex flex-col justify-between">
                 <div>
                   {/* Profile Info: photo overlaps the band */}
-                  <div className="flex items-end gap-3 -mt-7">
+                  <div className="flex items-end gap-3 -mt-10">
                     <div className="relative shrink-0">
                       <img
                         src={emp.avatarUrl}
                         alt={emp.fullName}
-                        className="w-14 h-14 rounded-2xl object-cover border-[3px] border-white shadow-md bg-white"
+                        className="w-20 h-20 rounded-2xl object-cover border-4 border-white shadow-md bg-white"
                       />
-                      <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
+                      <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${
                         emp.employmentStatus === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'
                       }`} />
                     </div>
