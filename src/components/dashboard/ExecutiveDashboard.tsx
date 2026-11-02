@@ -1,26 +1,52 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { needsRenewal } from '../../lib/contracts';
+import { isHeadquarters, leaderTitleFor } from '../../lib/divisions';
+import { divisionColor } from '../../data/divisionColors';
+import { roleTheme } from '../../data/roleTheme';
 import {
   Users,
-  UserCheck,
+  Building2,
   AlertTriangle,
-  FileCheck2,
-  Building,
+  FileWarning,
   ArrowRight,
   Printer,
   Download,
-  ShieldAlert,
-  Briefcase,
-  MapPin,
+  UserPlus,
   Clock,
-  UserPlus
+  CheckCircle2,
+  MapPin,
+  ChevronRight,
+  PieChart
 } from 'lucide-react';
+
+const timeAgo = (iso: string) => {
+  const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (Number.isNaN(minutes)) return '';
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours} h ago`;
+  const days = Math.round(hours / 24);
+  return days < 7 ? `${days} d ago` : new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+};
+
+// One shared colour per staff type for the "Staff by type" bar
+const GROUP_COLORS: Record<string, string> = {
+  Leadership: '#0E6139',
+  Teaching: '#2D9A48',
+  Security: '#256663',
+  Facilities: '#13838C',
+  Transport: '#B7791F',
+  Office: '#3B6386',
+  Other: '#798C80'
+};
 
 export const ExecutiveDashboard: React.FC = () => {
   const {
-    employees,
+    scopedEmployees,
     scopedDivisions: divisions,
+    employees,
     notifications,
     regionalScope,
     setActivePage,
@@ -31,440 +57,300 @@ export const ExecutiveDashboard: React.FC = () => {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
   const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const scopeLabel = regionalScope === 'all' ? 'All Campuses' : `${regionalScope[0].toUpperCase()}${regionalScope.slice(1)} Campus`;
 
-  const scopedEmployees = employees.filter(emp => {
-    if (regionalScope === 'hargeisa') return emp.campusLocation === 'Hargeisa';
-    if (regionalScope === 'gabiley') return emp.campusLocation === 'Gabiley';
-    return true;
+  const renewalsDue = scopedEmployees.filter(needsRenewal);
+  const incomplete = scopedEmployees.filter(e => e.missingRequirements.length > 0);
+  const needingAttention = scopedEmployees
+    .filter(e => needsRenewal(e) || e.missingRequirements.length > 0)
+    .sort((a, b) => Number(needsRenewal(b)) - Number(needsRenewal(a)));
+  const attention = needingAttention.slice(0, 5);
+
+  // Staff by type (Leadership, Teaching, ...)
+  const groups = new Map<string, number>();
+  scopedEmployees.forEach(e => {
+    const g = roleTheme(e).group;
+    groups.set(g, (groups.get(g) || 0) + 1);
   });
+  const groupList = [...groups.entries()].sort((a, b) => b[1] - a[1]);
 
-  const activeStaffCount = scopedEmployees.filter(e => e.employmentStatus === 'Active').length;
-  const expiringContractsCount = scopedEmployees.filter(e => 
-    needsRenewal(e)
-  ).length;
-  const missingDocsCount = scopedEmployees.filter(e => e.missingRequirements.length > 0).length;
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const handleExportPayrollReport = () => {
-    const csvRows = [
-      ['ID', 'Name', 'Division', 'City', 'Job Title', 'Salary (USD)', 'Status']
-    ];
-
+  const handleExport = () => {
+    const rows = [['ID', 'Name', 'Division', 'City', 'Job Title', 'Salary (USD)', 'Status']];
     scopedEmployees.forEach(e => {
-      csvRows.push([
-        e.id,
-        `"${e.fullName}"`,
-        `"${e.divisionName}"`,
-        e.campusLocation,
-        `"${e.jobTitle}"`,
-        String(e.contract.monthlyBaseSalary),
-        e.employmentStatus
-      ]);
+      rows.push([e.id, `"${e.fullName}"`, `"${e.divisionName}"`, e.campusLocation, `"${e.jobTitle}"`, String(e.contract.monthlyBaseSalary), e.employmentStatus]);
     });
-
-    const csvContent = 'data:text/csv;charset=utf-8,' + csvRows.map(r => r.join(',')).join('\n');
     const link = document.createElement('a');
-    link.href = encodeURI(csvContent);
+    link.href = encodeURI('data:text/csv;charset=utf-8,' + rows.map(r => r.join(',')).join('\n'));
     link.download = `DirectAid_Staff_${regionalScope}_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
   };
 
+  const stats = [
+    { label: 'Total Staff', value: scopedEmployees.length, hint: 'View directory', icon: Users, color: '#147D4A', page: 'directory' as const },
+    { label: 'School Divisions', value: divisions.length, hint: 'View divisions', icon: Building2, color: '#13838C', page: 'divisions' as const },
+    { label: 'Renewals Due', value: renewalsDue.length, hint: 'Next 60 days', icon: AlertTriangle, color: '#B7791F', page: 'contracts' as const },
+    { label: 'Incomplete Profiles', value: incomplete.length, hint: 'Missing details', icon: FileWarning, color: '#BE2B5A', page: 'reports' as const }
+  ];
+
   return (
-    <div className="space-y-6">
-      {/* Welcome Hero Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-[#0E6139] via-[#147D4A] to-[#2D9A48] p-6 sm:p-7 shadow-[0_20px_50px_-20px_rgba(20,125,74,0.55)]">
-        {/* Decorative rings echoing the logo's circle */}
+    <div className="space-y-5">
+      {/* Welcome banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-[#0E6139] via-[#147D4A] to-[#2D9A48] p-6 shadow-[0_20px_50px_-20px_rgba(20,125,74,0.55)]">
         <div className="absolute -top-24 -right-16 w-72 h-72 rounded-full border-[28px] border-white/10 pointer-events-none" />
         <div className="absolute -bottom-28 right-40 w-56 h-56 rounded-full bg-white/10 blur-2xl pointer-events-none" />
-        <div className="absolute top-6 right-1/3 w-3 h-3 rounded-full bg-white/30 pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div className="flex flex-col sm:flex-row sm:items-center gap-5">
             <img
               src="/directaid-logo-white.png"
               alt="DirectAid - العون المباشر"
-              className="h-12 sm:h-14 w-auto object-contain shrink-0 self-start sm:self-auto drop-shadow-sm sm:pr-5 sm:border-r sm:border-white/25"
+              className="h-12 w-auto object-contain shrink-0 self-start sm:self-auto sm:pr-5 sm:border-r sm:border-white/25"
             />
-
-            <div className="space-y-1.5 text-white">
-              <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-white/85">
+            <div className="text-white">
+              <p className="flex flex-wrap items-center gap-2 text-xs font-semibold text-white/85">
                 <span className="w-2 h-2 rounded-full bg-[#B8F5CF] animate-pulse" />
-                <span>{today}</span>
-                <span className="text-white/40">·</span>
-                <span className="capitalize">
-                  {regionalScope === 'all' ? 'All Campuses' : `${regionalScope} Campus`}
-                </span>
-              </div>
-
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-                {greeting}
-              </h1>
-              <p className="text-sm text-white/80 max-w-xl">
-                Staff records, contract renewals, and school divisions across Somaliland, all in one place.
+                {today} <span className="text-white/40">·</span> {scopeLabel}
               </p>
+              <h1 className="mt-1 text-2xl sm:text-3xl font-black tracking-tight">{greeting}</h1>
+              <p className="mt-0.5 text-sm text-white/80">Here's how your staff and schools look today.</p>
             </div>
           </div>
 
-          {/* Quick Actions */}
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             <button
               type="button"
-              onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-xl transition-all backdrop-blur-sm"
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-xl transition-colors"
             >
-              <Printer className="w-3.5 h-3.5" />
-              <span>Print</span>
+              <Printer className="w-3.5 h-3.5" /> Print
             </button>
-
             <button
               type="button"
-              onClick={handleExportPayrollReport}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-xl transition-all backdrop-blur-sm"
+              onClick={handleExport}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-xl transition-colors"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>Export CSV</span>
+              <Download className="w-3.5 h-3.5" /> Export CSV
             </button>
-
             <button
               type="button"
               onClick={() => setActivePage('register')}
-              className="edit-only inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#147D4A] bg-white hover:bg-[#EBF7EE] rounded-xl transition-all shadow-md"
+              className="edit-only inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#147D4A] bg-white hover:bg-[#EBF7EE] rounded-xl shadow-md transition-colors"
             >
-              <UserPlus className="w-3.5 h-3.5" />
-              <span>Register Staff</span>
+              <UserPlus className="w-3.5 h-3.5" /> Register Staff
             </button>
           </div>
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Staff */}
-        <div
-          onClick={() => setActivePage('directory')}
-          className="bg-white border border-[#E2EAE4] hover:border-[#147D4A] rounded-2xl p-4.5 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer hover:-translate-y-0.5 group"
-        >
-          <div className="flex items-center justify-between text-xs font-semibold text-[#57685D] mb-2">
-            <span className="uppercase tracking-wider text-[11px]">Total Staff</span>
-            <div className="w-8 h-8 rounded-xl bg-[#EBF7EE] text-[#147D4A] flex items-center justify-center group-hover:scale-105 transition-transform">
-              <Users className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-[#192C21] font-mono">
-              {scopedEmployees.length}
-            </span>
-            <span className="text-[11px] font-bold text-[#147D4A] bg-[#EBF7EE] px-2 py-0.5 rounded-full">
-              {regionalScope === 'all' ? 'All Wings' : regionalScope}
-            </span>
-          </div>
-          <div className="mt-3 pt-2.5 border-t border-[#E2EAE4] flex items-center justify-between text-xs text-[#57685D]">
-            <span>Primary &amp; Secondary</span>
-            <span className="font-bold text-[#147D4A] group-hover:translate-x-0.5 flex items-center gap-0.5 transition-transform">
-              View All <ArrowRight className="w-3 h-3" />
-            </span>
-          </div>
-        </div>
-
-        {/* Active on Duty */}
-        <div
-          onClick={() => setActivePage('directory')}
-          className="bg-white border border-[#E2EAE4] hover:border-[#35B86B] rounded-2xl p-4.5 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer hover:-translate-y-0.5 group"
-        >
-          <div className="flex items-center justify-between text-xs font-semibold text-[#57685D] mb-2">
-            <span className="uppercase tracking-wider text-[11px]">Active Staff</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#147D4A] flex items-center justify-center group-hover:scale-105 transition-transform">
-              <UserCheck className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-[#192C21] font-mono">
-              {activeStaffCount}
-            </span>
-            <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full">
-              {Math.round((activeStaffCount / (scopedEmployees.length || 1)) * 100)}% On Duty
-            </span>
-          </div>
-          <div className="mt-3 pt-2.5 border-t border-[#E2EAE4] flex items-center justify-between text-xs text-[#57685D]">
-            <span>Teaching &amp; Admin</span>
-            <span className="text-emerald-700 font-semibold">Active Status</span>
-          </div>
-        </div>
-
-        {/* Expiring Contracts */}
-        <div
-          onClick={() => setActivePage('contracts')}
-          className="bg-white border border-[#E2EAE4] hover:border-amber-400 rounded-2xl p-4.5 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer hover:-translate-y-0.5 group"
-        >
-          <div className="flex items-center justify-between text-xs font-semibold text-[#57685D] mb-2">
-            <span className="uppercase tracking-wider text-[11px]">Due for Renewal</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <AlertTriangle className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-[#192C21] font-mono">
-              {expiringContractsCount}
-            </span>
-            <span className="text-[11px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full">
-              Next 60 Days
-            </span>
-          </div>
-          <div className="mt-3 pt-2.5 border-t border-[#E2EAE4] flex items-center justify-between text-xs text-[#57685D]">
-            <span>Pending Review</span>
-            <span className="font-bold text-amber-700 group-hover:translate-x-0.5 flex items-center gap-0.5 transition-transform">
-              Contracts Hub <ArrowRight className="w-3 h-3" />
-            </span>
-          </div>
-        </div>
-
-        {/* Missing Documents */}
-        <div
-          onClick={() => setActivePage('reports')}
-          className="bg-white border border-[#E2EAE4] hover:border-rose-400 rounded-2xl p-4.5 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer hover:-translate-y-0.5 group"
-        >
-          <div className="flex items-center justify-between text-xs font-semibold text-[#57685D] mb-2">
-            <span className="uppercase tracking-wider text-[11px]">Audit Exceptions</span>
-            <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <FileCheck2 className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-[#192C21] font-mono">
-              {missingDocsCount}
-            </span>
-            <span className="text-[11px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full">
-              Incomplete Dossiers
-            </span>
-          </div>
-          <div className="mt-3 pt-2.5 border-t border-[#E2EAE4] flex items-center justify-between text-xs text-[#57685D]">
-            <span>CID &amp; Health Clearances</span>
-            <span className="font-bold text-rose-700 group-hover:translate-x-0.5 flex items-center gap-0.5 transition-transform">
-              Compliance <ArrowRight className="w-3 h-3" />
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* School Divisions Section */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-bold text-[#192C21] flex items-center gap-2">
-              <Building className="w-4.5 h-4.5 text-[#147D4A]" />
-              School Divisions
-            </h2>
-            <p className="text-xs text-[#57685D]">
-              Canonical school divisions across Hargeisa and Gabiley.
-            </p>
-          </div>
-
+      {/* Key numbers */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {stats.map(stat => (
           <button
-            onClick={() => setActivePage('divisions')}
-            className="text-xs font-bold text-[#147D4A] hover:underline flex items-center gap-1"
+            key={stat.label}
+            type="button"
+            onClick={() => setActivePage(stat.page)}
+            className="group text-left bg-white border border-[#E2EAE4] hover:border-[#C5E8D2] rounded-2xl p-4 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all"
           >
-            <span>View All</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <div className="flex items-start justify-between gap-2">
+              <span className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm" style={{ backgroundColor: stat.color }}>
+                <stat.icon className="w-5 h-5" />
+              </span>
+              <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-[#147D4A] group-hover:translate-x-0.5 transition-all" />
+            </div>
+            <p className="mt-3 text-3xl font-black text-[#192C21] font-mono leading-none">{stat.value}</p>
+            <p className="mt-1.5 text-xs font-bold text-[#384C3F]">{stat.label}</p>
+            <p className="text-[11px] text-[#798C80]">{stat.hint}</p>
           </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-          {divisions.filter(d => d.level !== 'Central Operations').map((div) => {
-            const divStaff = employees.filter(e => e.divisionId === div.id);
-            const expiringInDiv = divStaff.filter(e => 
-              needsRenewal(e)
-            ).length;
-
-            return (
-              <div
-                key={div.id}
-                onClick={() => navigateToDivisionStaff(div.id)}
-                className="bg-white border border-[#E2EAE4] hover:border-[#147D4A] rounded-2xl p-4 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between group hover:-translate-y-0.5"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-[#147D4A] bg-[#EBF7EE] px-2 py-0.5 rounded-md font-mono">
-                      {div.code}
-                    </span>
-                    <span className="text-[11px] text-[#57685D] flex items-center gap-1 font-semibold">
-                      <MapPin className="w-3 h-3 text-[#147D4A]" />
-                      {div.city}
-                    </span>
-                  </div>
-
-                  <h3 className="font-bold text-xs text-[#192C21] group-hover:text-[#147D4A] transition-colors leading-snug line-clamp-2">
-                    {div.name}
-                  </h3>
-
-                  <div className="mt-3 flex items-center gap-2 text-xs text-[#57685D]">
-                    {div.principalAvatar ? (
-                      <img
-                        src={div.principalAvatar}
-                        alt={div.principalName}
-                        className="w-7 h-7 rounded-xl object-cover border border-[#C5E8D2]"
-                      />
-                    ) : (
-                      <div className="w-7 h-7 rounded-xl bg-[#EBF7EE] border border-[#C5E8D2] shrink-0 flex items-center justify-center text-[#147D4A]">
-                        <UserCheck className="w-3.5 h-3.5" />
-                      </div>
-                    )}
-                    <div className="truncate">
-                      <span className="block text-[9px] text-[#798C80] uppercase font-bold">Principal</span>
-                      <span className="font-semibold text-[#192C21] text-xs truncate block">{div.principalName || 'Not assigned'}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-3 pt-2.5 border-t border-[#E2EAE4] space-y-1 text-xs">
-                  <div className="flex items-center justify-between text-[#57685D]">
-                    <span>Staff:</span>
-                    <span className="font-bold font-mono text-[#192C21]">{divStaff.length}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-[#57685D]">
-                    <span>Students:</span>
-                    <span className="font-semibold font-mono text-[#192C21]">{div.studentCount}</span>
-                  </div>
-
-                  {expiringInDiv > 0 && (
-                    <div className="text-[10px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded font-bold flex items-center justify-between">
-                      <span>Expiring:</span>
-                      <span>{expiringInDiv}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        ))}
       </section>
 
-      {/* 3-Column Bento Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Staff by Role */}
-        <div className="bg-white border border-[#E2EAE4] rounded-2xl p-5 shadow-xs space-y-3.5">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-xs text-[#192C21] flex items-center gap-2">
-              <Briefcase className="w-4 h-4 text-[#147D4A]" />
-              Staff by Role
-            </h3>
-            <span className="text-[11px] text-[#57685D] font-mono font-bold">{scopedEmployees.length} Total</span>
+        {/* School divisions */}
+        <section className="lg:col-span-2 bg-white border border-[#E2EAE4] rounded-2xl shadow-xs overflow-hidden self-start">
+          <div className="px-5 py-4 border-b border-[#E2EAE4] flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-bold text-[#192C21] flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-[#147D4A]" /> School Divisions
+              </h2>
+              <p className="text-[11px] text-[#57685D]">Staff and students per division</p>
+            </div>
+            <button type="button" onClick={() => setActivePage('divisions')} className="text-xs font-bold text-[#147D4A] hover:underline flex items-center gap-1">
+              View all <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
 
-          <div className="space-y-2.5">
-            {[
-              { role: 'Teachers', count: scopedEmployees.filter(e => e.jobTitle === 'Teacher').length, color: 'bg-[#147D4A]' },
-              { role: 'Principals & Deputies', count: scopedEmployees.filter(e => e.jobTitle === 'Principal' || e.jobTitle === 'Deputy Principal').length, color: 'bg-[#35B86B]' },
-              { role: 'Security Guards', count: scopedEmployees.filter(e => e.jobTitle === 'Security Guard').length, color: 'bg-amber-500' },
-              { role: 'Cleaners & Support', count: scopedEmployees.filter(e => e.jobTitle === 'Cleaner').length, color: 'bg-teal-500' },
-              { role: 'Drivers', count: scopedEmployees.filter(e => e.jobTitle === 'Driver').length, color: 'bg-blue-500' },
-              { role: 'Office & Admin', count: scopedEmployees.filter(e => e.jobTitle === 'Secretary' || e.jobTitle === 'Administrative Officer' || e.jobTitle === 'Finance Officer' || e.jobTitle === 'IT Support Officer').length, color: 'bg-indigo-500' }
-            ].map((item, idx) => {
-              const pct = Math.round((item.count / (scopedEmployees.length || 1)) * 100);
-              return (
-                <div key={idx} className="space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-[#192C21]">{item.role}</span>
-                    <span className="font-mono text-[#57685D] text-[11px]">{item.count} ({pct}%)</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-[#F6FAF7] rounded-full overflow-hidden">
-                    <div className={`h-full ${item.color} rounded-full`} style={{ width: `${pct}%` }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+          {divisions.length === 0 ? (
+            <div className="p-10 text-center">
+              <Building2 className="w-8 h-8 text-[#C5E8D2] mx-auto" />
+              <p className="mt-2 text-sm font-bold text-[#192C21]">No divisions yet</p>
+              <button
+                type="button"
+                onClick={() => setActivePage('divisions')}
+                className="edit-only mt-3 px-4 py-2 bg-[#147D4A] hover:bg-[#0E6139] text-white text-xs font-semibold rounded-xl"
+              >
+                Create a division
+              </button>
+            </div>
+          ) : (
+            <ul className="divide-y divide-[#EEF3EF]">
+              {divisions.map(div => {
+                const color = divisionColor(div);
+                const staff = employees.filter(e => e.divisionId === div.id);
+                const due = staff.filter(needsRenewal).length;
+                const hq = isHeadquarters(div);
+                return (
+                  <li key={div.id}>
+                    <button
+                      type="button"
+                      onClick={() => navigateToDivisionStaff(div.id)}
+                      className="group w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-[#F6FAF7] transition-colors"
+                    >
+                      <span className={`w-1.5 self-stretch rounded-full bg-linear-to-b ${color.band}`} />
+                      {div.principalAvatar ? (
+                        <img src={div.principalAvatar} alt="" className="w-10 h-10 rounded-xl object-cover border-2 shrink-0" style={{ borderColor: color.swatch }} />
+                      ) : (
+                        <span className="w-10 h-10 rounded-xl border-2 border-dashed shrink-0 flex items-center justify-center" style={{ borderColor: color.swatch, color: color.swatch }}>
+                          <Building2 className="w-4 h-4" />
+                        </span>
+                      )}
+                      <span className="flex-1 min-w-0">
+                        <span className="block text-sm font-bold text-[#192C21] truncate group-hover:text-[#147D4A]">{div.name}</span>
+                        <span className="block text-[11px] text-[#57685D] truncate">
+                          {leaderTitleFor(div.level)}: {div.principalName || 'Not assigned'}
+                          <span className="hidden sm:inline"> · <MapPin className="inline w-3 h-3 -mt-0.5" /> {div.city}</span>
+                        </span>
+                      </span>
+                      <span className="hidden sm:flex items-center gap-4 shrink-0 text-center">
+                        <span>
+                          <span className="block text-sm font-black text-[#192C21] font-mono">{staff.length}</span>
+                          <span className="block text-[9px] font-bold uppercase tracking-wider text-[#798C80]">Staff</span>
+                        </span>
+                        {!hq && (
+                          <span>
+                            <span className="block text-sm font-black text-[#192C21] font-mono">{div.studentCount}</span>
+                            <span className="block text-[9px] font-bold uppercase tracking-wider text-[#798C80]">Students</span>
+                          </span>
+                        )}
+                      </span>
+                      {due > 0 && (
+                        <span className="text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full shrink-0">
+                          {due} due
+                        </span>
+                      )}
+                      <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#147D4A] shrink-0" />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
 
-        {/* HR Attention Items */}
-        <div className="bg-white border border-[#E2EAE4] rounded-2xl p-5 shadow-xs space-y-3.5">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-xs text-[#192C21] flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-amber-600" />
-              HR Action Items
-            </h3>
-            <span className="text-[10px] text-amber-800 bg-amber-50 font-bold px-2 py-0.5 rounded-full">
-              Attention
-            </span>
-          </div>
-
-          <div className="space-y-2">
-            {scopedEmployees
-              .filter(e => e.missingRequirements.length > 0 || needsRenewal(e))
-              .slice(0, 4)
-              .map((emp) => (
-                <div
-                  key={emp.id}
-                  onClick={() => navigateToProfile(emp.id)}
-                  className="p-2.5 bg-[#F9FBFA] hover:bg-[#EBF7EE] border border-[#E2EAE4] rounded-xl transition-colors cursor-pointer group"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-[#192C21] group-hover:text-[#147D4A] truncate">
-                      {emp.fullName}
-                    </span>
-                    <span className="text-[10px] font-mono text-slate-400">{emp.id}</span>
-                  </div>
-                  <div className="text-[11px] text-[#57685D] mt-0.5 truncate">
-                    {emp.jobTitle} · {emp.divisionName}
-                  </div>
-                  {emp.missingRequirements.length > 0 && (
-                    <span className="mt-1 inline-block text-[10px] bg-rose-50 text-rose-700 font-bold px-1.5 py-0.2 rounded">
-                      Missing: {emp.missingRequirements[0]}
-                    </span>
-                  )}
-                </div>
-              ))}
-          </div>
-
-          <button
-            onClick={() => setActivePage('contracts')}
-            className="w-full py-1.5 text-center text-xs font-bold text-[#147D4A] hover:underline"
-          >
-            Review Contracts Hub →
-          </button>
-        </div>
-
-        {/* Recent Activity */}
-        <div className="bg-white border border-[#E2EAE4] rounded-2xl p-5 shadow-xs space-y-3.5">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-xs text-[#192C21] flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[#147D4A]" />
-              Recent Operations
-            </h3>
-            <span className="text-[11px] text-[#57685D]">Activity Log</span>
-          </div>
-
-          <div className="space-y-2.5 text-xs">
-            {notifications.length === 0 && (
-              <p className="text-[11px] text-[#57685D]">No activity recorded yet.</p>
-            )}
-            {notifications.slice(0, 4).map((n) => ({
-              title: n.title,
-              desc: n.message,
-              time: new Date(n.timestamp).toLocaleDateString()
-            })).map((act, i) => (
-              <div key={i} className="flex gap-2.5 items-start">
-                <span className="w-2 h-2 rounded-full bg-[#147D4A] mt-1.5 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-[#192C21] truncate">{act.title}</span>
-                    <span className="text-[10px] text-slate-400 font-mono">{act.time}</span>
-                  </div>
-                  <p className="text-[11px] text-[#57685D] mt-0.5 leading-snug truncate">{act.desc}</p>
-                </div>
+        <div className="space-y-5">
+          {/* Needs attention */}
+          <section className="bg-white border border-[#E2EAE4] rounded-2xl shadow-xs overflow-hidden">
+            <div className="px-5 py-4 border-b border-[#E2EAE4] flex items-center justify-between">
+              <h2 className="text-sm font-bold text-[#192C21] flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-600" /> Needs Attention
+              </h2>
+              <span className="text-[11px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full">
+                {needingAttention.length}
+              </span>
+            </div>
+            {attention.length === 0 ? (
+              <div className="px-5 py-6 text-center">
+                <CheckCircle2 className="w-7 h-7 text-[#147D4A] mx-auto" />
+                <p className="mt-1.5 text-xs font-semibold text-[#192C21]">All staff records are in order</p>
               </div>
-            ))}
-          </div>
+            ) : (
+              <ul className="divide-y divide-[#EEF3EF]">
+                {attention.map(emp => (
+                  <li key={emp.id}>
+                    <button
+                      type="button"
+                      onClick={() => navigateToProfile(emp.id)}
+                      className="group w-full flex items-center gap-2.5 px-5 py-2.5 text-left hover:bg-[#F6FAF7] transition-colors"
+                    >
+                      <img src={emp.avatarUrl} alt="" className="w-8 h-8 rounded-lg object-cover border border-[#E2EAE4] shrink-0" />
+                      <span className="flex-1 min-w-0">
+                        <span className="block text-xs font-bold text-[#192C21] truncate group-hover:text-[#147D4A]">{emp.fullName}</span>
+                        <span className="block text-[10px] truncate">
+                          {needsRenewal(emp) ? (
+                            <span className="text-amber-700 font-semibold">Contract renewal due</span>
+                          ) : (
+                            <span className="text-rose-600 font-semibold">Missing: {emp.missingRequirements[0]}</span>
+                          )}
+                        </span>
+                      </span>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#147D4A] shrink-0" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
 
-          <button
-            onClick={() => setActivePage('reports')}
-            className="w-full py-1.5 text-center text-xs font-bold text-[#147D4A] hover:underline"
-          >
-            Full Audit Center →
-          </button>
+          {/* Staff by type */}
+          <section className="bg-white border border-[#E2EAE4] rounded-2xl shadow-xs p-5">
+            <h2 className="text-sm font-bold text-[#192C21] flex items-center gap-2">
+              <PieChart className="w-4 h-4 text-[#147D4A]" /> Staff by Type
+            </h2>
+            {groupList.length === 0 ? (
+              <p className="mt-3 text-xs text-[#57685D]">No staff registered yet.</p>
+            ) : (
+              <>
+                <div className="mt-3 h-3 rounded-full overflow-hidden flex bg-[#F6FAF7]">
+                  {groupList.map(([group, count]) => (
+                    <span
+                      key={group}
+                      className="h-full first:rounded-l-full last:rounded-r-full"
+                      style={{ width: `${(count / scopedEmployees.length) * 100}%`, backgroundColor: GROUP_COLORS[group] || '#798C80' }}
+                      title={`${group}: ${count}`}
+                    />
+                  ))}
+                </div>
+                <ul className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5">
+                  {groupList.map(([group, count]) => (
+                    <li key={group} className="flex items-center gap-1.5 text-xs min-w-0">
+                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: GROUP_COLORS[group] || '#798C80' }} />
+                      <span className="text-[#384C3F] truncate">{group}</span>
+                      <span className="ml-auto font-mono font-bold text-[#192C21]">{count}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </section>
+
+          {/* Recent activity */}
+          <section className="bg-white border border-[#E2EAE4] rounded-2xl shadow-xs overflow-hidden">
+            <div className="px-5 py-4 border-b border-[#E2EAE4] flex items-center justify-between">
+              <h2 className="text-sm font-bold text-[#192C21] flex items-center gap-2">
+                <Clock className="w-4 h-4 text-[#147D4A]" /> Recent Activity
+              </h2>
+              <button type="button" onClick={() => setActivePage('notifications')} className="text-[11px] font-bold text-[#147D4A] hover:underline">
+                See all
+              </button>
+            </div>
+            {notifications.length === 0 ? (
+              <p className="px-5 py-5 text-xs text-[#57685D]">No activity yet.</p>
+            ) : (
+              <ul className="px-5 py-3 space-y-3">
+                {notifications.slice(0, 4).map(n => (
+                  <li key={n.id} className="flex gap-2.5">
+                    <span className="mt-1.5 w-2 h-2 rounded-full bg-[#147D4A] shrink-0" />
+                    <span className="flex-1 min-w-0">
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-bold text-[#192C21] truncate">{n.title}</span>
+                        <span className="text-[10px] text-[#798C80] shrink-0">{timeAgo(n.timestamp)}</span>
+                      </span>
+                      <span className="block text-[11px] text-[#57685D] truncate">{n.message}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
         </div>
       </div>
     </div>
