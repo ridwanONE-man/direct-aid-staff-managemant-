@@ -54,8 +54,18 @@ export const CampusDivisions: React.FC = () => {
     addDivision,
     deleteDivision,
     updateDivision,
+    reorderDivisions,
+    canEdit,
     setActivePage
   } = useApp();
+
+  // Drag a card onto another card to move it there
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const endDrag = () => {
+    setDragId(null);
+    setDragOverId(null);
+  };
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkDelete, setBulkDelete] = useState<{ ids: string[]; all: boolean } | null>(null);
@@ -335,8 +345,32 @@ export const CampusDivisions: React.FC = () => {
           return (
             <div
               key={div.id}
+              draggable={canEdit}
+              onDragStart={(e) => {
+                setDragId(div.id);
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', div.id);
+              }}
+              onDragOver={(e) => {
+                if (!dragId) return;
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                if (dragOverId !== div.id) setDragOverId(div.id);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (dragId && dragId !== div.id) {
+                  const ids = filteredDivisions.map(d => d.id).filter(id => id !== dragId);
+                  ids.splice(ids.indexOf(div.id), 0, dragId);
+                  reorderDivisions(ids);
+                }
+                endDrag();
+              }}
+              onDragEnd={endDrag}
               className={`bg-white border rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col group hover:-translate-y-1 ${
                 isSelected(div.id) ? 'border-[#147D4A] ring-2 ring-[#147D4A]/20' : 'border-[#E2EAE4]'
+              } ${canEdit ? 'cursor-grab active:cursor-grabbing' : ''} ${dragId === div.id ? 'opacity-40' : ''} ${
+                dragOverId === div.id && dragId && dragId !== div.id ? 'ring-4 ring-[#147D4A]/30' : ''
               }`}
             >
               {/* Colour band with the division name */}
