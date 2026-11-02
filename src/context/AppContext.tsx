@@ -17,6 +17,7 @@ import { REQUIRED_DOCUMENTS } from '../data/documentTypes';
 import { isUserRole, UserRole } from '../lib/roles';
 import { syncOwnRole } from '../lib/adminApi';
 import { leaderRoleFor } from '../lib/divisions';
+import { divisionColor } from '../data/divisionColors';
 import { claimSession, fetchActiveSessionId, sessionIdOf, SIGNED_IN_ELSEWHERE } from '../lib/singleSession';
 
 export type AppPage = 'dashboard' | 'directory' | 'divisions' | 'profile' | 'contracts' | 'reports' | 'register' | 'settings' | 'notifications';
@@ -470,8 +471,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const moving = new Set(orderedIds);
     const queue = orderedIds.map(id => sorted.find(d => d.id === id)).filter((d): d is SchoolDivisionCategory => !!d);
     const merged = sorted.map(d => (moving.has(d.id) ? queue.shift() ?? d : d));
-    const renumbered = merged.map((d, i) => ({ ...d, canonicalIndex: i + 1 }));
-    const changed = renumbered.filter(d => divisions.find(o => o.id === d.id)?.canonicalIndex !== d.canonicalIndex);
+    // Save each card's current colour first: older divisions take their colour from their number,
+    // so renumbering would otherwise change it
+    const renumbered = merged.map((d, i) => ({ ...d, color: divisionColor(d).key, canonicalIndex: i + 1 }));
+    const changed = renumbered.filter(d => {
+      const before = divisions.find(o => o.id === d.id);
+      return before?.canonicalIndex !== d.canonicalIndex || before?.color !== d.color;
+    });
     setDivisions(renumbered);
     if (supabase && changed.length > 0) {
       persist(supabase.from('divisions').upsert(changed.map(d => ({ id: d.id, code: d.code, data: d }))));
