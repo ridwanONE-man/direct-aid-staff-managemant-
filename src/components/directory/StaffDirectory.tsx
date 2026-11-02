@@ -390,7 +390,8 @@ export const StaffDirectory: React.FC = () => {
             const theme = roleTheme(emp);
             const RoleIcon = theme.icon;
             const division = divisions.find(d => d.id === emp.divisionId);
-            const band = division ? divisionColor(division).band : theme.band;
+            const divColor = division ? divisionColor(division) : null;
+            const band = divColor ? divColor.band : theme.band;
             return (
               <div
                 key={emp.id}
@@ -400,7 +401,7 @@ export const StaffDirectory: React.FC = () => {
                 }`}
               >
                 {/* Colour band: the colour of the staff member's school division */}
-                <div className={`relative h-[68px] bg-linear-to-br ${band} px-3 pt-2.5`}>
+                <div className={`relative h-[68px] bg-linear-to-br ${band} px-3 pt-2.5`} style={divColor?.bandStyle}>
                   <span className="absolute -top-8 -right-6 w-24 h-24 rounded-full border-[14px] border-white/10 pointer-events-none" />
                   <span className="absolute -bottom-10 left-10 w-20 h-20 rounded-full bg-white/10 blur-xl pointer-events-none" />
                   <div className="relative flex items-center justify-between gap-2">

@@ -205,7 +205,7 @@ export const ExecutiveDashboard: React.FC = () => {
                       onClick={() => navigateToDivisionStaff(div.id)}
                       className="group w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-[#F6FAF7] transition-colors"
                     >
-                      <span className={`w-1.5 self-stretch rounded-full bg-linear-to-b ${color.band}`} />
+                      <span className={`w-1.5 self-stretch rounded-full bg-linear-to-b ${color.band}`} style={color.bandStyle} />
                       {div.principalAvatar ? (
                         <img src={div.principalAvatar} alt="" className="w-10 h-10 rounded-xl object-cover border-2 shrink-0" style={{ borderColor: color.swatch }} />
                       ) : (

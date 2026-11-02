@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { SchoolDivisionCategory, LocationCity, SchoolLevel, GenderDivision } from '../../types';
 import { BulkActionBar, ConfirmDeleteDialog, SelectBox } from '../common/BulkActions';
 import { HQ_LEVEL, isHeadquarters, leaderRoleFor, leaderTitleFor } from '../../lib/divisions';
-import { DIVISION_COLORS, divisionColor, nextDivisionColor } from '../../data/divisionColors';
+import { customDivisionColor, DIVISION_COLORS, divisionColor, isCustomColor, nextDivisionColor } from '../../data/divisionColors';
 import {
   Building2,
   MapPin,
@@ -374,7 +374,7 @@ export const CampusDivisions: React.FC = () => {
               }`}
             >
               {/* Colour band with the division name */}
-              <div className={`relative bg-linear-to-br ${color.band} px-4 pt-3 pb-4 text-white overflow-hidden`}>
+              <div className={`relative bg-linear-to-br ${color.band} px-4 pt-3 pb-4 text-white overflow-hidden`} style={color.bandStyle}>
                 <span className="absolute -top-10 -right-8 w-32 h-32 rounded-full border-[16px] border-white/10 pointer-events-none transition-transform duration-500 group-hover:scale-110" />
                 <span className="absolute -bottom-12 -left-6 w-28 h-28 rounded-full bg-white/10 blur-2xl pointer-events-none" />
                 <div className="relative flex items-center justify-between gap-2">
@@ -995,7 +995,42 @@ export const CampusDivisions: React.FC = () => {
                       </button>
                     );
                   })}
+
+                  {/* Custom colour: any colour from the picker */}
+                  {(() => {
+                    const custom = isCustomColor(divisionForm.color) ? customDivisionColor(divisionForm.color) : null;
+                    return (
+                      <label
+                        title="Choose a custom colour"
+                        className={`relative w-9 h-9 rounded-xl shadow-sm cursor-pointer transition-transform hover:scale-110 flex items-center justify-center ${
+                          custom ? 'ring-2 ring-offset-2 ring-[#192C21] scale-110' : 'border-2 border-dashed border-slate-300 bg-white'
+                        }`}
+                        style={custom ? custom.bandStyle : { backgroundImage: 'conic-gradient(#E11D48, #F59E0B, #16A34A, #0EA5E9, #6366F1, #C026D3, #E11D48)' }}
+                      >
+                        {custom ? (
+                          <Check className="w-4 h-4 text-white" />
+                        ) : (
+                          <span className="w-5 h-5 rounded-md bg-white flex items-center justify-center">
+                            <Plus className="w-3.5 h-3.5 text-slate-600" />
+                          </span>
+                        )}
+                        <input
+                          type="color"
+                          value={custom ? custom.swatch : '#147D4A'}
+                          onChange={(e) => updateForm('color', e.target.value)}
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          aria-label="Custom card colour"
+                        />
+                      </label>
+                    );
+                  })()}
                 </div>
+                {isCustomColor(divisionForm.color) && (
+                  <p className="mt-1.5 text-[11px] text-slate-500 flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded" style={{ backgroundColor: divisionForm.color }} />
+                    Custom colour <span className="font-mono uppercase">{divisionForm.color}</span>
+                  </p>
+                )}
               </div>
 
               <div>
