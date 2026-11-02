@@ -11,8 +11,8 @@ type SettingsTab = 'appearance' | 'security' | 'accounts';
 
 const THEMES: { value: ThemePreference; label: string; hint: string; icon: React.ElementType }[] = [
   { value: 'light', label: 'Light', hint: 'Bright green and white', icon: Sun },
-  { value: 'dark', label: 'Dark', hint: 'Easier on the eyes at night', icon: Moon },
-  { value: 'system', label: 'System', hint: 'Follow this device', icon: Monitor }
+  { value: 'system', label: 'System', hint: 'Soft charcoal grey', icon: Monitor },
+  { value: 'dark', label: 'Dark', hint: 'Deep black, see-through panels', icon: Moon }
 ];
 
 const AppearancePanel: React.FC = () => {
@@ -44,7 +44,7 @@ const AppearancePanel: React.FC = () => {
                   t.value === 'dark'
                     ? 'theme-preview-dark'
                     : t.value === 'system'
-                      ? 'theme-preview-split'
+                      ? 'theme-preview-dim'
                       : 'theme-preview-light'
                 }`}
               >

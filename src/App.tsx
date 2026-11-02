@@ -13,6 +13,7 @@ import { RegisterEmployeePage } from './components/register/RegisterEmployeePage
 import { RenewContractModal } from './components/modals/RenewContractModal';
 import { SaveNotice } from './components/common/SaveNotice';
 import { SettingsPage } from './components/settings/SettingsPage';
+import { LogoutDialog } from './components/common/LogoutDialog';
 
 const ReadOnlyNotice: React.FC<{ onBack: () => void }> = ({ onBack }) => (
   <div className="bg-white border border-[#E2EAE4] rounded-2xl p-12 text-center shadow-xs">
@@ -25,7 +26,8 @@ const ReadOnlyNotice: React.FC<{ onBack: () => void }> = ({ onBack }) => (
 );
 
 const AppContent: React.FC = () => {
-  const { activePage, isAuthenticated, isAuthReady, isDataLoading, syncError, clearSyncError, canEdit, setActivePage } = useApp();
+  const { activePage, isAuthenticated, isAuthReady, isDataLoading, syncError, clearSyncError, canEdit, setActivePage, logout, userEmail } = useApp();
+  const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
@@ -57,6 +59,7 @@ const AppContent: React.FC = () => {
         setIsCollapsed={setIsSidebarCollapsed}
         isMobileOpen={isMobileNavOpen}
         setIsMobileOpen={setIsMobileNavOpen}
+        onRequestLogout={() => setIsLogoutOpen(true)}
       />
 
       {/* Header Bar */}
@@ -102,6 +105,17 @@ const AppContent: React.FC = () => {
       </main>
 
       <SaveNotice />
+
+      {isLogoutOpen && (
+        <LogoutDialog
+          email={userEmail}
+          onCancel={() => setIsLogoutOpen(false)}
+          onConfirm={async () => {
+            await logout();
+            setIsLogoutOpen(false);
+          }}
+        />
+      )}
 
       {/* Interactive Global Modals */}
       <RenewContractModal />

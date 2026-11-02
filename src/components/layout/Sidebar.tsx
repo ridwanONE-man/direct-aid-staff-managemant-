@@ -25,13 +25,15 @@ interface SidebarProps {
   setIsCollapsed: (collapsed: boolean) => void;
   isMobileOpen: boolean;
   setIsMobileOpen: (open: boolean) => void;
+  onRequestLogout: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   isCollapsed,
   setIsCollapsed,
   isMobileOpen,
-  setIsMobileOpen
+  setIsMobileOpen,
+  onRequestLogout
 }) => {
   const {
     activePage,
@@ -43,7 +45,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setRegionalScope,
     notifications,
     setIsAddEmployeeOpen,
-    logout,
     userEmail,
     userRole,
     canEdit
@@ -301,7 +302,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </h4>
                 <button
                   type="button"
-                  onClick={logout}
+                  onClick={onRequestLogout}
                   className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                   title="Sign Out"
                 >
@@ -319,13 +320,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
         ) : (
-          <div className="flex justify-center mb-2 group relative">
+          <div className="flex justify-center mb-9 group relative">
             <div className="relative cursor-pointer" onClick={() => setIsCollapsed(false)}>
               <div className="w-10 h-10 rounded-xl bg-[#EBF7EE] border border-[#C5E8D2] shadow-2xs flex items-center justify-center text-[#147D4A]">
                 <UserCheck className="w-5 h-5" />
               </div>
               <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white" />
             </div>
+
+            <button
+              type="button"
+              onClick={onRequestLogout}
+              className="absolute -bottom-7 left-1/2 -translate-x-1/2 p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+              title="Log out"
+              aria-label="Log out"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
 
             {/* Collapsed Tooltip */}
             <div className="absolute left-full ml-2 px-2.5 py-1 bg-[#192C21] text-white text-xs rounded-lg shadow-md opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-opacity">

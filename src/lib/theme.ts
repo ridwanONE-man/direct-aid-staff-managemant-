@@ -1,9 +1,8 @@
-// Light / dark theme for the signed-in portal. The choice is a per-device preference, so it lives in
-// localStorage; `system` follows the operating system setting.
+// Portal themes for the signed-in app. The choice is a per-device preference, so it lives in localStorage.
+// light: green and white · system: soft charcoal ("dim") · dark: true black with see-through panels
 export type ThemePreference = 'light' | 'dark' | 'system';
 
 const STORAGE_KEY = 'directaid_theme';
-const darkQuery = typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
 export const getThemePreference = (): ThemePreference => {
   try {
@@ -16,8 +15,9 @@ export const getThemePreference = (): ThemePreference => {
 };
 
 const applyTheme = (pref: ThemePreference) => {
-  const dark = pref === 'dark' || (pref === 'system' && !!darkQuery?.matches);
-  document.documentElement.classList.toggle('dark', dark);
+  const root = document.documentElement.classList;
+  root.toggle('dark', pref === 'dark');
+  root.toggle('dim', pref === 'system');
 };
 
 export const setThemePreference = (pref: ThemePreference) => {
@@ -30,9 +30,4 @@ export const setThemePreference = (pref: ThemePreference) => {
 };
 
 // Called once at startup, before the first render
-export const initTheme = () => {
-  applyTheme(getThemePreference());
-  darkQuery?.addEventListener('change', () => {
-    if (getThemePreference() === 'system') applyTheme('system');
-  });
-};
+export const initTheme = () => applyTheme(getThemePreference());
