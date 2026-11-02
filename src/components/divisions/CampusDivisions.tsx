@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { SchoolDivisionCategory, LocationCity, SchoolLevel, GenderDivision } from '../../types';
 import { BulkActionBar, ConfirmDeleteDialog, SelectBox } from '../common/BulkActions';
+import { HQ_LEVEL, isHeadquarters, leaderRoleFor, leaderTitleFor } from '../../lib/divisions';
 import {
   Building2,
   MapPin,
@@ -14,7 +15,11 @@ import {
   Trash2,
   AlertTriangle,
   Pencil,
-  Save
+  Save,
+  Landmark,
+  School,
+  ArrowLeft,
+  ChevronRight
 } from 'lucide-react';
 
 const emptyDivisionForm = {
@@ -58,7 +63,11 @@ export const CampusDivisions: React.FC = () => {
   const [deleteError, setDeleteError] = useState('');
   const pendingDeleteStaff = pendingDelete ? employees.filter(e => e.divisionId === pendingDelete.id).length : 0;
   const [divisionForm, setDivisionForm] = useState(emptyDivisionForm);
-  const principalStaff = employees.filter(e => e.jobTitle === 'Principal');
+  // School or headquarters; null while the create box is still asking which one
+  const [divisionKind, setDivisionKind] = useState<'school' | 'hq' | null>(null);
+  const staffWithLeaderRole = (level: SchoolLevel) => employees.filter(e => e.jobTitle === leaderRoleFor(level));
+  const principalStaff = staffWithLeaderRole(divisionForm.level);
+  const leaderTitle = leaderTitleFor(divisionForm.level);
   const selectedPrincipal = principalStaff.find(e => e.id === divisionForm.principalEmployeeId);
   const principalOfOther = (employeeId: string) =>
     allDivisions.find(d => d.id !== editingId && d.principalEmployeeId === employeeId);
@@ -70,6 +79,17 @@ export const CampusDivisions: React.FC = () => {
     setDivisionForm(prev => ({ ...prev, [field]: value }));
   };
 
+  const chooseKind = (kind: 'school' | 'hq') => {
+    setDivisionKind(kind);
+    setFormError('');
+    setDivisionForm(prev => ({
+      ...prev,
+      level: kind === 'hq' ? HQ_LEVEL : prev.level === HQ_LEVEL ? 'Secondary' : prev.level,
+      gender: kind === 'hq' ? 'Operations' : prev.gender === 'Operations' ? 'Boys' : prev.gender,
+      principalEmployeeId: ''
+    }));
+  };
+
   const openEditModal = (div: SchoolDivisionCategory) => {
     setDivisionForm({
       name: div.name,
@@ -77,21 +97,23 @@ export const CampusDivisions: React.FC = () => {
       city: div.city,
       level: div.level,
       gender: div.gender,
-      principalEmployeeId: principalStaff.some(e => e.id === div.principalEmployeeId) ? div.principalEmployeeId! : '',
+      principalEmployeeId: staffWithLeaderRole(div.level).some(e => e.id === div.principalEmployeeId) ? div.principalEmployeeId! : '',
       studentCount: div.studentCount ? String(div.studentCount) : '',
       description: div.description,
       campusAddress: div.campusAddress
     });
     setFormError('');
     setUnlinkedPrincipal(
-      div.principalName && !principalStaff.some(e => e.id === div.principalEmployeeId) ? div.principalName : ''
+      div.principalName && !staffWithLeaderRole(div.level).some(e => e.id === div.principalEmployeeId) ? div.principalName : ''
     );
+    setDivisionKind(isHeadquarters(div) ? 'hq' : 'school');
     setEditingId(div.id);
     setIsCreateOpen(true);
   };
 
   const closeCreateModal = () => {
     setIsCreateOpen(false);
+    setDivisionKind(null);
     setEditingId(null);
     setUnlinkedPrincipal('');
     setDivisionForm(emptyDivisionForm);
@@ -104,7 +126,7 @@ export const CampusDivisions: React.FC = () => {
     const code = divisionForm.code.trim().toUpperCase();
 
     if (!name || !code) {
-      setFormError('Division name and code are required.');
+      setFormError(`${isOperations ? 'Headquarters' : 'School'} name and code are required.`);
       return;
     }
     if (allDivisions.some(d => d.id !== editingId && d.code.toUpperCase() === code)) {
@@ -309,7 +331,7 @@ export const CampusDivisions: React.FC = () => {
                 isSelected(div.id)
                   ? 'border-[#147D4A] ring-2 ring-[#147D4A]/20'
                   : isHQ
-                  ? 'border-indigo-200 bg-indigo-50/15'
+                  ? 'border-[#C5E8D2] hover:border-[#147D4A]'
                   : 'border-[#E2EAE4] hover:border-[#147D4A]'
               }`}
             >
@@ -329,6 +351,11 @@ export const CampusDivisions: React.FC = () => {
                     <span className="font-mono text-[11px] font-bold text-[#147D4A] bg-[#EBF7EE] px-2 py-0.5 rounded-md">
                       {div.code}
                     </span>
+                    {isHQ && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-linear-to-r from-[#0E6139] to-[#147D4A] px-2 py-0.5 rounded-md">
+                        <Landmark className="w-3 h-3" /> HQ
+                      </span>
+                    )}
                   </div>
 
                   <span className="text-[11px] font-semibold text-[#57685D] flex items-center gap-1">
@@ -360,7 +387,7 @@ export const CampusDivisions: React.FC = () => {
                   )}
                   <div className="min-w-0 flex-1">
                     <span className="text-[9px] font-bold uppercase tracking-wider text-[#798C80] block">
-                      {isHQ ? 'Director' : 'Principal'}
+                      {leaderTitleFor(div.level)}
                     </span>
                     <span className="font-bold text-xs text-[#192C21] block truncate">{div.principalName || 'Not assigned'}</span>
                     {div.principalPhone && (
@@ -677,13 +704,25 @@ export const CampusDivisions: React.FC = () => {
             <div className="p-4 border-b border-[#E2EAE4] bg-[#F9FBFA] flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-[#192C21] flex items-center gap-2">
-                  <Building2 className="w-4.5 h-4.5 text-[#147D4A]" />
-                  {editingId ? 'Edit School Division' : 'Create School Division'}
+                  {divisionKind === 'hq' ? (
+                    <Landmark className="w-4.5 h-4.5 text-[#147D4A]" />
+                  ) : divisionKind === 'school' ? (
+                    <School className="w-4.5 h-4.5 text-[#147D4A]" />
+                  ) : (
+                    <Building2 className="w-4.5 h-4.5 text-[#147D4A]" />
+                  )}
+                  {!divisionKind
+                    ? 'Create Division'
+                    : `${editingId ? 'Edit' : 'Create'} ${divisionKind === 'hq' ? 'Headquarters' : 'School'}`}
                 </h3>
                 <p className="text-xs text-[#57685D] mt-0.5">
-                  {editingId
-                    ? 'Changes also update the division shown on its staff records.'
-                    : 'Add a campus division so staff can be assigned to it.'}
+                  {!divisionKind
+                    ? 'What would you like to add?'
+                    : editingId
+                      ? 'Changes also update the division shown on its staff records.'
+                      : divisionKind === 'hq'
+                        ? 'The head office, led by a General Director.'
+                        : 'A school campus, led by a Principal.'}
                 </p>
               </div>
               <button
@@ -695,7 +734,57 @@ export const CampusDivisions: React.FC = () => {
               </button>
             </div>
 
+            {!divisionKind ? (
+              <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {([
+                  {
+                    kind: 'school' as const,
+                    icon: School,
+                    title: 'School',
+                    text: 'A primary or secondary campus with its own Principal, wing and students.',
+                    band: 'from-[#147D4A] via-[#2D9A48] to-[#35B86B]'
+                  },
+                  {
+                    kind: 'hq' as const,
+                    icon: Landmark,
+                    title: 'Headquarters',
+                    text: 'The head office for central operations, led by a General Director.',
+                    band: 'from-[#0B4F2E] via-[#0E6139] to-[#147D4A]'
+                  }
+                ]).map(option => (
+                  <button
+                    key={option.kind}
+                    type="button"
+                    onClick={() => chooseKind(option.kind)}
+                    className="group text-left bg-white border border-[#E2EAE4] hover:border-[#147D4A] rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all"
+                  >
+                    <div className={`relative h-20 bg-linear-to-br ${option.band} flex items-center justify-center`}>
+                      <span className="absolute -top-6 -right-6 w-20 h-20 rounded-full border-[12px] border-white/10" />
+                      <span className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm text-white flex items-center justify-center">
+                        <option.icon className="w-6 h-6" />
+                      </span>
+                    </div>
+                    <div className="p-4">
+                      <span className="flex items-center justify-between text-sm font-bold text-[#192C21] group-hover:text-[#147D4A]">
+                        {option.title}
+                        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#147D4A]" />
+                      </span>
+                      <span className="block text-xs text-[#57685D] mt-1 leading-relaxed">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
             <div className="p-4 max-h-[65vh] overflow-y-auto space-y-3 text-xs">
+              {!editingId && (
+                <button
+                  type="button"
+                  onClick={() => setDivisionKind(null)}
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#57685D] hover:text-[#147D4A]"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" /> Change type
+                </button>
+              )}
               {formError && (
                 <div className="p-2.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg font-semibold">
                   {formError}
@@ -704,30 +793,30 @@ export const CampusDivisions: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-2">
-                  <label className="block text-slate-700 font-semibold mb-1">Division Name</label>
+                  <label className="block text-slate-700 font-semibold mb-1">{isOperations ? 'Headquarters Name' : 'School Name'}</label>
                   <input
                     type="text"
                     value={divisionForm.name}
                     onChange={(e) => updateForm('name', e.target.value)}
-                    placeholder="e.g. Boys Secondary Staff - Hargeisa"
+                    placeholder={isOperations ? 'e.g. DirectAid Somaliland Headquarters' : 'e.g. Boys Secondary School - Hargeisa'}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#147D4A] focus:border-[#147D4A]"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Division Code</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Code</label>
                   <input
                     type="text"
                     value={divisionForm.code}
                     onChange={(e) => updateForm('code', e.target.value)}
-                    placeholder="e.g. HRG-SEC-B"
+                    placeholder={isOperations ? 'e.g. HQ-HRG' : 'e.g. HRG-SEC-B'}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#147D4A] focus:border-[#147D4A] font-mono uppercase"
                     required
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className={`grid grid-cols-1 gap-3 ${isOperations ? '' : 'sm:grid-cols-3'}`}>
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">City</label>
                   <select
@@ -739,6 +828,8 @@ export const CampusDivisions: React.FC = () => {
                     <option value="Gabiley">Gabiley</option>
                   </select>
                 </div>
+                {!isOperations && (
+                <>
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">School Level</label>
                   <select
@@ -748,7 +839,6 @@ export const CampusDivisions: React.FC = () => {
                   >
                     <option value="Secondary">Secondary</option>
                     <option value="Primary">Primary</option>
-                    <option value="Central Operations">Central Operations</option>
                   </select>
                 </div>
                 <div>
@@ -762,15 +852,16 @@ export const CampusDivisions: React.FC = () => {
                     <option value="Boys">Boys</option>
                     <option value="Girls">Girls</option>
                     <option value="Co-educational">Co-educational</option>
-                    {isOperations && <option value="Operations">Operations</option>}
                   </select>
                 </div>
+                </>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="sm:col-span-2">
+                <div className={isOperations ? 'sm:col-span-3' : 'sm:col-span-2'}>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-slate-700 font-semibold">{isOperations ? 'Director' : 'Principal'}</label>
+                    <label className="block text-slate-700 font-semibold">{leaderTitle}</label>
                     {(selectedPrincipal || unlinkedPrincipal) && (
                       <button
                         type="button"
@@ -802,7 +893,7 @@ export const CampusDivisions: React.FC = () => {
                   </select>
                   {principalStaff.length === 0 ? (
                     <p className="mt-1.5 text-[11px] text-amber-700">
-                      No staff with the Principal role yet.{' '}
+                      No staff with the {leaderTitle} role yet.{' '}
                       <button
                         type="button"
                         onClick={() => {
@@ -811,21 +902,22 @@ export const CampusDivisions: React.FC = () => {
                         }}
                         className="font-bold underline"
                       >
-                        Register a principal
+                        Register a {leaderTitle.toLowerCase()}
                       </button>
                     </p>
                   ) : selectedPrincipal && principalOfOther(selectedPrincipal.id) ? (
                     <p className="mt-1.5 text-[11px] text-amber-700">
-                      {selectedPrincipal.fullName} will be removed as principal of {principalOfOther(selectedPrincipal.id)!.name}.
+                      {selectedPrincipal.fullName} will be removed as {leaderTitle.toLowerCase()} of {principalOfOther(selectedPrincipal.id)!.name}.
                     </p>
                   ) : unlinkedPrincipal && !selectedPrincipal ? (
                     <p className="mt-1.5 text-[11px] text-amber-700">
-                      &quot;{unlinkedPrincipal}&quot; was typed in by hand and isn&apos;t a staff record. Choose a principal from the list; saving without one leaves the school unassigned.
+                      &quot;{unlinkedPrincipal}&quot; was typed in by hand and isn&apos;t a staff record. Choose a {leaderTitle.toLowerCase()} from the list; saving without one leaves it unassigned.
                     </p>
                   ) : (
-                    <p className="mt-1.5 text-[11px] text-slate-500">Only staff registered with the Principal role are listed.</p>
+                    <p className="mt-1.5 text-[11px] text-slate-500">Only staff registered with the {leaderTitle} role are listed.</p>
                   )}
                 </div>
+                {!isOperations && (
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">Student Count</label>
                   <input
@@ -837,10 +929,11 @@ export const CampusDivisions: React.FC = () => {
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#147D4A] focus:border-[#147D4A] font-mono disabled:bg-slate-100"
                   />
                 </div>
+                )}
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Campus Address</label>
+                <label className="block text-slate-700 font-semibold mb-1">{isOperations ? 'Office Address' : 'Campus Address'}</label>
                 <input
                   type="text"
                   value={divisionForm.campusAddress}
@@ -859,6 +952,7 @@ export const CampusDivisions: React.FC = () => {
                 />
               </div>
             </div>
+            )}
 
             <div className="p-3.5 border-t border-[#E2EAE4] bg-[#F9FBFA] flex items-center justify-between">
               <button
@@ -868,13 +962,15 @@ export const CampusDivisions: React.FC = () => {
               >
                 Cancel
               </button>
-              <button
-                type="submit"
-                className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#147D4A] hover:bg-[#0E6139] rounded-xl transition-colors flex items-center gap-1.5"
-              >
-                {editingId ? <Save className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                <span>{editingId ? 'Save Changes' : 'Create Division'}</span>
-              </button>
+              {divisionKind && (
+                <button
+                  type="submit"
+                  className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#147D4A] hover:bg-[#0E6139] rounded-xl transition-colors flex items-center gap-1.5"
+                >
+                  {editingId ? <Save className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                  <span>{editingId ? 'Save Changes' : `Create ${divisionKind === 'hq' ? 'Headquarters' : 'School'}`}</span>
+                </button>
+              )}
             </div>
           </form>
         </div>

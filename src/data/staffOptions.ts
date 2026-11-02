@@ -2,6 +2,7 @@ import { JobRole } from '../types';
 
 // Choices offered when registering or editing staff
 export const JOB_ROLES: { value: JobRole; label: string }[] = [
+  { value: 'General Director', label: 'General Director (Headquarters)' },
   { value: 'Principal', label: 'Principal / Headmaster' },
   { value: 'Deputy Principal', label: 'Deputy Principal' },
   { value: 'Teacher', label: 'Teacher / Instructor' },

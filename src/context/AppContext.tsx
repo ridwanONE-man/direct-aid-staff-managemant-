@@ -16,6 +16,7 @@ import { withLiveContractStatus } from '../lib/contracts';
 import { REQUIRED_DOCUMENTS } from '../data/documentTypes';
 import { isUserRole, UserRole } from '../lib/roles';
 import { syncOwnRole } from '../lib/adminApi';
+import { leaderRoleFor } from '../lib/divisions';
 import { claimSession, fetchActiveSessionId, sessionIdOf, SIGNED_IN_ELSEWHERE } from '../lib/singleSession';
 
 export type AppPage = 'dashboard' | 'directory' | 'divisions' | 'profile' | 'contracts' | 'reports' | 'register' | 'settings' | 'notifications';
@@ -626,8 +627,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setEmployees(prev => [newRecord, ...prev]);
     if (supabase) persist(supabase.from('employees').insert(employeeRow(newRecord)));
 
-    // A newly registered principal becomes the principal shown on their division
-    if (newRecord.jobTitle === 'Principal') {
+    // A newly registered principal (school) or general director (headquarters) becomes the head shown on their division
+    if (newRecord.jobTitle === leaderRoleFor(divisionObj.level)) {
       saveDivisions([{
         ...divisionObj,
         principalName: newRecord.fullName,
@@ -665,13 +666,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     if (supabase) persist(supabase.from('employees').update(employeeRow(finalEmp)).eq('id', finalEmp.id));
 
-    // Keep the division's principal details in step with the linked staff record,
-    // and release the school if this person is no longer a principal
+    // Keep the division's head details in step with the linked staff record,
+    // and release the division if this person no longer holds its head role
     saveDivisions(
       divisions
         .filter(d => d.principalEmployeeId === finalEmp.id)
         .map(d =>
-          finalEmp.jobTitle === 'Principal'
+          finalEmp.jobTitle === leaderRoleFor(d.level)
             ? {
                 ...d,
                 principalName: finalEmp.fullName,

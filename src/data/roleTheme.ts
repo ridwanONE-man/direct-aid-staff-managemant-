@@ -21,6 +21,7 @@ const LEADERSHIP: RoleTheme = {
 
 const THEMES: Record<string, RoleTheme> = {
   Principal: LEADERSHIP,
+  'General Director': LEADERSHIP,
   'Deputy Principal': { ...LEADERSHIP, icon: Award, band: 'from-[#0E6139] via-[#147D4A] to-[#2D9A48]' },
   'Head Teacher': { ...LEADERSHIP, icon: Award, band: 'from-[#0E6139] via-[#147D4A] to-[#2D9A48]' },
   Teacher: {

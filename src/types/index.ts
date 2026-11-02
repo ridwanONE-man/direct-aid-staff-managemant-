@@ -3,6 +3,7 @@ export type SchoolLevel = 'Secondary' | 'Primary' | 'Central Operations';
 export type GenderDivision = 'Boys' | 'Girls' | 'Co-educational' | 'Operations';
 
 export type JobRole = 
+  | 'General Director'
   | 'Principal'
   | 'Deputy Principal'
   | 'Head Teacher'
