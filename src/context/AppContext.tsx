@@ -18,7 +18,7 @@ import { isUserRole, UserRole } from '../lib/roles';
 import { syncOwnRole } from '../lib/adminApi';
 import { claimSession, fetchActiveSessionId, sessionIdOf, SIGNED_IN_ELSEWHERE } from '../lib/singleSession';
 
-export type AppPage = 'dashboard' | 'directory' | 'divisions' | 'profile' | 'contracts' | 'reports' | 'register' | 'settings';
+export type AppPage = 'dashboard' | 'directory' | 'divisions' | 'profile' | 'contracts' | 'reports' | 'register' | 'settings' | 'notifications';
 
 export interface DirectoryFilters {
   searchQuery: string;
@@ -51,6 +51,8 @@ interface AppContextType {
   notifications: HRAlertNotification[];
   markNotificationRead: (id: string) => void;
   clearAllNotifications: () => void;
+  deleteNotification: (id: string) => void;
+  deleteAllNotifications: () => void;
   complianceItems: ComplianceAuditItem[];
   toggleComplianceStatus: (id: string) => void;
   
@@ -392,6 +394,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (unread.length === 0) return;
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     if (supabase) persist(supabase.from('notifications').upsert(unread.map(n => ({ id: n.id, data: n }))));
+  };
+
+  const deleteNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+    if (supabase) persist(supabase.from('notifications').delete().eq('id', id));
+  };
+
+  const deleteAllNotifications = () => {
+    const ids = notifications.map(n => n.id);
+    if (ids.length === 0) return;
+    setNotifications([]);
+    if (supabase) persist(supabase.from('notifications').delete().in('id', ids));
   };
 
   const toggleComplianceStatus = (id: string) => {
@@ -793,6 +807,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         notifications,
         markNotificationRead,
         clearAllNotifications,
+        deleteNotification,
+        deleteAllNotifications,
         complianceItems,
         toggleComplianceStatus,
         isAddEmployeeOpen,

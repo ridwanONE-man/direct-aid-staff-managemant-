@@ -14,6 +14,7 @@ import { RenewContractModal } from './components/modals/RenewContractModal';
 import { SaveNotice } from './components/common/SaveNotice';
 import { SettingsPage } from './components/settings/SettingsPage';
 import { LogoutDialog } from './components/common/LogoutDialog';
+import { NotificationsPage } from './components/notifications/NotificationsPage';
 
 const ReadOnlyNotice: React.FC<{ onBack: () => void }> = ({ onBack }) => (
   <div className="bg-white border border-[#E2EAE4] rounded-2xl p-12 text-center shadow-xs">
@@ -101,6 +102,7 @@ const AppContent: React.FC = () => {
           {activePage === 'reports' && <ReportsCenter />}
           {activePage === 'register' && (canEdit ? <RegisterEmployeePage /> : <ReadOnlyNotice onBack={() => setActivePage('dashboard')} />)}
           {activePage === 'settings' && <SettingsPage />}
+          {activePage === 'notifications' && <NotificationsPage />}
         </div>
       </main>
 

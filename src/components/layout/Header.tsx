@@ -1,15 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { useApp } from '../../context/AppContext';
-import {
-  Search,
-  Bell,
-  Menu,
-  CheckCircle,
-  AlertTriangle,
-  FileCheck,
-  UserPlus,
-  Sparkles
-} from 'lucide-react';
+import { Search, Bell, Menu, UserPlus } from 'lucide-react';
 
 interface HeaderProps {
   isCollapsed: boolean;
@@ -25,26 +16,10 @@ export const Header: React.FC<HeaderProps> = ({ isCollapsed, onOpenMobileNav }) 
     filters,
     setFilters,
     notifications,
-    markNotificationRead,
-    clearAllNotifications,
     setIsAddEmployeeOpen
   } = useApp();
 
-  const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const notifRef = useRef<HTMLDivElement>(null);
-
   const unreadCount = notifications.filter(n => !n.read).length;
-
-  // Handle outside click to close popovers
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
-        setIsNotifOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const getPageTitle = () => {
     switch (activePage) {
@@ -62,6 +37,10 @@ export const Header: React.FC<HeaderProps> = ({ isCollapsed, onOpenMobileNav }) 
         return 'Audit & Reports';
       case 'register':
         return 'Staff Registration';
+      case 'settings':
+        return 'Settings';
+      case 'notifications':
+        return 'Notifications';
       default:
         return 'Portal';
     }
@@ -135,106 +114,24 @@ export const Header: React.FC<HeaderProps> = ({ isCollapsed, onOpenMobileNav }) 
           </select>
         </div>
 
-        {/* Notifications Popover */}
-        <div className="relative" ref={notifRef}>
-          <button
-            onClick={() => setIsNotifOpen(!isNotifOpen)}
-            className="relative p-2 rounded-xl text-[#57685D] hover:text-[#192C21] hover:bg-[#F3F7F4] transition-colors"
-            aria-label="View HR Notifications"
-          >
-            <Bell className="w-4.5 h-4.5" />
-            {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-xs">
-                {unreadCount}
-              </span>
-            )}
-          </button>
-
-          {isNotifOpen && (
-            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-[#E2EAE4] rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in-50 zoom-in-95">
-              <div className="p-3.5 border-b border-[#E2EAE4] bg-[#F9FBFA] flex items-center justify-between">
-                <div>
-                  <h4 className="text-xs font-bold text-[#192C21]">Alerts</h4>
-                  <p className="text-[11px] text-[#6B7E72]">{unreadCount} requiring attention</p>
-                </div>
-                {unreadCount > 0 && (
-                  <button
-                    onClick={clearAllNotifications}
-                    className="text-[11px] text-[#147D4A] hover:underline font-semibold"
-                  >
-                    Mark all read
-                  </button>
-                )}
-              </div>
-
-              <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
-                {notifications.length === 0 ? (
-                  <div className="p-6 text-center text-xs text-[#6B7E72]">
-                    No notifications at this time.
-                  </div>
-                ) : (
-                  notifications.map((notif) => (
-                    <div
-                      key={notif.id}
-                      onClick={() => {
-                        markNotificationRead(notif.id);
-                        if (notif.actionUrl) {
-                          setActivePage(notif.actionUrl as any);
-                          setIsNotifOpen(false);
-                        }
-                      }}
-                      className={`p-3 text-xs cursor-pointer transition-colors hover:bg-[#F6FAF7] flex gap-2.5 items-start ${
-                        !notif.read ? 'bg-[#F9FCFA]' : ''
-                      }`}
-                    >
-                      <div className="mt-0.5 shrink-0">
-                        {notif.category === 'contract' ? (
-                          <div className="w-6 h-6 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center">
-                            <AlertTriangle className="w-3.5 h-3.5" />
-                          </div>
-                        ) : notif.category === 'document' ? (
-                          <div className="w-6 h-6 rounded-lg bg-rose-100 text-rose-800 flex items-center justify-center">
-                            <FileCheck className="w-3.5 h-3.5" />
-                          </div>
-                        ) : (
-                          <div className="w-6 h-6 rounded-lg bg-emerald-100 text-[#147D4A] flex items-center justify-center">
-                            <CheckCircle className="w-3.5 h-3.5" />
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <span className={`font-semibold ${notif.read ? 'text-[#44564B]' : 'text-[#192C21]'}`}>
-                            {notif.title}
-                          </span>
-                          {!notif.read && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#147D4A]"></span>
-                          )}
-                        </div>
-                        <p className="text-[11px] text-[#57685D] mt-0.5 line-clamp-2 leading-relaxed">
-                          {notif.message}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <div className="p-2.5 border-t border-[#E2EAE4] bg-[#F9FBFA] text-center">
-                <button
-                  onClick={() => {
-                    setActivePage('reports');
-                    setIsNotifOpen(false);
-                  }}
-                  className="text-xs text-[#147D4A] font-semibold hover:underline"
-                >
-                  View Reports Center →
-                </button>
-              </div>
-            </div>
+        {/* Notifications: opens the Notifications page */}
+        <button
+          onClick={() => setActivePage('notifications')}
+          className={`relative p-2 rounded-xl transition-colors ${
+            activePage === 'notifications'
+              ? 'bg-[#EBF7EE] text-[#147D4A]'
+              : 'text-[#57685D] hover:text-[#192C21] hover:bg-[#F3F7F4]'
+          }`}
+          aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
+          title="Notifications"
+        >
+          <Bell className="w-4.5 h-4.5" />
+          {unreadCount > 0 && (
+            <span className="absolute top-1 right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-xs">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
           )}
-        </div>
+        </button>
 
         {/* Quick Add Button */}
         <button
