@@ -3,6 +3,8 @@ import { useApp } from '../../context/AppContext';
 import { SchoolDivisionCategory, LocationCity, SchoolLevel, GenderDivision } from '../../types';
 import { BulkActionBar, ConfirmDeleteDialog, SelectBox } from '../common/BulkActions';
 import { HQ_LEVEL, isHeadquarters, leaderRoleFor, leaderTitleFor } from '../../lib/divisions';
+import { roleTheme } from '../../data/roleTheme';
+import { EmployeeRecord } from '../../types';
 import {
   Building2,
   MapPin,
@@ -19,8 +21,32 @@ import {
   Landmark,
   School,
   ArrowLeft,
-  ChevronRight
+  ChevronRight,
+  GripVertical,
+  Users,
+  GraduationCap
 } from 'lucide-react';
+
+const DIVISION_STYLE = {
+  hq: { band: 'from-[#0B4F2E] via-[#0E6139] to-[#147D4A]', icon: Landmark, label: 'Headquarters' },
+  Secondary: { band: 'from-[#147D4A] via-[#2D9A48] to-[#35B86B]', icon: School, label: 'Secondary' },
+  Primary: { band: 'from-[#1C7A55] via-[#239366] to-[#3BAE7E]', icon: School, label: 'Primary' }
+};
+
+const divisionStyle = (div: SchoolDivisionCategory) =>
+  isHeadquarters(div) ? DIVISION_STYLE.hq : div.level === 'Primary' ? DIVISION_STYLE.Primary : DIVISION_STYLE.Secondary;
+
+// Staff of a division grouped by type (Leadership, Teaching, ...), with the same colours as the staff cards
+const staffGroups = (staff: EmployeeRecord[]) => {
+  const groups = new Map<string, { count: number; theme: ReturnType<typeof roleTheme> }>();
+  staff.forEach(emp => {
+    const theme = roleTheme(emp);
+    const entry = groups.get(theme.group);
+    if (entry) entry.count += 1;
+    else groups.set(theme.group, { count: 1, theme });
+  });
+  return [...groups.entries()].sort((a, b) => b[1].count - a[1].count);
+};
 
 const emptyDivisionForm = {
   name: '',
@@ -48,8 +74,18 @@ export const CampusDivisions: React.FC = () => {
     addDivision,
     deleteDivision,
     updateDivision,
+    reorderDivisions,
+    canEdit,
     setActivePage
   } = useApp();
+
+  // Drag-and-drop ordering of the division cards
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const endDrag = () => {
+    setDragId(null);
+    setDragOverId(null);
+  };
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkDelete, setBulkDelete] = useState<{ ids: string[]; all: boolean } | null>(null);
@@ -314,171 +350,198 @@ export const CampusDivisions: React.FC = () => {
         </div>
       )}
 
+      {filteredDivisions.length > 1 && (
+        <p className="edit-only -mb-2 text-[11px] text-[#798C80] flex items-center gap-1">
+          <GripVertical className="w-3.5 h-3.5" /> Drag a card to move it to a new place.
+        </p>
+      )}
+
       {/* Divisions Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
         {filteredDivisions.map((div) => {
           const divStaff = employees.filter(e => e.divisionId === div.id);
           const teachers = divStaff.filter(e => e.jobTitle === 'Teacher').length;
-          const securities = divStaff.filter(e => e.jobTitle === 'Security Guard').length;
-          const cleaners = divStaff.filter(e => e.jobTitle === 'Cleaner').length;
-          const drivers = divStaff.filter(e => e.jobTitle === 'Driver').length;
-          const isHQ = div.level === 'Central Operations';
+          const isHQ = isHeadquarters(div);
+          const style = divisionStyle(div);
+          const TypeIcon = style.icon;
+          const isDragging = dragId === div.id;
+          const isDropTarget = dragOverId === div.id && dragId !== null && dragId !== div.id;
 
           return (
             <div
               key={div.id}
-              className={`bg-white border rounded-2xl p-4.5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between group hover:-translate-y-1 ${
-                isSelected(div.id)
-                  ? 'border-[#147D4A] ring-2 ring-[#147D4A]/20'
-                  : isHQ
-                  ? 'border-[#C5E8D2] hover:border-[#147D4A]'
-                  : 'border-[#E2EAE4] hover:border-[#147D4A]'
+              draggable={canEdit}
+              onDragStart={(e) => {
+                setDragId(div.id);
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', div.id);
+              }}
+              onDragOver={(e) => {
+                if (!dragId) return;
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                if (dragOverId !== div.id) setDragOverId(div.id);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (dragId && dragId !== div.id) {
+                  const ids = filteredDivisions.map(d => d.id).filter(id => id !== dragId);
+                  ids.splice(ids.indexOf(div.id), 0, dragId);
+                  reorderDivisions(ids);
+                }
+                endDrag();
+              }}
+              onDragEnd={endDrag}
+              className={`bg-white border rounded-2xl overflow-hidden shadow-xs hover:shadow-lg transition-all duration-200 flex flex-col group ${
+                canEdit ? 'cursor-grab active:cursor-grabbing' : ''
+              } ${isDragging ? 'opacity-40 scale-[0.98]' : 'hover:-translate-y-1'} ${
+                isDropTarget
+                  ? 'border-[#147D4A] ring-4 ring-[#147D4A]/20'
+                  : isSelected(div.id)
+                    ? 'border-[#147D4A] ring-2 ring-[#147D4A]/20'
+                    : 'border-[#E2EAE4] hover:border-[#C5E8D2]'
               }`}
             >
-              <div>
-                {/* Header Tag */}
-                <div className="flex items-center justify-between mb-2.5">
-                  <div className="flex items-center gap-1.5">
+              {/* Colour band: school level or headquarters */}
+              <div className={`relative h-[76px] bg-linear-to-br ${style.band} px-3 pt-2.5`}>
+                <span className="absolute -top-8 -right-6 w-24 h-24 rounded-full border-[14px] border-white/10 pointer-events-none" />
+                <span className="absolute -bottom-10 left-12 w-20 h-20 rounded-full bg-white/10 blur-xl pointer-events-none" />
+                <div className="relative flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="edit-only text-white/60 hover:text-white" title="Drag to move">
+                      <GripVertical className="w-4 h-4" />
+                    </span>
                     <SelectBox
                       checked={isSelected(div.id)}
                       onChange={() => toggleSelected(div.id)}
                       label={`Select ${div.name}`}
-                      className="mr-0.5"
                     />
-                    <span className="w-5 h-5 rounded-full bg-[#147D4A] text-white text-[10px] font-bold flex items-center justify-center font-mono">
+                    <span className="w-5 h-5 rounded-full bg-white text-[#147D4A] text-[10px] font-bold flex items-center justify-center font-mono shrink-0">
                       {div.canonicalIndex}
                     </span>
-                    <span className="font-mono text-[11px] font-bold text-[#147D4A] bg-[#EBF7EE] px-2 py-0.5 rounded-md">
+                    <span className="font-mono text-[10px] font-bold text-white bg-white/20 px-2 py-0.5 rounded-md truncate">
                       {div.code}
                     </span>
-                    {isHQ && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-linear-to-r from-[#0E6139] to-[#147D4A] px-2 py-0.5 rounded-md">
-                        <Landmark className="w-3 h-3" /> HQ
-                      </span>
-                    )}
                   </div>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-white/20 backdrop-blur-sm px-2 py-0.5 rounded-full shrink-0">
+                    <TypeIcon className="w-3 h-3" /> {style.label}
+                  </span>
+                </div>
+              </div>
 
-                  <span className="text-[11px] font-semibold text-[#57685D] flex items-center gap-1">
+              <div className="px-4 pb-4 flex-1 flex flex-col">
+                {/* Head of the division: photo overlaps the band */}
+                <div className="flex items-end gap-3 -mt-7">
+                  {div.principalAvatar ? (
+                    <img
+                      src={div.principalAvatar}
+                      alt={div.principalName}
+                      className="w-14 h-14 rounded-2xl object-cover border-[3px] border-white shadow-md bg-white shrink-0"
+                    />
+                  ) : (
+                    <div className="w-14 h-14 rounded-2xl bg-[#EBF7EE] border-[3px] border-white shadow-md shrink-0 flex items-center justify-center text-[#147D4A]">
+                      <UserCheck className="w-6 h-6" />
+                    </div>
+                  )}
+                  <span className="mb-0.5 ml-auto text-[11px] font-semibold text-[#57685D] flex items-center gap-1">
                     <MapPin className="w-3.5 h-3.5 text-[#147D4A]" />
                     {div.city}
                   </span>
                 </div>
 
-                {/* Division Title */}
-                <h3 className="text-sm font-bold text-[#192C21] group-hover:text-[#147D4A] transition-colors leading-snug">
+                <h3 className="mt-2.5 text-sm font-bold text-[#192C21] group-hover:text-[#147D4A] transition-colors leading-snug">
                   {div.name}
                 </h3>
-                <p className="text-[11px] text-[#57685D] mt-1 line-clamp-2 leading-relaxed">
-                  {div.description}
+                <p className="text-[10px] text-[#57685D] mt-0.5">
+                  <span className="font-bold uppercase tracking-wider text-[#798C80]">{leaderTitleFor(div.level)}:</span>{' '}
+                  <span className={div.principalName ? 'font-semibold text-[#192C21]' : 'italic'}>{div.principalName || 'Not assigned'}</span>
+                  {div.principalPhone && <span className="font-mono"> · {div.principalPhone}</span>}
                 </p>
+                {div.description && (
+                  <p className="text-[11px] text-[#57685D] mt-1.5 line-clamp-2 leading-relaxed">{div.description}</p>
+                )}
 
-                {/* Principal / Campus Head */}
-                <div className="mt-3 p-2.5 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl flex items-center gap-2.5">
-                  {div.principalAvatar ? (
-                    <img
-                      src={div.principalAvatar}
-                      alt={div.principalName}
-                      className="w-9 h-9 rounded-xl object-cover border border-[#C5E8D2] shrink-0"
-                    />
-                  ) : (
-                    <div className="w-9 h-9 rounded-xl bg-[#EBF7EE] border border-[#C5E8D2] shrink-0 flex items-center justify-center text-[#147D4A]">
-                      <UserCheck className="w-4 h-4" />
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-[#798C80] block">
-                      {leaderTitleFor(div.level)}
-                    </span>
-                    <span className="font-bold text-xs text-[#192C21] block truncate">{div.principalName || 'Not assigned'}</span>
-                    {div.principalPhone && (
-                      <span className="text-[10px] text-[#57685D] flex items-center gap-1 font-mono mt-0.5">
-                        <Phone className="w-2.5 h-2.5 text-[#147D4A]" /> {div.principalPhone}
-                      </span>
-                    )}
+                {/* Key numbers */}
+                <div className={`mt-3 grid gap-2 ${isHQ ? 'grid-cols-1' : 'grid-cols-3'}`}>
+                  <div className="rounded-xl bg-[#F6FAF7] border border-[#E2EAE4] px-2 py-1.5 text-center">
+                    <Users className="w-3.5 h-3.5 text-[#147D4A] mx-auto" />
+                    <span className="block text-sm font-black text-[#192C21] font-mono leading-tight">{divStaff.length}</span>
+                    <span className="block text-[9px] font-semibold uppercase tracking-wider text-[#798C80]">Staff</span>
                   </div>
-                </div>
-
-                {/* Staff Breakdown */}
-                <div className="mt-3 space-y-1.5 text-xs">
-                  <div className="flex items-center justify-between text-[#384C3F]">
-                    <span className="text-[#57685D]">Assigned Staff:</span>
-                    <span className="font-bold font-mono text-xs text-[#192C21]">{divStaff.length} Staff</span>
-                  </div>
-
                   {!isHQ && (
-                    <div className="flex items-center justify-between text-[#57685D]">
-                      <span>Students:</span>
-                      <span className="font-semibold font-mono text-[#192C21]">{div.studentCount}</span>
-                    </div>
+                    <>
+                      <div className="rounded-xl bg-[#F6FAF7] border border-[#E2EAE4] px-2 py-1.5 text-center">
+                        <GraduationCap className="w-3.5 h-3.5 text-[#147D4A] mx-auto" />
+                        <span className="block text-sm font-black text-[#192C21] font-mono leading-tight">{teachers}</span>
+                        <span className="block text-[9px] font-semibold uppercase tracking-wider text-[#798C80]">Teachers</span>
+                      </div>
+                      <div className="rounded-xl bg-[#F6FAF7] border border-[#E2EAE4] px-2 py-1.5 text-center">
+                        <School className="w-3.5 h-3.5 text-[#147D4A] mx-auto" />
+                        <span className="block text-sm font-black text-[#192C21] font-mono leading-tight">{div.studentCount}</span>
+                        <span className="block text-[9px] font-semibold uppercase tracking-wider text-[#798C80]">Students</span>
+                      </div>
+                    </>
                   )}
+                </div>
 
-                  {/* Role composition chips */}
-                  <div className="pt-1.5 flex flex-wrap gap-1 text-[10px]">
-                    {teachers > 0 && (
-                      <span className="bg-[#EBF7EE] text-[#147D4A] font-semibold px-2 py-0.5 rounded-md">
-                        {teachers} Teachers
-                      </span>
-                    )}
-                    {securities > 0 && (
-                      <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md">
-                        {securities} Security
-                      </span>
-                    )}
-                    {cleaners > 0 && (
-                      <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md">
-                        {cleaners} Cleaners
-                      </span>
-                    )}
-                    {drivers > 0 && (
-                      <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md">
-                        {drivers} Drivers
-                      </span>
-                    )}
+                {/* Staff by type, same colours as the Staff Directory cards */}
+                {divStaff.length > 0 && (
+                  <div className="mt-2.5 flex flex-wrap gap-1">
+                    {staffGroups(divStaff).map(([group, { count, theme }]) => {
+                      const GroupIcon = theme.icon;
+                      return (
+                        <span key={group} className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md ${theme.tint} ${theme.text}`}>
+                          <GroupIcon className="w-3 h-3" /> {count} {group}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Bottom Actions */}
+                <div className="mt-auto pt-3">
+                  <div className="pt-2.5 border-t border-[#E2EAE4] flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setModalDivision(div)}
+                        className="font-semibold text-[#57685D] hover:text-[#192C21] mr-1"
+                      >
+                        Overview
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(div)}
+                        className="edit-only p-1.5 rounded-lg text-slate-400 hover:text-[#147D4A] hover:bg-[#EBF7EE] transition-colors"
+                        title="Edit division"
+                        aria-label={`Edit ${div.name}`}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDeleteError('');
+                          setPendingDelete(div);
+                        }}
+                        className="edit-only p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        title="Delete division"
+                        aria-label={`Delete ${div.name}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => navigateToDivisionStaff(div.id)}
+                      className="inline-flex items-center gap-1 font-bold text-[#147D4A] hover:underline"
+                    >
+                      <span>Staff Roster</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                    </button>
                   </div>
                 </div>
-              </div>
-
-              {/* Bottom Actions */}
-              <div className="mt-4 pt-2.5 border-t border-[#E2EAE4] flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setModalDivision(div)}
-                    className="font-semibold text-[#57685D] hover:text-[#192C21]"
-                  >
-                    Overview
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => openEditModal(div)}
-                    className="edit-only p-1.5 rounded-lg text-slate-400 hover:text-[#147D4A] hover:bg-[#EBF7EE] transition-colors"
-                    title="Edit division"
-                    aria-label={`Edit ${div.name}`}
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDeleteError('');
-                      setPendingDelete(div);
-                    }}
-                    className="edit-only p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                    title="Delete division"
-                    aria-label={`Delete ${div.name}`}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => navigateToDivisionStaff(div.id)}
-                  className="inline-flex items-center gap-1 font-bold text-[#147D4A] hover:underline"
-                >
-                  <span>Staff Roster</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                </button>
               </div>
             </div>
           );
@@ -933,7 +996,7 @@ export const CampusDivisions: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">{isOperations ? 'Office Address' : 'Campus Address'}</label>
+                <label className="block text-slate-700 font-semibold mb-1">{isOperations ? 'Headquarters Address' : 'Campus Address'}</label>
                 <input
                   type="text"
                   value={divisionForm.campusAddress}

@@ -203,8 +203,8 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
 
   // 4. Contract & Documents
   const [monthlyBaseSalary, setMonthlyBaseSalary] = useState('');
-  const [durationValue, setDurationValue] = useState('');
-  const [durationUnit, setDurationUnit] = useState<'' | 'months' | 'years'>('');
+  const [durationYears, setDurationYears] = useState('');
+  const [durationMonths, setDurationMonths] = useState('');
   const [startDate] = useState(new Date().toISOString().split('T')[0]);
   // References count up within the year from 1 (CTR-2026-1, CTR-2026-2, ...), using the lowest free number
   // so older random references such as CTR-2026-936 don't push the count up
@@ -303,24 +303,21 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
     const selectedDiv = divisions.find(d => d.id === divisionId) || divisions[0];
     if (!selectedDiv) return;
 
-    const duration = Number(durationValue);
+    const years = Number(durationYears) || 0;
+    const months = Number(durationMonths) || 0;
     if (!jobRole.trim() || !employmentType.trim()) {
       setError('Please choose or type the job role and employment type.');
       setStep(2);
       return;
     }
-    if (!durationUnit) {
-      setError('Please choose months or years for the contract duration.');
-      return;
-    }
-    if (!Number.isInteger(duration) || duration < 1) {
-      setError(`Please enter the number of ${durationUnit} for the contract duration.`);
+    if (years + months === 0) {
+      setError('Please enter the contract duration in years and/or months.');
       return;
     }
 
     const end = new Date(startDate);
-    if (durationUnit === 'months') end.setMonth(end.getMonth() + duration);
-    else end.setFullYear(end.getFullYear() + duration);
+    end.setFullYear(end.getFullYear() + years);
+    end.setMonth(end.getMonth() + months);
     const endDate = end.toISOString().split('T')[0];
     const today = new Date().toISOString().split('T')[0];
 
@@ -892,38 +889,41 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
 
               <div>
                 <label htmlFor="reg-duration" className={labelClass}>Contract Duration</label>
-                {/* One box: choose months or years first, then type how many */}
-                <div className="flex items-center bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl transition-all focus-within:bg-white focus-within:border-[#147D4A] focus-within:ring-2 focus-within:ring-[#147D4A]/15">
-                  <select
-                    id="reg-duration"
-                    value={durationUnit}
-                    onChange={(e) => setDurationUnit(e.target.value as 'months' | 'years')}
-                    className={`bg-transparent pl-3.5 pr-2 py-2.5 text-sm font-semibold focus:outline-none cursor-pointer ${
-                      durationUnit ? 'text-[#147D4A] shrink-0' : 'text-slate-400 w-full'
-                    }`}
-                  >
-                    <option value="" disabled>Select months or years</option>
-                    <option value="months">Months</option>
-                    <option value="years">Years</option>
-                  </select>
-                  {durationUnit && (
-                    <>
-                      <span className="w-px h-5 bg-[#E2EAE4] shrink-0" />
-                      <input
-                        key={durationUnit}
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={3}
-                        value={durationValue}
-                        onChange={(e) => setDurationValue(e.target.value.replace(/\D/g, '').replace(/^0+/, ''))}
-                        placeholder={durationUnit === 'months' ? 'Number of months, e.g. 6' : 'Number of years, e.g. 2'}
-                        aria-label={durationUnit === 'months' ? 'Number of months' : 'Number of years'}
-                        className="flex-1 min-w-0 bg-transparent px-3 py-2.5 text-sm font-mono font-semibold text-[#192C21] placeholder:font-sans placeholder:font-normal placeholder:text-slate-400 focus:outline-none"
-                        autoFocus
-                      />
-                    </>
-                  )}
+                {/* One box: years and months side by side, e.g. 2 Y / 6 M */}
+                <div className="flex items-stretch bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl overflow-hidden transition-all focus-within:bg-white focus-within:border-[#147D4A] focus-within:ring-2 focus-within:ring-[#147D4A]/15">
+                  {([
+                    { id: 'reg-duration', value: durationYears, set: setDurationYears, unit: 'Y', label: 'Years', max: 30, hint: '0' },
+                    { id: 'reg-duration-months', value: durationMonths, set: setDurationMonths, unit: 'M', label: 'Months', max: 11, hint: '0' }
+                  ]).map((part, i) => (
+                    <React.Fragment key={part.unit}>
+                      {i > 0 && <span className="w-px my-2 bg-[#E2EAE4] shrink-0" />}
+                      <label htmlFor={part.id} className="flex-1 min-w-0 flex items-center gap-1.5 pl-3 pr-2 cursor-text">
+                        <input
+                          id={part.id}
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={2}
+                          value={part.value}
+                          onChange={(e) => {
+                            const digits = e.target.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+                            part.set(digits && Number(digits) > part.max ? String(part.max) : digits);
+                          }}
+                          placeholder={part.hint}
+                          aria-label={`Contract ${part.label.toLowerCase()}`}
+                          className="w-full min-w-0 bg-transparent py-2.5 text-sm font-mono font-semibold text-[#192C21] placeholder:text-slate-400 focus:outline-none"
+                        />
+                        <span className="shrink-0 text-[11px] font-bold text-[#147D4A] bg-[#EBF7EE] px-1.5 py-0.5 rounded-md" title={part.label}>
+                          {part.unit}
+                        </span>
+                      </label>
+                    </React.Fragment>
+                  ))}
                 </div>
+                <p className="mt-1 text-[11px] text-[#798C80]">
+                  {(Number(durationYears) || 0) + (Number(durationMonths) || 0) > 0
+                    ? `${Number(durationYears) || 0} year${Number(durationYears) === 1 ? '' : 's'} ${Number(durationMonths) || 0} month${Number(durationMonths) === 1 ? '' : 's'}`
+                    : 'Years (Y) and months (M)'}
+                </p>
               </div>
             </div>
 

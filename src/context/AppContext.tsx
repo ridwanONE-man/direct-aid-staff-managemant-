@@ -72,6 +72,7 @@ interface AppContextType {
   deleteDivision: (id: string) => string | null;
   clearDivisionPrincipal: (id: string) => void;
   updateDivision: (id: string, updates: Omit<SchoolDivisionCategory, 'id' | 'canonicalIndex'>) => void;
+  reorderDivisions: (orderedIds: string[]) => void;
   addEmployee: (empData: Partial<EmployeeRecord>) => EmployeeRecord;
   updateEmployee: (id: string, updates: Partial<EmployeeRecord>) => void;
   deleteEmployee: (id: string) => void;
@@ -311,7 +312,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       }
 
-      setDivisions(loadedDivisions);
+      setDivisions([...loadedDivisions].sort((a, b) => a.canonicalIndex - b.canonicalIndex));
       setEmployees(loadedEmployees);
       setNotifications((notifRes.data || []).map(r => r.data as HRAlertNotification));
       setComplianceItems((compRes.data || []).map(r => r.data as ComplianceAuditItem));
@@ -460,6 +461,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     employeeId
       ? divisions.filter(d => d.id !== keepDivisionId && d.principalEmployeeId === employeeId).map(blankPrincipal)
       : [];
+
+  // Drag-and-drop order: `orderedIds` is the new order of the divisions on screen (it may be a filtered subset);
+  // the others keep their places, then every division is renumbered 1..n
+  const reorderDivisions = (orderedIds: string[]) => {
+    if (blockReadOnly()) return;
+    const sorted = [...divisions].sort((a, b) => a.canonicalIndex - b.canonicalIndex);
+    const moving = new Set(orderedIds);
+    const queue = orderedIds.map(id => sorted.find(d => d.id === id)).filter((d): d is SchoolDivisionCategory => !!d);
+    const merged = sorted.map(d => (moving.has(d.id) ? queue.shift() ?? d : d));
+    const renumbered = merged.map((d, i) => ({ ...d, canonicalIndex: i + 1 }));
+    const changed = renumbered.filter(d => divisions.find(o => o.id === d.id)?.canonicalIndex !== d.canonicalIndex);
+    setDivisions(renumbered);
+    if (supabase && changed.length > 0) {
+      persist(supabase.from('divisions').upsert(changed.map(d => ({ id: d.id, code: d.code, data: d }))));
+    }
+  };
 
   const updateDivision = (id: string, updates: Omit<SchoolDivisionCategory, 'id' | 'canonicalIndex'>) => {
     if (blockReadOnly()) return;
@@ -823,6 +840,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addDivision,
         deleteDivision,
         clearDivisionPrincipal,
+        reorderDivisions,
         updateDivision,
         addEmployee,
         updateEmployee,
