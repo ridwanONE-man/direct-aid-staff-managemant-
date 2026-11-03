@@ -384,7 +384,7 @@ export const StaffDirectory: React.FC = () => {
       {/* Main Employee Presentation: Grid vs Table */}
       {viewMode === 'grid' ? (
         /* Grid Card View - Beautiful & Attractive */
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {filteredEmployees.map((emp) => {
             const isExpiring = needsRenewal(emp);
             const theme = roleTheme(emp);
@@ -401,7 +401,7 @@ export const StaffDirectory: React.FC = () => {
                 }`}
               >
                 {/* Colour band: the colour of the staff member's school division */}
-                <div className={`relative h-[68px] bg-linear-to-br ${band} px-3 pt-2.5`} style={divColor?.bandStyle}>
+                <div className={`relative h-14 bg-linear-to-br ${band} px-3 pt-2`} style={divColor?.bandStyle}>
                   <span className="absolute -top-8 -right-6 w-24 h-24 rounded-full border-[14px] border-white/10 pointer-events-none" />
                   <span className="absolute -bottom-10 left-10 w-20 h-20 rounded-full bg-white/10 blur-xl pointer-events-none" />
                   <div className="relative flex items-center justify-between gap-2">
@@ -421,10 +421,10 @@ export const StaffDirectory: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="px-4 pb-4 flex-1 flex flex-col justify-between">
+                <div className="px-3.5 pb-3 flex-1 flex flex-col justify-between">
                 <div>
                   {/* Profile Info: photo overlaps the band */}
-                  <div className="flex items-end gap-3 -mt-8">
+                  <div className="flex items-end gap-3 -mt-7">
                     <div className="relative shrink-0">
                       <img
                         src={emp.avatarUrl}
@@ -435,44 +435,44 @@ export const StaffDirectory: React.FC = () => {
                         emp.employmentStatus === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'
                       }`} />
                     </div>
-                    <span className="mb-0.5 ml-auto text-[11px] font-semibold text-[#57685D] flex items-center gap-1">
+                    <span className="mb-0.5 ml-auto text-[11px] font-bold text-[#384C3F] flex items-center gap-1">
                       <MapPin className="w-3 h-3 text-[#147D4A]" />
                       {emp.campusLocation}
                     </span>
                   </div>
 
-                  <div className="mt-2.5 min-w-0">
-                    <h3 className="font-bold text-sm text-[#192C21] group-hover:text-[#147D4A] transition-colors truncate">
+                  <div className="mt-2 min-w-0">
+                    <h3 className="font-extrabold text-sm text-[#192C21] group-hover:text-[#147D4A] transition-colors truncate">
                       {emp.fullName}
                     </h3>
-                    <span className={`inline-flex items-center gap-1 mt-1 text-[11px] font-semibold px-2 py-0.5 rounded-md ${theme.tint} ${theme.text} max-w-full`}>
+                    <span className={`inline-flex items-center gap-1 mt-1 text-[11px] font-bold px-2 py-0.5 rounded-md ${theme.tint} ${theme.text} max-w-full`}>
                       <RoleIcon className="w-3 h-3 shrink-0" />
                       <span className="truncate">{roleName(emp)}</span>
                     </span>
-                    <span className="text-[10px] text-[#57685D] truncate block mt-1">
+                    <span className="text-[11px] font-semibold text-[#384C3F] truncate block mt-1">
                       {emp.divisionName}
                     </span>
                   </div>
 
                   {/* Contact & Meta */}
-                  <div className="mt-3.5 pt-3 border-t border-[#E2EAE4] space-y-1 text-xs text-[#57685D]">
+                  <div className="mt-2.5 pt-2 border-t border-[#E2EAE4] space-y-0.5 text-xs text-[#57685D]">
                     <div className="flex items-center gap-1.5 truncate text-[11px]">
                       <Phone className="w-3 h-3 text-slate-400 shrink-0" />
-                      <span className="font-mono text-slate-700">{emp.phoneNumber}</span>
+                      <span className="font-mono font-semibold text-slate-800">{emp.phoneNumber}</span>
                     </div>
                     <div className="flex items-center gap-1.5 truncate text-[11px]">
                       <Mail className="w-3 h-3 text-slate-400 shrink-0" />
-                      <span className="truncate text-slate-600">{emp.email}</span>
+                      <span className="truncate font-medium text-slate-700">{emp.email}</span>
                     </div>
                     <div className="flex items-center gap-1.5 truncate text-[11px]">
                       <GraduationCap className="w-3 h-3 text-slate-400 shrink-0" />
-                      <span className="truncate text-slate-600">{emp.qualifications.highestDegree}</span>
+                      <span className="truncate font-medium text-slate-700">{emp.qualifications.highestDegree}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Card Footer: Status & Dossier CTA */}
-                <div className="mt-3.5 pt-2.5 border-t border-[#E2EAE4] flex items-center justify-between text-xs">
+                <div className="mt-2.5 pt-2 border-t border-[#E2EAE4] flex items-center justify-between text-xs">
                   <div>
                     <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-md ${
                       isExpiring

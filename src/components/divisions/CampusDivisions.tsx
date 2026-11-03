@@ -334,7 +334,7 @@ export const CampusDivisions: React.FC = () => {
       )}
 
       {/* Divisions Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-3">
         {filteredDivisions.map((div) => {
           const divStaff = employees.filter(e => e.divisionId === div.id);
           const teachers = divStaff.filter(e => e.jobTitle === 'Teacher').length;
@@ -374,7 +374,7 @@ export const CampusDivisions: React.FC = () => {
               }`}
             >
               {/* Colour band with the division name */}
-              <div className={`relative bg-linear-to-br ${color.band} px-4 pt-3 pb-4 text-white overflow-hidden`} style={color.bandStyle}>
+              <div className={`relative bg-linear-to-br ${color.band} px-3.5 pt-2.5 pb-3 text-white overflow-hidden`} style={color.bandStyle}>
                 <span className="absolute -top-10 -right-8 w-32 h-32 rounded-full border-[16px] border-white/10 pointer-events-none transition-transform duration-500 group-hover:scale-110" />
                 <span className="absolute -bottom-12 -left-6 w-28 h-28 rounded-full bg-white/10 blur-2xl pointer-events-none" />
                 <div className="relative flex items-center justify-between gap-2">
@@ -395,37 +395,37 @@ export const CampusDivisions: React.FC = () => {
                     <TypeIcon className="w-3 h-3" /> {isHQ ? 'Office' : div.level}
                   </span>
                 </div>
-                <h3 className="relative mt-3 text-base font-extrabold leading-snug line-clamp-2">{div.name}</h3>
-                <p className="relative mt-1 text-[11px] text-white/85 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <h3 className="relative mt-2 text-base font-black leading-snug line-clamp-2">{div.name}</h3>
+                <p className="relative mt-0.5 text-[11px] font-semibold text-white/90 flex flex-wrap items-center gap-x-2 gap-y-0.5">
                   <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" /> {div.city}</span>
                   {!isHQ && div.gender && <span>· {div.gender} wing</span>}
                 </p>
               </div>
 
-              <div className="px-4 py-3.5 flex-1 flex flex-col">
+              <div className="px-3.5 py-3 flex-1 flex flex-col">
                 {/* Head of the division */}
                 <div className="flex items-center gap-2.5">
                   {div.principalAvatar ? (
                     <img
                       src={div.principalAvatar}
                       alt={div.principalName}
-                      className="w-16 h-16 rounded-2xl shadow-sm object-cover border-2 shrink-0"
+                      className="w-14 h-14 rounded-2xl shadow-sm object-cover border-2 shrink-0"
                       style={{ borderColor: color.swatch }}
                     />
                   ) : (
-                    <div className="w-16 h-16 rounded-2xl bg-[#F6FAF7] border-2 border-dashed shrink-0 flex items-center justify-center" style={{ borderColor: color.swatch, color: color.swatch }}>
-                      <UserCheck className="w-7 h-7" />
+                    <div className="w-14 h-14 rounded-2xl bg-[#F6FAF7] border-2 border-dashed shrink-0 flex items-center justify-center" style={{ borderColor: color.swatch, color: color.swatch }}>
+                      <UserCheck className="w-6 h-6" />
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-[#798C80] block">
+                    <span className="text-[9px] font-extrabold uppercase tracking-wider text-[#64776C] block">
                       {leaderTitleFor(div.level)}
                     </span>
-                    <span className={`text-xs block truncate ${div.principalName ? 'font-bold text-[#192C21]' : 'italic text-[#798C80]'}`}>
+                    <span className={`text-xs block truncate ${div.principalName ? 'font-extrabold text-[#192C21]' : 'italic font-semibold text-[#798C80]'}`}>
                       {div.principalName || 'Not assigned'}
                     </span>
                     {div.principalPhone && (
-                      <span className="text-[10px] text-[#57685D] flex items-center gap-1 font-mono">
+                      <span className="text-[10px] font-semibold text-[#384C3F] flex items-center gap-1 font-mono">
                         <Phone className="w-2.5 h-2.5" style={{ color: color.swatch }} /> {div.principalPhone}
                       </span>
                     )}
@@ -433,11 +433,11 @@ export const CampusDivisions: React.FC = () => {
                 </div>
 
                 {div.description && (
-                  <p className="text-[11px] text-[#57685D] mt-2.5 line-clamp-2 leading-relaxed">{div.description}</p>
+                  <p className="text-[11px] font-medium text-[#384C3F] mt-2 line-clamp-2 leading-relaxed">{div.description}</p>
                 )}
 
                 {/* Key numbers */}
-                <div className={`mt-3 grid gap-2 ${isHQ ? 'grid-cols-1' : 'grid-cols-3'}`}>
+                <div className={`mt-2.5 grid gap-2 ${isHQ ? 'grid-cols-1' : 'grid-cols-3'}`}>
                   {[
                     { icon: Users, value: divStaff.length, label: 'Staff' },
                     ...(isHQ
@@ -449,21 +449,21 @@ export const CampusDivisions: React.FC = () => {
                   ].map(stat => (
                     <div
                       key={stat.label}
-                      className="rounded-xl border px-2 py-2.5 text-center"
+                      className="rounded-xl border px-2 py-2 text-center"
                       style={{ backgroundColor: `${color.swatch}12`, borderColor: `${color.swatch}33` }}
                     >
-                      <span className="w-7 h-7 mx-auto rounded-lg flex items-center justify-center text-white shadow-sm" style={{ backgroundColor: color.swatch }}>
+                      <span className="w-6 h-6 mx-auto rounded-lg flex items-center justify-center text-white shadow-sm" style={{ backgroundColor: color.swatch }}>
                         <stat.icon className="w-3.5 h-3.5" />
                       </span>
                       <span className="block text-lg font-black text-[#192C21] font-mono leading-tight mt-1">{stat.value}</span>
-                      <span className="block text-[9px] font-bold uppercase tracking-wider text-[#798C80]">{stat.label}</span>
+                      <span className="block text-[9px] font-extrabold uppercase tracking-wider text-[#64776C]">{stat.label}</span>
                     </div>
                   ))}
                 </div>
 
                 {/* Bottom Actions */}
-                <div className="mt-auto pt-3">
-                  <div className="pt-2.5 border-t border-[#E2EAE4] flex items-center justify-between text-xs">
+                <div className="mt-auto pt-2.5">
+                  <div className="pt-2 border-t border-[#E2EAE4] flex items-center justify-between text-xs">
                     <div className="flex items-center gap-1">
                       <button
                         type="button"
