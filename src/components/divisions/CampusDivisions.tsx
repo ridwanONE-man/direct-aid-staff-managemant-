@@ -22,7 +22,6 @@ import {
   ArrowLeft,
   ChevronRight,
   Users,
-  GraduationCap,
   Check,
   Palette
 } from 'lucide-react';
@@ -337,7 +336,6 @@ export const CampusDivisions: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-3">
         {filteredDivisions.map((div) => {
           const divStaff = employees.filter(e => e.divisionId === div.id);
-          const teachers = divStaff.filter(e => e.jobTitle === 'Teacher').length;
           const isHQ = isHeadquarters(div);
           const color = divisionColor(div);
           const TypeIcon = isHQ ? Landmark : School;
@@ -436,27 +434,24 @@ export const CampusDivisions: React.FC = () => {
                   <p className="text-[11px] font-medium text-[#384C3F] mt-2 line-clamp-2 leading-relaxed">{div.description}</p>
                 )}
 
-                {/* Key numbers */}
-                <div className={`mt-2.5 grid gap-2 ${isHQ ? 'grid-cols-1' : 'grid-cols-3'}`}>
+                {/* Key numbers: all staff (teachers included) and students */}
+                <div className={`mt-2.5 grid gap-2 ${isHQ ? 'grid-cols-1' : 'grid-cols-2'}`}>
                   {[
                     { icon: Users, value: divStaff.length, label: 'Staff' },
-                    ...(isHQ
-                      ? []
-                      : [
-                          { icon: GraduationCap, value: teachers, label: 'Teachers' },
-                          { icon: School, value: div.studentCount, label: 'Students' }
-                        ])
+                    ...(isHQ ? [] : [{ icon: School, value: div.studentCount, label: 'Students' }])
                   ].map(stat => (
                     <div
                       key={stat.label}
-                      className="rounded-xl border px-2 py-2 text-center"
+                      className="rounded-xl border px-2.5 py-2 flex items-center gap-2.5"
                       style={{ backgroundColor: `${color.swatch}12`, borderColor: `${color.swatch}33` }}
                     >
-                      <span className="w-6 h-6 mx-auto rounded-lg flex items-center justify-center text-white shadow-sm" style={{ backgroundColor: color.swatch }}>
-                        <stat.icon className="w-3.5 h-3.5" />
+                      <span className="w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-sm shrink-0" style={{ backgroundColor: color.swatch }}>
+                        <stat.icon className="w-4.5 h-4.5" />
                       </span>
-                      <span className="block text-lg font-black text-[#192C21] font-mono leading-tight mt-1">{stat.value}</span>
-                      <span className="block text-[9px] font-extrabold uppercase tracking-wider text-[#64776C]">{stat.label}</span>
+                      <span className="min-w-0">
+                        <span className="block text-xl font-black text-[#192C21] font-mono leading-none">{stat.value}</span>
+                        <span className="block mt-0.5 text-[10px] font-extrabold uppercase tracking-wider text-[#64776C]">{stat.label}</span>
+                      </span>
                     </div>
                   ))}
                 </div>
