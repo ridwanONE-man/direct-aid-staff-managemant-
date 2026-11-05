@@ -178,7 +178,7 @@ export const ContractsHub: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="bg-[#F8FAF9] border-b border-[#E2EAE4] text-[#55675B] font-semibold">
-                <th className="py-2.5 px-3.5">Reference</th>
+                <th className="py-2.5 px-3.5">Employee ID</th>
                 <th className="py-2.5 px-3.5">Employee</th>
                 <th className="py-2.5 px-3.5">Role</th>
                 <th className="py-2.5 px-3.5">Division</th>
@@ -200,8 +200,8 @@ export const ContractsHub: React.FC = () => {
                   const isExpiring = needsRenewal(emp);
                   return (
                     <tr key={emp.id} className="hover:bg-[#F9FBFA] transition-colors">
-                      <td className="py-3 px-3.5 font-mono font-medium text-[#147D4A]">
-                        {emp.contract.referenceNo}
+                      <td className="py-3 px-3.5 font-mono font-bold text-[#147D4A]">
+                        {emp.id}
                       </td>
                       <td className="py-3 px-3.5">
                         <div className="flex items-center gap-2">
@@ -212,7 +212,7 @@ export const ContractsHub: React.FC = () => {
                           />
                           <div>
                             <span className="font-bold text-[#192C21] block">{emp.fullName}</span>
-                            <span className="text-[10px] text-slate-400 font-mono">{emp.id}</span>
+                            <span className="text-[10px] text-slate-400">{emp.divisionName}</span>
                           </div>
                         </div>
                       </td>

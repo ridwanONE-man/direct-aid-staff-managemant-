@@ -575,7 +575,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (blockReadOnly()) throw new Error('Your account is read-only.');
     const cityCode = data.campusLocation === 'Gabiley' ? 'GBL' : 'HRG';
     const randomSuffix = Math.floor(2000 + Math.random() * 8000);
-    const newId = `DA-${cityCode}-${randomSuffix}`;
+    const newId = data.id?.trim() || `DA-${cityCode}-${randomSuffix}`;
+    if (employees.some(e => e.id.toLowerCase() === newId.toLowerCase())) {
+      throw new Error(`Employee ID ${newId} is already in use.`);
+    }
 
     const divisionObj = divisions.find(d => d.id === data.divisionId) || divisions[0];
     if (!divisionObj) {

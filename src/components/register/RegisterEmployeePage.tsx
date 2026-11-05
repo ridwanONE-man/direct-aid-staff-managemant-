@@ -184,6 +184,7 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
   const [residentialArea, setResidentialArea] = useState('');
+  const [employeeId, setEmployeeId] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
 
   // 2. Division & Role
@@ -237,9 +238,23 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
   const isTeacher = jobRole === 'Teacher';
   const avatarPreview = photoUrl || initialsAvatar(fullName);
 
+  // Employee ID is typed in by HR; it must be filled in and not used by anyone else
+  const employeeIdProblem = () => {
+    const id = employeeId.trim();
+    if (!id) return 'Please enter the employee ID.';
+    if (!/^[A-Za-z0-9][A-Za-z0-9\-_/.]*$/.test(id)) return 'The employee ID can use letters, numbers and - _ / . only.';
+    const taken = employees.find(e => e.id.toLowerCase() === id.toLowerCase());
+    return taken ? `Employee ID ${id} is already used by ${taken.fullName}.` : '';
+  };
+
   const goToStep = (target: 1 | 2 | 3 | 4) => {
     if (target > 1 && !fullName.trim()) {
       setError('Please enter the full name to continue.');
+      setStep(1);
+      return;
+    }
+    if (target > 1 && employeeIdProblem()) {
+      setError(employeeIdProblem());
       setStep(1);
       return;
     }
@@ -304,6 +319,11 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
     const selectedDiv = divisions.find(d => d.id === divisionId) || divisions[0];
     if (!selectedDiv) return;
 
+    if (employeeIdProblem()) {
+      setError(employeeIdProblem());
+      setStep(1);
+      return;
+    }
     if (!jobRole.trim() || !employmentType.trim()) {
       setError('Please choose or type the job role and employment type.');
       setStep(2);
@@ -358,54 +378,64 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
     const jobTitle: JobRole = isKnownRole ? (jobRole as JobRole) : 'Other';
     const contractType = employmentType.trim() as EmploymentType;
 
-    const newEmp = addEmployee({
-      fullName: fullName.trim(),
-      avatarUrl: avatarPreview,
-      gender,
-      maritalStatus,
-      emergencyContact: {
-        name: nextOfKinName.trim(),
-        relationship: 'Next of Kin',
-        phone: nextOfKinPhone.trim()
-      },
-      phoneNumber: phoneNumber.trim(),
-      email: email.trim(),
-      residentialArea: residentialArea.trim(),
-      paymentMethod: paymentMethod.trim(),
-      paymentAccountNo: paymentAccountNo.trim(),
-      shiftSchedule: shiftSchedule.trim(),
-      policeClearanceStatus: docFiles.police_clearance ? 'Verified' : undefined,
-      divisionId: selectedDiv.id,
-      divisionName: selectedDiv.name,
-      campusLocation: selectedDiv.city,
-      schoolLevel: selectedDiv.level,
-      genderDivision: selectedDiv.gender,
-      jobTitle,
-      customJobTitle: isKnownRole ? undefined : jobRole.trim(),
-      employmentType: contractType,
-      teachingSubjects: isTeacher && teachingSubject.trim() ? [teachingSubject.trim()] : undefined,
-      qualifications: {
-        degreeLevel,
-        highestDegree: highestDegree.trim(),
-        institution: institution.trim(),
-        fieldOfStudy: fieldOfStudy.trim(),
-        graduationYear: Number(graduationYear) || 0,
-        yearsOfExperience: Number(yearsOfExperience) || 0
-      },
-      contract: {
-        referenceNo: contractRefNo,
-        contractType,
-        startDate,
-        endDate,
-        renewalStatus: 'Not Due',
-        salaryGrade: `Grade ${jobTitle === 'Principal' ? 'E-1' : jobTitle === 'Teacher' ? 'T-2' : 'S-1'}`,
-        monthlyBaseSalary: Number(monthlyBaseSalary) || 0,
-        currency: 'USD',
-        benefits: ['Medical Insurance', 'Housing Stipend'],
-        noticePeriodDays: 30
-      },
-      documents
-    });
+    // e.g. the employee ID was taken by someone else in the meantime
+    let newEmp: EmployeeRecord;
+    try {
+      newEmp = addEmployee({
+        id: employeeId.trim().toUpperCase(),
+        fullName: fullName.trim(),
+        avatarUrl: avatarPreview,
+        gender,
+        maritalStatus,
+        emergencyContact: {
+          name: nextOfKinName.trim(),
+          relationship: 'Next of Kin',
+          phone: nextOfKinPhone.trim()
+        },
+        phoneNumber: phoneNumber.trim(),
+        email: email.trim(),
+        residentialArea: residentialArea.trim(),
+        paymentMethod: paymentMethod.trim(),
+        paymentAccountNo: paymentAccountNo.trim(),
+        shiftSchedule: shiftSchedule.trim(),
+        policeClearanceStatus: docFiles.police_clearance ? 'Verified' : undefined,
+        divisionId: selectedDiv.id,
+        divisionName: selectedDiv.name,
+        campusLocation: selectedDiv.city,
+        schoolLevel: selectedDiv.level,
+        genderDivision: selectedDiv.gender,
+        jobTitle,
+        customJobTitle: isKnownRole ? undefined : jobRole.trim(),
+        employmentType: contractType,
+        teachingSubjects: isTeacher && teachingSubject.trim() ? [teachingSubject.trim()] : undefined,
+        qualifications: {
+          degreeLevel,
+          highestDegree: highestDegree.trim(),
+          institution: institution.trim(),
+          fieldOfStudy: fieldOfStudy.trim(),
+          graduationYear: Number(graduationYear) || 0,
+          yearsOfExperience: Number(yearsOfExperience) || 0
+        },
+        contract: {
+          referenceNo: contractRefNo,
+          contractType,
+          startDate,
+          endDate,
+          renewalStatus: 'Not Due',
+          salaryGrade: `Grade ${jobTitle === 'Principal' ? 'E-1' : jobTitle === 'Teacher' ? 'T-2' : 'S-1'}`,
+          monthlyBaseSalary: Number(monthlyBaseSalary) || 0,
+          currency: 'USD',
+          benefits: ['Medical Insurance', 'Housing Stipend'],
+          noticePeriodDays: 30
+        },
+        documents
+      });
+    } catch (err) {
+      await removeStaffFiles(uploadedPaths);
+      setError(err instanceof Error ? err.message : 'Could not register this staff member.');
+      setIsSubmitting(false);
+      return;
+    }
 
     setIsSubmitting(false);
     onRegistered(newEmp);
@@ -500,7 +530,7 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
                 <Camera className="w-4.5 h-4.5 text-[#147D4A]" />
                 Personal Details
               </h2>
-              <p className="text-xs text-[#57685D] mt-0.5">Only the full name is required. Everything else can be added later.</p>
+              <p className="text-xs text-[#57685D] mt-0.5">Only the full name and employee ID are required. Everything else can be added later.</p>
             </div>
 
             {/* Photo */}
@@ -607,7 +637,20 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
                 />
               </div>
 
-              <div className="sm:col-span-2">
+              <div>
+                <label htmlFor="reg-employee-id" className={labelClass}>Employee ID</label>
+                <input
+                  id="reg-employee-id"
+                  type="text"
+                  value={employeeId}
+                  onChange={(e) => setEmployeeId(e.target.value.replace(/\s/g, ''))}
+                  placeholder="e.g. DA-0012"
+                  autoComplete="off"
+                  className={`${inputClass} font-mono uppercase`}
+                />
+              </div>
+
+              <div>
                 <label htmlFor="reg-area" className={labelClass}>Residential District</label>
                 <input
                   id="reg-area"
@@ -862,13 +905,7 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
               <p className="text-xs text-[#57685D] mt-0.5">Salary, payment account, contract length, and documents.</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <span className={labelClass}>Contract Reference</span>
-                <div className="px-3.5 py-2.5 bg-[#EBF7EE] border border-[#C5E8D2] rounded-xl font-mono font-bold text-sm text-[#147D4A]">
-                  {contractRefNo}
-                </div>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
               <div>
                 <label htmlFor="reg-salary" className={labelClass}>
