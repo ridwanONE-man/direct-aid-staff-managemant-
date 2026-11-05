@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { bannerButton, bannerPrimaryButton, PageBanner } from '../common/PageBanner';
 import {
   ShieldCheck,
   Download,
@@ -87,40 +88,20 @@ export const ReportsCenter: React.FC = () => {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="bg-white border border-[#E2EAE4] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-black text-[#192C21] tracking-tight flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-[#147D4A]" />
-              Audit &amp; Reports
-            </h1>
-            <span className="text-xs bg-[#EBF7EE] text-[#147D4A] font-bold px-2.5 py-0.5 rounded-full">
-              {regionalScope === 'all' ? 'All Campuses' : regionalScope === 'hargeisa' ? 'Hargeisa' : 'Gabiley'}
-            </span>
-          </div>
-          <p className="text-xs text-[#57685D] mt-1">
-            Institutional compliance audits, annual census, teacher ratios, and payroll registers.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#192C21] bg-white hover:bg-[#F3F7F4] border border-[#E2EAE4] rounded-xl transition-colors shadow-xs"
-          >
-            <Printer className="w-3.5 h-3.5 text-[#57685D]" />
-            <span>Print</span>
-          </button>
-
-          <button
-            onClick={() => downloadReportCSV(selectedReport)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#147D4A] hover:bg-[#0E6139] rounded-xl transition-all shadow-xs"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Export CSV</span>
-          </button>
-        </div>
-      </div>
+      <PageBanner
+        title="Audit & Reports"
+        badge={regionalScope === 'all' ? 'All Campuses' : regionalScope === 'hargeisa' ? 'Hargeisa' : 'Gabiley'}
+        subtitle="Staff census, compliance checks, teacher ratios and payroll."
+      >
+        <button onClick={() => window.print()} className={bannerButton}>
+          <Printer className="w-3.5 h-3.5" />
+          <span>Print</span>
+        </button>
+        <button onClick={() => downloadReportCSV(selectedReport)} className={bannerPrimaryButton}>
+          <Download className="w-3.5 h-3.5" />
+          <span>Export CSV</span>
+        </button>
+      </PageBanner>
 
       {/* Report Categories Selector */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">

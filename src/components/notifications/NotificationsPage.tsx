@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useApp, AppPage } from '../../context/AppContext';
 import { HRAlertNotification } from '../../types';
 import { ConfirmDeleteDialog } from '../common/BulkActions';
-import { Bell, BellOff, CheckCheck, ChevronRight, FileText, Building2, ShieldCheck, Trash2, UserPlus, Info } from 'lucide-react';
+import { bannerButton, PageBanner } from '../common/PageBanner';
+import { BellOff, CheckCheck, ChevronRight, FileText, Building2, ShieldCheck, Trash2, UserPlus, Info } from 'lucide-react';
 
 const CATEGORY_STYLE: Record<HRAlertNotification['category'], { icon: React.ElementType; className: string; label: string }> = {
   contract: { icon: FileText, className: 'bg-amber-50 text-amber-700', label: 'Contract' },
@@ -57,42 +58,28 @@ export const NotificationsPage: React.FC = () => {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="bg-white border border-[#E2EAE4] rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span className="relative w-10 h-10 rounded-xl bg-[#EBF7EE] text-[#147D4A] flex items-center justify-center">
-            <Bell className="w-5 h-5" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center">
-                {unreadCount}
-              </span>
-            )}
-          </span>
-          <div>
-            <h1 className="text-xl font-black text-[#192C21] tracking-tight">Notifications</h1>
-            <p className="text-xs text-[#57685D] mt-0.5">
-              {unreadCount > 0 ? `${unreadCount} unread of ${notifications.length}` : `${notifications.length} notifications, all read`}
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={clearAllNotifications}
-            disabled={unreadCount === 0}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#147D4A] bg-white hover:bg-[#EBF7EE] border border-[#C5E8D2] rounded-xl transition-colors disabled:opacity-40 disabled:hover:bg-white"
-          >
-            <CheckCheck className="w-3.5 h-3.5" /> Mark all read
-          </button>
-          <button
-            type="button"
-            onClick={() => setConfirmDeleteAll(true)}
-            disabled={notifications.length === 0}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 bg-white hover:bg-rose-50 border border-rose-200 rounded-xl transition-colors disabled:opacity-40 disabled:hover:bg-white"
-          >
-            <Trash2 className="w-3.5 h-3.5" /> Delete all
-          </button>
-        </div>
-      </div>
+      <PageBanner
+        title="Notifications"
+        badge={unreadCount > 0 ? `${unreadCount} unread` : undefined}
+        subtitle={notifications.length > 0 ? `${notifications.length} notifications` : 'New staff, schools and contract renewals show up here.'}
+      >
+        <button
+          type="button"
+          onClick={clearAllNotifications}
+          disabled={unreadCount === 0}
+          className={`${bannerButton} disabled:opacity-40 disabled:hover:bg-white/10`}
+        >
+          <CheckCheck className="w-3.5 h-3.5" /> Mark all read
+        </button>
+        <button
+          type="button"
+          onClick={() => setConfirmDeleteAll(true)}
+          disabled={notifications.length === 0}
+          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-rose-600 bg-white hover:bg-rose-50 rounded-xl shadow-md transition-colors disabled:opacity-50 disabled:hover:bg-white"
+        >
+          <Trash2 className="w-3.5 h-3.5" /> Delete all
+        </button>
+      </PageBanner>
 
       {/* Filter */}
       <div className="bg-white border border-[#E2EAE4] rounded-2xl p-1.5 shadow-xs inline-flex gap-1 text-xs">

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { BannerStat, PageBanner } from '../common/PageBanner';
 import { needsRenewal } from '../../lib/contracts';
 import {
-  FileText,
   AlertTriangle,
   CheckCircle2,
   Building,
@@ -57,29 +57,13 @@ export const ContractsHub: React.FC = () => {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="bg-white border border-[#E2EAE4] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-black text-[#192C21] tracking-tight flex items-center gap-2">
-              <FileText className="w-5 h-5 text-[#147D4A]" />
-              Contracts &amp; HR
-            </h1>
-            <span className="text-xs bg-amber-50 text-amber-800 font-bold px-2.5 py-0.5 rounded-full border border-amber-200">
-              {expiringList.length} Due Soon
-            </span>
-          </div>
-          <p className="text-xs text-[#57685D] mt-1">
-            Contract lifecycles, renewal approvals, and salary baselines.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-4 border-l border-slate-100 pl-4 shrink-0 text-xs">
-          <div>
-            <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Monthly Payroll</span>
-            <span className="text-base font-black text-[#147D4A] font-mono">${totalPayrollUSD.toLocaleString()} USD</span>
-          </div>
-        </div>
-      </div>
+      <PageBanner
+        title="Contracts & HR"
+        badge={`${expiringList.length} Due Soon`}
+        subtitle="Contract periods, renewals and monthly salaries."
+      >
+        <BannerStat label="Monthly Payroll" value={`$${totalPayrollUSD.toLocaleString()}`} />
+      </PageBanner>
 
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

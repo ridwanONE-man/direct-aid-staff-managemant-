@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { PageBanner } from '../common/PageBanner';
 import { needsRenewal } from '../../lib/contracts';
 import { EmployeeRecord } from '../../types';
-import { ChevronRight, MapPin, Phone, Search, User, UserCheck, X } from 'lucide-react';
+import { ChevronRight, MapPin, Phone, Search, User, X } from 'lucide-react';
 
 const roleLabel = (emp: EmployeeRecord) =>
   emp.jobTitle === 'Other' && emp.customJobTitle ? emp.customJobTitle : emp.jobTitle;
@@ -46,25 +47,15 @@ export const StaffProfileList: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <div className="bg-white border border-[#E2EAE4] rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <span className="w-9 h-9 rounded-xl bg-[#EBF7EE] text-[#147D4A] flex items-center justify-center">
-            <UserCheck className="w-4.5 h-4.5" />
-          </span>
-          <div>
-            <h1 className="text-base font-black text-[#192C21] tracking-tight">Staff Profiles</h1>
-            <p className="text-[11px] text-[#57685D]">Pick a staff member to open their full profile.</p>
-          </div>
-          <span className="text-[11px] bg-[#EBF7EE] text-[#147D4A] font-bold px-2 py-0.5 rounded-full font-mono">{shown.length}</span>
-        </div>
-        <div className="relative sm:w-72">
+      <PageBanner title="Staff Profiles" badge={shown.length} subtitle="Pick a staff member to open their full profile.">
+        <div className="relative w-full sm:w-72">
           <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search name, ID, role, phone..."
-            className="w-full pl-8 pr-8 py-2 bg-[#F6FAF7] border border-[#E2EAE4] rounded-xl text-xs text-[#192C21] placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#147D4A]"
+            className="w-full pl-8 pr-8 py-2 bg-white border border-white/40 rounded-xl text-xs text-[#192C21] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-white/50 shadow-md"
           />
           {query && (
             <button
@@ -77,7 +68,7 @@ export const StaffProfileList: React.FC = () => {
             </button>
           )}
         </div>
-      </div>
+      </PageBanner>
 
       <div className="bg-white border border-[#E2EAE4] rounded-2xl shadow-xs divide-y divide-[#EEF3EF] overflow-hidden">
         {shown.map(emp => {

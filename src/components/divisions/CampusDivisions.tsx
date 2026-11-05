@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { SchoolDivisionCategory, LocationCity, SchoolLevel, GenderDivision } from '../../types';
 import { BulkActionBar, ConfirmDeleteDialog, SelectBox } from '../common/BulkActions';
+import { BannerStat, bannerPrimaryButton, PageBanner } from '../common/PageBanner';
 import { HQ_LEVEL, isHeadquarters, leaderRoleFor, leaderTitleFor } from '../../lib/divisions';
 import { customDivisionColor, DIVISION_COLORS, divisionColor, isCustomColor, nextDivisionColor } from '../../data/divisionColors';
 import {
@@ -204,44 +205,22 @@ export const CampusDivisions: React.FC = () => {
   return (
     <div className="space-y-5">
       {/* Page Header */}
-      <div className="bg-white border border-[#E2EAE4] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-black text-[#192C21] tracking-tight flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-[#147D4A]" />
-              School Divisions
-            </h1>
-            <span className="text-xs bg-[#EBF7EE] text-[#147D4A] font-bold px-2.5 py-0.5 rounded-full font-mono">
-              {divisions.length} {divisions.length === 1 ? 'Division' : 'Divisions'}
-            </span>
-          </div>
-          <p className="text-xs text-[#57685D] mt-1 max-w-2xl">
-            {regionalScope === 'all'
-              ? 'Campus divisions across Hargeisa and Gabiley organized by school level and wing.'
-              : `Showing ${regionalScope === 'hargeisa' ? 'Hargeisa' : 'Gabiley'} divisions only (regional scope).`}
-          </p>
-        </div>
-
-        {/* Global Network Metrics */}
-        <div className="flex flex-wrap items-center gap-5 md:border-l border-slate-100 md:pl-4 shrink-0 text-xs">
-          <div>
-            <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Students</span>
-            <span className="text-base font-black text-[#192C21] font-mono">{totalStudents.toLocaleString()}</span>
-          </div>
-          <div>
-            <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Teacher Ratio</span>
-            <span className="text-base font-black text-[#147D4A] font-mono">1:{avgRatio}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setIsCreateOpen(true)}
-            className="edit-only px-3.5 py-2 text-xs font-semibold text-white bg-[#147D4A] hover:bg-[#0E6139] rounded-xl transition-colors flex items-center gap-1.5"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Create Division</span>
-          </button>
-        </div>
-      </div>
+      <PageBanner
+        title="School Divisions"
+        badge={`${divisions.length} ${divisions.length === 1 ? 'Division' : 'Divisions'}`}
+        subtitle={
+          regionalScope === 'all'
+            ? 'Schools and offices across Hargeisa and Gabiley.'
+            : `Showing ${regionalScope === 'hargeisa' ? 'Hargeisa' : 'Gabiley'} only.`
+        }
+      >
+        <BannerStat label="Students" value={totalStudents.toLocaleString()} />
+        <BannerStat label="Teacher Ratio" value={`1:${avgRatio}`} />
+        <button type="button" onClick={() => setIsCreateOpen(true)} className={`edit-only ${bannerPrimaryButton}`}>
+          <Plus className="w-4 h-4" />
+          <span>Create Division</span>
+        </button>
+      </PageBanner>
 
       {/* Filter Bar */}
       <div className="bg-white border border-[#E2EAE4] rounded-2xl p-3 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">

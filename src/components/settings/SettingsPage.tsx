@@ -4,8 +4,9 @@ import { supabase } from '../../lib/supabase';
 import { roleLabel } from '../../lib/roles';
 import { getThemePreference, setThemePreference, ThemePreference } from '../../lib/theme';
 import { AccountsPanel } from './AccountsPanel';
+import { PageBanner } from '../common/PageBanner';
 import { PasswordInput } from './PasswordInput';
-import { CheckCircle2, Loader2, Lock, Monitor, Moon, Palette, Settings, ShieldCheck, Sun, Users } from 'lucide-react';
+import { CheckCircle2, Loader2, Lock, Monitor, Moon, Palette, ShieldCheck, Sun, Users } from 'lucide-react';
 
 type SettingsTab = 'appearance' | 'security' | 'accounts';
 
@@ -145,23 +146,16 @@ export const SettingsPage: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      <div className="bg-white border border-[#E2EAE4] rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span className="w-10 h-10 rounded-xl bg-[#EBF7EE] text-[#147D4A] flex items-center justify-center">
-            <Settings className="w-5 h-5" />
-          </span>
-          <div>
-            <h1 className="text-xl font-black text-[#192C21] tracking-tight">Settings</h1>
-            <p className="text-xs text-[#57685D] mt-0.5">Theme, password{isAdmin ? ' and portal accounts' : ''}.</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 text-xs">
-          <span className="text-[#57685D] truncate max-w-[200px]">{userEmail}</span>
-          <span className="inline-flex items-center gap-1 font-bold text-[#147D4A] bg-[#EBF7EE] border border-[#C5E8D2] px-2 py-0.5 rounded-full">
-            <ShieldCheck className="w-3.5 h-3.5" /> {roleLabel(userRole)}
-          </span>
-        </div>
-      </div>
+      <PageBanner
+        title="Settings"
+        badge={roleLabel(userRole)}
+        subtitle={`Theme, password${isAdmin ? ' and portal accounts' : ''}.`}
+      >
+        <span className="inline-flex items-center gap-1.5 max-w-[240px] px-3 py-2 text-xs font-semibold text-white bg-white/10 border border-white/25 rounded-xl">
+          <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">{userEmail}</span>
+        </span>
+      </PageBanner>
 
       <div className="bg-white border border-[#E2EAE4] rounded-2xl p-1.5 shadow-xs flex gap-1 overflow-x-auto text-xs">
         {tabs.map(t => (
