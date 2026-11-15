@@ -33,10 +33,6 @@ import {
 
 type TabId = 'overview' | 'personal' | 'employment' | 'qualifications' | 'contract' | 'documents';
 
-const inputClass =
-  'w-full px-3.5 py-2.5 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl text-sm text-[#192C21] placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-[#147D4A] focus:ring-2 focus:ring-[#147D4A]/15 transition-all';
-const labelClass = 'block text-xs font-semibold text-[#384C3F] mb-1.5';
-
 const roleLabel = (emp: EmployeeRecord) =>
   emp.jobTitle === 'Other' && emp.customJobTitle
     ? emp.customJobTitle
@@ -76,8 +72,6 @@ export const EmployeeProfile: React.FC = () => {
     employees,
     selectedEmployee,
     setSelectedEmployee,
-    setActivePage,
-    updateEmployee,
     setIsRenewContractOpen,
     setContractRenewalTarget,
     addDocument,

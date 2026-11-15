@@ -15,8 +15,6 @@ import {
   MapPin,
   Plus,
   UserPlus,
-  ShieldAlert,
-  Shield,
   LogOut
 } from 'lucide-react';
 
@@ -43,8 +41,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     scopedDivisions: divisions,
     regionalScope,
     setRegionalScope,
-    notifications,
-    setIsAddEmployeeOpen,
     userEmail,
     userRole,
     canEdit

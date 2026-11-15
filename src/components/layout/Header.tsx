@@ -15,8 +15,7 @@ export const Header: React.FC<HeaderProps> = ({ isCollapsed, onOpenMobileNav }) 
     setRegionalScope,
     filters,
     setFilters,
-    notifications,
-    setIsAddEmployeeOpen
+    notifications
   } = useApp();
 
   const unreadCount = notifications.filter(n => !n.read).length;

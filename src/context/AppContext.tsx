@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import {
   EmployeeRecord,
   SchoolDivisionCategory,
-  AppUserRole,
   LocationCity,
   HRAlertNotification,
   ComplianceAuditItem,
@@ -45,8 +44,6 @@ interface AppContextType {
   setActivePage: (page: AppPage) => void;
   regionalScope: 'all' | 'hargeisa' | 'gabiley';
   setRegionalScope: (scope: 'all' | 'hargeisa' | 'gabiley') => void;
-  currentRole: AppUserRole;
-  setCurrentRole: (role: AppUserRole) => void;
   filters: DirectoryFilters;
   setFilters: React.Dispatch<React.SetStateAction<DirectoryFilters>>;
   resetFilters: () => void;
@@ -59,19 +56,14 @@ interface AppContextType {
   toggleComplianceStatus: (id: string) => void;
   
   // Modals
-  isAddEmployeeOpen: boolean;
-  setIsAddEmployeeOpen: (open: boolean) => void;
   isRenewContractOpen: boolean;
   setIsRenewContractOpen: (open: boolean) => void;
   contractRenewalTarget: EmployeeRecord | null;
   setContractRenewalTarget: (emp: EmployeeRecord | null) => void;
-  isUploadDocOpen: boolean;
-  setIsUploadDocOpen: (open: boolean) => void;
 
   // Actions
   addDivision: (divData: Omit<SchoolDivisionCategory, 'id' | 'canonicalIndex'>) => SchoolDivisionCategory;
   deleteDivision: (id: string) => string | null;
-  clearDivisionPrincipal: (id: string) => void;
   updateDivision: (id: string, updates: Omit<SchoolDivisionCategory, 'id' | 'canonicalIndex'>) => void;
   reorderDivisions: (orderedIds: string[]) => void;
   addEmployee: (empData: Partial<EmployeeRecord>) => EmployeeRecord;
@@ -144,16 +136,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeRecord | null>(null);
   const [activePage, setActivePage] = useState<AppPage>('dashboard');
   const [regionalScope, setRegionalScope] = useState<'all' | 'hargeisa' | 'gabiley'>('all');
-  const [currentRole, setCurrentRole] = useState<AppUserRole>('super_admin');
   const [filters, setFilters] = useState<DirectoryFilters>(defaultFilters);
   const [notifications, setNotifications] = useState<HRAlertNotification[]>([]);
   const [complianceItems, setComplianceItems] = useState<ComplianceAuditItem[]>([]);
 
   // Modal states
-  const [isAddEmployeeOpen, setIsAddEmployeeOpen] = useState(false);
   const [isRenewContractOpen, setIsRenewContractOpen] = useState(false);
   const [contractRenewalTarget, setContractRenewalTarget] = useState<EmployeeRecord | null>(null);
-  const [isUploadDocOpen, setIsUploadDocOpen] = useState(false);
 
   // Authentication & sync state
   const [session, setSession] = useState<Session | null>(null);
@@ -509,12 +498,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (supabase) persist(supabase.from('employees').upsert(affected.map(employeeRow)));
   };
 
-  const clearDivisionPrincipal = (id: string) => {
-    if (blockReadOnly()) return;
-    const div = divisions.find(d => d.id === id);
-    if (div) saveDivisions([blankPrincipal(div)]);
-  };
-
   // Divisions that still have staff are skipped and reported back
   const deleteDivisions = (ids: string[]): { deleted: number; blocked: string[] } => {
     if (blockReadOnly()) return { deleted: 0, blocked: [] };
@@ -826,8 +809,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActivePage,
         regionalScope,
         setRegionalScope,
-        currentRole,
-        setCurrentRole,
         filters,
         setFilters,
         resetFilters,
@@ -838,17 +819,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteAllNotifications,
         complianceItems,
         toggleComplianceStatus,
-        isAddEmployeeOpen,
-        setIsAddEmployeeOpen,
         isRenewContractOpen,
         setIsRenewContractOpen,
         contractRenewalTarget,
         setContractRenewalTarget,
-        isUploadDocOpen,
-        setIsUploadDocOpen,
         addDivision,
         deleteDivision,
-        clearDivisionPrincipal,
         reorderDivisions,
         updateDivision,
         addEmployee,

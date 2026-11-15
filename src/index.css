@@ -1,19 +1,6 @@
 @import "tailwindcss";
 
 @layer base {
-  :root {
-    --brand-primary: #147D4A;
-    --brand-primary-hover: #0E6139;
-    --brand-secondary: #35B86B;
-    --brand-secondary-hover: #2DA25D;
-    --brand-primary-light: #DDF5E5;
-    --brand-dark: #192C21;
-    --brand-muted: #57685D;
-    --brand-border: #E2EAE4;
-    --brand-surface: #F5F8F6;
-    --brand-card: #FFFFFF;
-  }
-
   body {
     background-color: #F6FAF7;
     color: #192C21;
@@ -22,47 +9,6 @@
     -moz-osx-font-smoothing: grayscale;
     letter-spacing: -0.01em;
   }
-}
-
-/* Card Elevation & Design System */
-.directaid-card {
-  background: #FFFFFF;
-  border: 1px solid #E2EAE4;
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px 0 rgba(20, 125, 74, 0.03), 0 1px 2px -1px rgba(20, 125, 74, 0.03);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.directaid-card:hover {
-  border-color: #C5E8D2;
-  box-shadow: 0 8px 24px -4px rgba(20, 125, 74, 0.08), 0 2px 6px -1px rgba(20, 125, 74, 0.04);
-}
-
-.directaid-card-interactive {
-  background: #FFFFFF;
-  border: 1px solid #E2EAE4;
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px 0 rgba(20, 125, 74, 0.03);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.directaid-card-interactive:hover {
-  border-color: #147D4A;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(20, 125, 74, 0.1), 0 4px 10px -2px rgba(20, 125, 74, 0.05);
-}
-
-/* Gradients */
-.brand-gradient {
-  background: linear-gradient(135deg, #147D4A 0%, #2DA25D 100%);
-}
-
-.brand-gradient-subtle {
-  background: linear-gradient(135deg, #EBF7EE 0%, #DDF5E5 100%);
-}
-
-.brand-gradient-dark {
-  background: linear-gradient(135deg, #192C21 0%, #273E31 100%);
 }
 
 /* Smooth Scrollbar */
@@ -202,11 +148,6 @@
   mix-blend-mode: screen;
   filter: invert(1) hue-rotate(180deg);
   opacity: 0.09;
-}
-.dim .app-shell .directaid-card,
-.dim .app-shell .directaid-card-interactive {
-  background: #28332E;
-  border-color: #3A4842;
 }
 .dim .app-shell aside,
 .dim .app-shell header {
@@ -370,11 +311,6 @@
   mix-blend-mode: screen;
   filter: invert(1) hue-rotate(180deg);
   opacity: 0.06;
-}
-.dark .app-shell .directaid-card,
-.dark .app-shell .directaid-card-interactive {
-  background: rgba(255, 255, 255, 0.045);
-  border-color: rgba(255, 255, 255, 0.09);
 }
 .dark .app-shell aside,
 .dark .app-shell header {

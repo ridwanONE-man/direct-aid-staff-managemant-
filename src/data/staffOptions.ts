@@ -35,12 +35,6 @@ export const TEACHING_SUBJECTS = [
   { value: 'ICT & Computer Science', label: 'ICT' }
 ];
 
-export const CONTRACT_DURATIONS = [
-  { value: '1', label: '1 Year' },
-  { value: '2', label: '2 Years' },
-  { value: '3', label: '3 Years' }
-];
-
 export const SHIFT_SCHEDULES = [
   { value: 'Morning Shift (07:00 - 13:00)', label: 'Morning Shift (07:00 - 13:00)' },
   { value: 'Afternoon Shift (13:00 - 18:00)', label: 'Afternoon Shift (13:00 - 18:00)' },

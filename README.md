@@ -1,20 +1,31 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# DirectAid Staff & HR Portal
 
-# Run and deploy your AI Studio app
+Staff records, school divisions, contracts and documents for DirectAid schools in Hargeisa and Gabiley.
 
-This contains everything you need to run your app locally.
+Built with React, Vite, Tailwind CSS and Supabase. Hosted on Vercel.
 
-View your app in AI Studio: https://ai.studio/apps/e199e3eb-f79b-449e-bba3-54324567c424
+## Run locally
 
-## Run Locally
+1. Install dependencies: `npm install`
+2. Create `.env.local` with:
+   ```
+   VITE_SUPABASE_URL=...
+   VITE_SUPABASE_ANON_KEY=...
+   SUPABASE_SERVICE_ROLE_KEY=...   # server only, never prefix with VITE_
+   ADMIN_EMAILS=...                # comma-separated admin emails
+   ```
+3. Start the app: `npm run dev`
 
-**Prerequisites:**  Node.js
+## Database
 
+Run [supabase/schema.sql](supabase/schema.sql) in the Supabase SQL Editor. It creates the tables, row-level security, the `staff-documents` storage bucket policies and the single-session table.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Admin tools
+
+- `api/admin-users.ts` is a Vercel function used by Settings to create and manage HR logins. Set `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_EMAILS` in the Vercel project settings.
+- `node scripts/set-admin.mjs <email>` gives an existing user the admin role.
+
+## Checks
+
+- `npm run lint` type-checks the project and flags unused code.
+- `npm run build` builds the production bundle.

@@ -11,6 +11,3 @@ export const REQUIRED_DOCUMENTS: { type: DocumentType; label: string; hint: stri
 ];
 
 export const OTHER_DOCUMENT_ACCEPT = '.pdf,.doc,.docx,.xls,.xlsx,image/*';
-
-export const documentLabel = (type: DocumentType) =>
-  REQUIRED_DOCUMENTS.find(d => d.type === type)?.label ?? 'Other Document';

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { EmploymentType } from '../../types';
-import { X, FileText, CheckCircle2 } from 'lucide-react';
+import { X, FileText } from 'lucide-react';
 
 export const RenewContractModal: React.FC = () => {
   const {
@@ -19,7 +19,7 @@ export const RenewContractModal: React.FC = () => {
   const [contractType, setContractType] = useState<EmploymentType>('Fixed-Term Contract');
   const [monthlyBaseSalary, setMonthlyBaseSalary] = useState(600);
   const [salaryGrade, setSalaryGrade] = useState('Grade T-2 (Senior Secondary Teacher)');
-  const [noticePeriodDays, setNoticePeriodDays] = useState(30);
+  const noticePeriodDays = 30;
 
   useEffect(() => {
     if (employee) {
@@ -47,7 +47,7 @@ export const RenewContractModal: React.FC = () => {
       contractType,
       monthlyBaseSalary: Number(monthlyBaseSalary),
       salaryGrade,
-      noticePeriodDays: Number(noticePeriodDays)
+      noticePeriodDays
     });
 
     setIsRenewContractOpen(false);

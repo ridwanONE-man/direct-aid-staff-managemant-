@@ -8,7 +8,6 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock,
-  Building,
   Users,
   DollarSign,
   BarChart3

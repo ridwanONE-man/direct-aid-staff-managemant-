@@ -23,10 +23,6 @@ export type JobRole =
 
 export type EmploymentType = 'Permanent' | 'Fixed-Term Contract' | 'Probationary' | 'Part-Time';
 export type EmploymentStatus = 'Active' | 'On Leave' | 'Suspended' | 'Terminated' | 'Archived';
-export type ContractStatus = 'Active' | 'Expiring Soon' | 'Expired' | 'Pending Renewal' | 'Probationary';
-
-export type AppUserRole = 'super_admin' | 'hr_admin' | 'division_manager' | 'employee';
-
 export type DocumentType =
   | 'cv'
   | 'contract'
