@@ -1,12 +1,10 @@
 import React, { useMemo, useState } from 'react';
+import { roleName } from '../../data/roleTheme';
 import { useApp } from '../../context/AppContext';
 import { PageBanner } from '../common/PageBanner';
 import { needsRenewal } from '../../lib/contracts';
 import { EmployeeRecord } from '../../types';
 import { ChevronRight, MapPin, Phone, Search, User, X } from 'lucide-react';
-
-const roleLabel = (emp: EmployeeRecord) =>
-  emp.jobTitle === 'Other' && emp.customJobTitle ? emp.customJobTitle : emp.jobTitle;
 
 const contractBadge = (emp: EmployeeRecord) => {
   if (emp.contract.renewalStatus === 'Expired') return { label: 'Expired', className: 'bg-rose-50 text-rose-700 border-rose-200' };
@@ -24,7 +22,7 @@ export const StaffProfileList: React.FC = () => {
     return employees
       .filter(emp =>
         !q ||
-        [emp.fullName, emp.id, roleLabel(emp), emp.divisionName, emp.phoneNumber].some(v => v?.toLowerCase().includes(q))
+        [emp.fullName, emp.id, roleName(emp), emp.divisionName, emp.phoneNumber].some(v => v?.toLowerCase().includes(q))
       )
       .sort((a, b) => a.fullName.localeCompare(b.fullName));
   }, [employees, query]);
@@ -91,7 +89,7 @@ export const StaffProfileList: React.FC = () => {
                   <span className="text-[10px] font-mono text-[#57685D] shrink-0 hidden sm:inline">{emp.id}</span>
                 </div>
                 <p className="text-[11px] text-[#57685D] truncate">
-                  {roleLabel(emp)} · {emp.divisionName}
+                  {roleName(emp)} · {emp.divisionName}
                 </p>
               </div>
               <div className="hidden md:flex flex-col items-end gap-0.5 text-[11px] text-[#57685D] shrink-0 w-36">

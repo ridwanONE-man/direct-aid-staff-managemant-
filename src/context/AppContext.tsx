@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { isoDate } from '../lib/dates';
 import {
   EmployeeRecord,
   SchoolDivisionCategory,
@@ -601,7 +602,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       paymentAccountNo: data.paymentAccountNo || data.phoneNumber || '',
       policeClearanceStatus: data.policeClearanceStatus,
       policeClearanceRef: data.policeClearanceRef,
-      hireDate: data.hireDate || new Date().toISOString().split('T')[0],
+      hireDate: data.hireDate || isoDate(),
       employmentType: data.employmentType || 'Fixed-Term Contract',
       employmentStatus: data.employmentStatus || 'Active',
       directSupervisor: data.directSupervisor || divisionObj.principalName,
@@ -617,8 +618,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       contract: data.contract || {
         referenceNo: `CTR-${cityCode}-2024-${Math.floor(100 + Math.random() * 900)}`,
         contractType: 'Fixed-Term Contract',
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        startDate: isoDate(),
+        endDate: isoDate(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)),
         renewalStatus: 'Not Due',
         salaryGrade: 'Grade Standard',
         monthlyBaseSalary: 550,
@@ -763,7 +764,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newDoc: DocumentAttachment = {
       ...docData,
       id: `doc-${Date.now()}`,
-      uploadedAt: new Date().toISOString().split('T')[0]
+      uploadedAt: isoDate()
     };
     const replaced = options.replaceId ? emp.documents.find(d => d.id === options.replaceId) : undefined;
     commitEmployee({

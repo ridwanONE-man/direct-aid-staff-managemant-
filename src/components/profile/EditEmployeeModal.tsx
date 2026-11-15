@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
+import { inputClass, labelClass, modalBackdrop, modalPanel } from '../common/styles';
+import { isoDate } from '../../lib/dates';
 import { useApp } from '../../context/AppContext';
 import { DegreeLevel, DocumentAttachment, EmployeeRecord, EmploymentStatus, EmploymentType, JobRole } from '../../types';
 import { EMPLOYMENT_TYPES, JOB_ROLES, PAYMENT_METHODS, SHIFT_SCHEDULES, TEACHING_SUBJECTS } from '../../data/staffOptions';
 import { formatFileSize, removeStaffFiles, uploadStaffFile, validateFile } from '../../lib/storage';
 import { initialsAvatar, resizePhoto } from '../../lib/photo';
 import { Briefcase, Camera, Edit, FileText, GraduationCap, Loader2, StickyNote, Trash2, Upload, User, X } from 'lucide-react';
-
-const inputClass =
-  'w-full px-3.5 py-2.5 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl text-sm text-[#192C21] placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-[#147D4A] focus:ring-2 focus:ring-[#147D4A]/15 transition-all';
-const labelClass = 'block text-xs font-semibold text-[#384C3F] mb-1.5';
 
 const STATUSES: EmploymentStatus[] = ['Active', 'On Leave', 'Suspended', 'Terminated', 'Archived'];
 const DEGREE_LEVELS: DegreeLevel[] = ['Diploma', 'Bachelor', 'Master', 'PhD', 'Vocational'];
@@ -114,7 +112,7 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, 
           type: 'photo',
           fileName: photoFile.name,
           fileSize: formatFileSize(photoFile.size),
-          uploadedAt: new Date().toISOString().split('T')[0],
+          uploadedAt: isoDate(),
           verified: false,
           storagePath: path,
           mimeType: photoFile.type
@@ -167,8 +165,8 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, 
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-      <form onSubmit={handleSave} className="bg-white rounded-2xl max-w-3xl w-full border border-[#E2EAE4] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className={modalBackdrop}>
+      <form onSubmit={handleSave} className={`${modalPanel} max-w-3xl flex flex-col max-h-[90vh]`}>
         {/* Header */}
         <div className="p-4 border-b border-[#E2EAE4] bg-[#F9FBFA] flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">

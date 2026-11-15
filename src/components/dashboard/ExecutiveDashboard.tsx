@@ -1,4 +1,6 @@
 import React from 'react';
+import { isoDate, timeAgo } from '../../lib/dates';
+import { downloadCsv } from '../../lib/csv';
 import { useApp } from '../../context/AppContext';
 import { needsRenewal } from '../../lib/contracts';
 import { isHeadquarters, leaderTitleFor } from '../../lib/divisions';
@@ -19,17 +21,6 @@ import {
   ChevronRight,
   PieChart
 } from 'lucide-react';
-
-const timeAgo = (iso: string) => {
-  const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (Number.isNaN(minutes)) return '';
-  if (minutes < 1) return 'Just now';
-  if (minutes < 60) return `${minutes} min ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours} h ago`;
-  const days = Math.round(hours / 24);
-  return days < 7 ? `${days} d ago` : new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-};
 
 // One shared colour per staff type for the "Staff by type" bar
 const GROUP_COLORS: Record<string, string> = {
@@ -77,12 +68,9 @@ export const ExecutiveDashboard: React.FC = () => {
   const handleExport = () => {
     const rows = [['ID', 'Name', 'Division', 'City', 'Job Title', 'Salary (USD)', 'Status']];
     scopedEmployees.forEach(e => {
-      rows.push([e.id, `"${e.fullName}"`, `"${e.divisionName}"`, e.campusLocation, `"${e.jobTitle}"`, String(e.contract.monthlyBaseSalary), e.employmentStatus]);
+      rows.push([e.id, e.fullName, e.divisionName, e.campusLocation, e.jobTitle, String(e.contract.monthlyBaseSalary), e.employmentStatus]);
     });
-    const link = document.createElement('a');
-    link.href = encodeURI('data:text/csv;charset=utf-8,' + rows.map(r => r.join(',')).join('\n'));
-    link.download = `DirectAid_Staff_${regionalScope}_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
+    downloadCsv(`DirectAid_Staff_${regionalScope}_${isoDate()}.csv`, rows);
   };
 
   const stats = [
@@ -342,7 +330,7 @@ export const ExecutiveDashboard: React.FC = () => {
                     <span className="flex-1 min-w-0">
                       <span className="flex items-center justify-between gap-2">
                         <span className="text-xs font-bold text-[#192C21] truncate">{n.title}</span>
-                        <span className="text-[10px] text-[#798C80] shrink-0">{timeAgo(n.timestamp)}</span>
+                        <span className="text-[10px] text-[#798C80] shrink-0">{timeAgo(n.timestamp, false)}</span>
                       </span>
                       <span className="block text-[11px] text-[#57685D] truncate">{n.message}</span>
                     </span>

@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { isoDate } from '../../lib/dates';
+import { downloadCsv } from '../../lib/csv';
 import { useApp } from '../../context/AppContext';
 import { bannerButton, bannerPrimaryButton, PageBanner } from '../common/PageBanner';
 import {
@@ -43,7 +45,7 @@ export const ReportsCenter: React.FC = () => {
         ['Division Code', 'Division Name', 'Campus City', 'Level', 'Gender Wing', 'Total Staff', 'Principal in Charge'],
         ...divisions.map(d => {
           const count = employees.filter(e => e.divisionId === d.id).length;
-          return [d.code, `"${d.name}"`, d.city, d.level, d.gender, String(count), `"${d.principalName}"`];
+          return [d.code, d.name, d.city, d.level, d.gender, String(count), d.principalName];
         })
       ];
     } else if (reportName === 'payroll') {
@@ -51,9 +53,9 @@ export const ReportsCenter: React.FC = () => {
         ['Employee ID', 'Full Name', 'Division', 'Job Title', 'Contract Ref', 'Monthly Base (USD)', 'Status'],
         ...employees.map(e => [
           e.id,
-          `"${e.fullName}"`,
-          `"${e.divisionName}"`,
-          `"${e.jobTitle}"`,
+          e.fullName,
+          e.divisionName,
+          e.jobTitle,
           e.contract.referenceNo,
           String(e.contract.monthlyBaseSalary),
           e.employmentStatus
@@ -63,8 +65,8 @@ export const ReportsCenter: React.FC = () => {
       rows = [
         ['Audit Item', 'Division', 'Category', 'Severity', 'Affected Count', 'Due Date', 'Status'],
         ...complianceItems.map(c => [
-          `"${c.title}"`,
-          `"${c.divisionName}"`,
+          c.title,
+          c.divisionName,
           c.category,
           c.severity,
           String(c.affectedCount),
@@ -74,14 +76,7 @@ export const ReportsCenter: React.FC = () => {
       ];
     }
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(r => r.join(',')).join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `DirectAid_${reportName}_Report_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadCsv(`DirectAid_${reportName}_Report_${isoDate()}.csv`, rows);
   };
 
   return (

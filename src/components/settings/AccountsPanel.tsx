@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { modalBackdrop, modalPanel } from '../common/styles';
+import { formatDate } from '../../lib/dates';
 import { AdminApiError, AdminUser, createUser, deleteUser, listUsers, resetPassword, updateUser } from '../../lib/adminApi';
 import { roleLabel, USER_ROLES, UserRole } from '../../lib/roles';
 import { ConfirmDeleteDialog } from '../common/BulkActions';
 import { PasswordInput, settingsInputClass as inputClass } from './PasswordInput';
 import { Edit, KeyRound, Loader2, Lock, Mail, RefreshCw, ShieldCheck, Trash2, UserPlus, X } from 'lucide-react';
 
-const formatDate = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Never';
+const lastSeen = (iso: string | null) => (iso ? formatDate(iso) : 'Never');
 
 const roleBadgeClass: Record<UserRole, string> = {
   admin: 'bg-[#EBF7EE] text-[#147D4A] border-[#C5E8D2]',
@@ -274,7 +275,7 @@ export const AccountsPanel: React.FC = () => {
                             No role · read-only
                           </span>
                         )}
-                        <span className="text-[10px] text-[#798C80]">· Last sign-in {formatDate(u.lastSignInAt)}</span>
+                        <span className="text-[10px] text-[#798C80]">· Last sign-in {lastSeen(u.lastSignInAt)}</span>
                       </div>
                     </div>
                     <button
@@ -322,8 +323,8 @@ export const AccountsPanel: React.FC = () => {
 
       {/* Change role */}
       {editTarget && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full border border-[#E2EAE4] shadow-2xl overflow-hidden">
+        <div className={modalBackdrop}>
+          <div className={`${modalPanel} max-w-md`}>
             <div className="p-5 space-y-3">
               <h3 className="font-bold text-base text-[#192C21] flex items-center gap-2">
                 <Edit className="w-4.5 h-4.5 text-[#147D4A]" /> Edit Account
@@ -352,8 +353,8 @@ export const AccountsPanel: React.FC = () => {
 
       {/* Change password */}
       {resetTarget && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full border border-[#E2EAE4] shadow-2xl overflow-hidden">
+        <div className={modalBackdrop}>
+          <div className={`${modalPanel} max-w-md`}>
             <div className="p-5 space-y-3">
               <h3 className="font-bold text-base text-[#192C21] flex items-center gap-2">
                 <KeyRound className="w-4.5 h-4.5 text-[#147D4A]" /> Change Password

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { modalPanel } from '../common/styles';
+import { isoDate } from '../../lib/dates';
 import { useApp } from '../../context/AppContext';
 import { EmploymentType } from '../../types';
 import { X, FileText } from 'lucide-react';
@@ -14,7 +16,7 @@ export const RenewContractModal: React.FC = () => {
 
   const employee = contractRenewalTarget;
 
-  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [startDate, setStartDate] = useState(isoDate());
   const [durationYears, setDurationYears] = useState(2);
   const [contractType, setContractType] = useState<EmploymentType>('Fixed-Term Contract');
   const [monthlyBaseSalary, setMonthlyBaseSalary] = useState(600);
@@ -56,7 +58,7 @@ export const RenewContractModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-lg w-full border border-[#E2EAE4] shadow-2xl overflow-hidden animate-in fade-in-50 zoom-in-95">
+      <div className={`${modalPanel} max-w-lg animate-in fade-in-50 zoom-in-95`}>
         <div className="p-4 border-b border-[#E2EAE4] bg-[#F9FBFA] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">

@@ -1,4 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { modalBackdrop, modalPanel } from '../common/styles';
+import { isoDate } from '../../lib/dates';
+import { downloadCsv } from '../../lib/csv';
 import { useApp } from '../../context/AppContext';
 import { needsRenewal } from '../../lib/contracts';
 import { EmployeeRecord } from '../../types';
@@ -169,31 +172,24 @@ export const StaffDirectory: React.FC = () => {
     filteredEmployees.forEach(e => {
       csvRows.push([
         e.id,
-        `"${e.fullName}"`,
-        `"${e.somaliName || ''}"`,
-        `"${e.divisionName}"`,
+        e.fullName,
+        e.somaliName || '',
+        e.divisionName,
         e.campusLocation,
         e.schoolLevel,
         e.genderDivision,
-        `"${e.jobTitle}"`,
+        e.jobTitle,
         e.phoneNumber,
         e.email,
-        `"${e.residentialArea}"`,
-        `"${e.qualifications.highestDegree}"`,
+        e.residentialArea,
+        e.qualifications.highestDegree,
         e.contract.referenceNo,
         e.contract.endDate,
         e.employmentStatus
       ]);
     });
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + csvRows.map(r => r.join(',')).join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `DirectAid_Staff_Directory_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadCsv(`DirectAid_Staff_Directory_${isoDate()}.csv`, csvRows);
   };
 
   const hasActiveFilters = Boolean(
@@ -757,8 +753,8 @@ export const StaffDirectory: React.FC = () => {
 
       {/* Delete confirmation */}
       {pendingDelete && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full border border-[#E2EAE4] shadow-2xl overflow-hidden">
+        <div className={modalBackdrop}>
+          <div className={`${modalPanel} max-w-md`}>
             <div className="p-5 flex items-start gap-4">
               <span className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
                 <AlertTriangle className="w-5 h-5" />

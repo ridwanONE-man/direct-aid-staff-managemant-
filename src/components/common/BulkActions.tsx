@@ -1,4 +1,5 @@
 import React from 'react';
+import { modalBackdrop, modalPanel } from './styles';
 import { AlertTriangle, Trash2 } from 'lucide-react';
 
 // Checkbox used on cards and table rows; clicks don't open the item underneath
@@ -107,8 +108,8 @@ export const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
   onCancel,
   children
 }) => (
-  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-    <div className="bg-white rounded-2xl max-w-md w-full border border-[#E2EAE4] shadow-2xl overflow-hidden">
+  <div className={modalBackdrop}>
+    <div className={`${modalPanel} max-w-md`}>
       <div className="p-5 flex items-start gap-4">
         <span className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
           <AlertTriangle className="w-5 h-5" />

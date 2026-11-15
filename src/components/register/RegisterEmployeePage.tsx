@@ -1,4 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { roleName } from '../../data/roleTheme';
+import { inputClass, labelClass } from '../common/styles';
+import { isoDate } from '../../lib/dates';
 import { useApp } from '../../context/AppContext';
 import { JobRole, DegreeLevel, EmploymentType, DocumentAttachment, DocumentType, EmployeeRecord } from '../../types';
 import { REQUIRED_DOCUMENTS } from '../../data/documentTypes';
@@ -21,10 +24,6 @@ import {
   User,
   X
 } from 'lucide-react';
-
-const inputClass =
-  'w-full px-3.5 py-2.5 bg-[#F9FBFA] border border-[#E2EAE4] rounded-xl text-sm text-[#192C21] placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-[#147D4A] focus:ring-2 focus:ring-[#147D4A]/15 transition-all';
-const labelClass = 'block text-xs font-semibold text-[#384C3F] mb-1.5';
 
 const OTHER = '__other__';
 
@@ -207,7 +206,7 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
   // Optional: years and/or months, e.g. 2 Y / 6 M
   const [durationYears, setDurationYears] = useState('');
   const [durationMonths, setDurationMonths] = useState('');
-  const [startDate] = useState(new Date().toISOString().split('T')[0]);
+  const [startDate] = useState(isoDate());
   // References count up within the year from 1 (CTR-2026-1, CTR-2026-2, ...), using the lowest free number
   // so older random references such as CTR-2026-936 don't push the count up
   const contractRefNo = useMemo(() => {
@@ -338,9 +337,9 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
       const end = new Date(startDate);
       end.setFullYear(end.getFullYear() + years);
       end.setMonth(end.getMonth() + months);
-      endDate = end.toISOString().split('T')[0];
+      endDate = isoDate(end);
     }
-    const today = new Date().toISOString().split('T')[0];
+    const today = isoDate();
 
     // Upload every attached file, then record it on the employee
     const pending: { type: DocumentType; name: string; file: File }[] = [
@@ -1096,9 +1095,6 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
   );
 };
 
-const roleLabel = (emp: EmployeeRecord) =>
-  emp.jobTitle === 'Other' && emp.customJobTitle ? emp.customJobTitle : emp.jobTitle;
-
 // Short summary of the staff member just registered, shown above a fresh form
 const RegisteredNotice: React.FC<{ employee: EmployeeRecord; onClose: () => void; onView: () => void }> = ({
   employee,
@@ -1128,7 +1124,7 @@ const RegisteredNotice: React.FC<{ employee: EmployeeRecord; onClose: () => void
             <span className="text-[11px] font-bold text-[#147D4A] block">Staff registered</span>
             <span className="font-bold text-sm text-[#192C21] block truncate">{employee.fullName}</span>
             <span className="text-xs text-[#57685D] block truncate">
-              {roleLabel(employee)} · {employee.divisionName}
+              {roleName(employee)} · {employee.divisionName}
             </span>
             <span className="text-[11px] text-slate-500 block mt-0.5">
               <span className="font-mono">{employee.id}</span> · {docCount} {docCount === 1 ? 'document' : 'documents'} uploaded
