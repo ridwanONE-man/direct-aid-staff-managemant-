@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { needsRenewal } from '../../lib/contracts';
 import { EmployeeRecord, DocumentAttachment, DocumentType } from '../../types';
-import { REQUIRED_DOCUMENTS } from '../../data/documentTypes';
+import { OTHER_DOCUMENT_ACCEPT, REQUIRED_DOCUMENTS } from '../../data/documentTypes';
 import { formatFileSize, getStaffFileUrl, uploadStaffFile, validateFile } from '../../lib/storage';
 import { resizePhoto } from '../../lib/photo';
 import { DocumentRow } from '../documents/DocumentRow';
@@ -139,6 +139,7 @@ export const EmployeeProfile: React.FC = () => {
     }
     // Open the tab synchronously so pop-up blockers allow it, then point it at the signed link
     const win = window.open('', '_blank');
+    if (win) win.opener = null;
     try {
       const url = await getStaffFileUrl(doc.storagePath, download ? doc.fileName : undefined);
       if (win) win.location.href = url;
@@ -592,7 +593,7 @@ export const EmployeeProfile: React.FC = () => {
                   <DocumentRow
                     key={doc.id}
                     label={doc.name}
-                    accept="*"
+                    accept={OTHER_DOCUMENT_ACCEPT}
                     busy={busyKey === doc.id}
                     fileName={doc.fileName}
                     meta={`${doc.fileSize} · ${doc.uploadedAt}`}

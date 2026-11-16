@@ -272,7 +272,7 @@ export const AccountsPanel: React.FC = () => {
                           </span>
                         ) : (
                           <span className="text-[10px] font-bold border px-1.5 rounded-full bg-amber-50 text-amber-800 border-amber-200">
-                            No role · read-only
+                            No role · no access
                           </span>
                         )}
                         <span className="text-[10px] text-[#798C80]">· Last sign-in {lastSeen(u.lastSignInAt)}</span>

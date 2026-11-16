@@ -26,8 +26,24 @@ const ReadOnlyNotice: React.FC<{ onBack: () => void }> = ({ onBack }) => (
   </div>
 );
 
+// Signed in, but the admin has not given this login a role, so the database shows it nothing
+const NoAccessNotice: React.FC<{ email: string | null; onLogout: () => void }> = ({ email, onLogout }) => (
+  <div className="min-h-screen bg-[#F5F8F6] flex items-center justify-center p-4">
+    <div className="bg-white border border-[#E2EAE4] rounded-2xl p-10 max-w-md w-full text-center shadow-xs">
+      <img src="/directaid-logo-full.png" alt="DirectAid" className="h-12 mx-auto object-contain" />
+      <h3 className="mt-5 text-base font-bold text-[#192C21]">No access yet</h3>
+      <p className="text-xs text-[#57685D] mt-1">
+        {email ? <span className="font-semibold">{email}</span> : 'This account'} has not been given a role. Ask a portal admin to set up your access.
+      </p>
+      <button onClick={onLogout} className="mt-5 px-4 py-2 bg-[#147D4A] hover:bg-[#0E6139] text-white text-xs font-semibold rounded-xl">
+        Log out
+      </button>
+    </div>
+  </div>
+);
+
 const AppContent: React.FC = () => {
-  const { activePage, isAuthenticated, isAuthReady, isDataLoading, syncError, clearSyncError, canEdit, setActivePage, logout, userEmail } = useApp();
+  const { activePage, isAuthenticated, isAuthReady, isDataLoading, syncError, clearSyncError, canEdit, userRole, setActivePage, logout, userEmail } = useApp();
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -42,6 +58,10 @@ const AppContent: React.FC = () => {
 
   if (!isAuthenticated) {
     return <LoginPage />;
+  }
+
+  if (!userRole) {
+    return <NoAccessNotice email={userEmail} onLogout={logout} />;
   }
 
   return (

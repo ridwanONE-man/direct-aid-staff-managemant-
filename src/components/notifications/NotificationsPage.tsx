@@ -63,7 +63,7 @@ export const NotificationsPage: React.FC = () => {
           type="button"
           onClick={() => setConfirmDeleteAll(true)}
           disabled={notifications.length === 0}
-          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-rose-600 bg-white hover:bg-rose-50 rounded-xl shadow-md transition-colors disabled:opacity-50 disabled:hover:bg-white"
+          className="edit-only inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-rose-600 bg-white hover:bg-rose-50 rounded-xl shadow-md transition-colors disabled:opacity-50 disabled:hover:bg-white"
         >
           <Trash2 className="w-3.5 h-3.5" /> Delete all
         </button>
@@ -121,7 +121,7 @@ export const NotificationsPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => deleteNotification(n.id)}
-                    className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0"
+                    className="edit-only p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0"
                     title="Delete notification"
                     aria-label={`Delete ${n.title}`}
                   >

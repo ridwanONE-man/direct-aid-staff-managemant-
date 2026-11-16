@@ -313,7 +313,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, [userId, userRole]);
 
   // Changes apply to the screen immediately; a failed save is reported in the sync banner
   // The bottom notice shows "Saving..." while writes are in flight, then "saved" for 2 seconds
@@ -386,15 +386,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const unread = notifications.filter(n => !n.read).map(n => ({ ...n, read: true }));
     if (unread.length === 0) return;
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    if (supabase) persist(supabase.from('notifications').upsert(unread.map(n => ({ id: n.id, data: n }))));
+    // Updates, not an upsert: read-only accounts may mark alerts read but not add them
+    const client = supabase;
+    if (client) {
+      persist(
+        Promise.all(unread.map(n => client.from('notifications').update({ data: n }).eq('id', n.id))).then(
+          results => results.find(r => r.error) ?? results[0]
+        )
+      );
+    }
   };
 
   const deleteNotification = (id: string) => {
+    if (blockReadOnly()) return;
     setNotifications(prev => prev.filter(n => n.id !== id));
     if (supabase) persist(supabase.from('notifications').delete().eq('id', id));
   };
 
   const deleteAllNotifications = () => {
+    if (blockReadOnly()) return;
     const ids = notifications.map(n => n.id);
     if (ids.length === 0) return;
     setNotifications([]);

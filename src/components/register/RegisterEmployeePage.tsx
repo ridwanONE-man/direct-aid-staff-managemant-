@@ -4,7 +4,7 @@ import { inputClass, labelClass } from '../common/styles';
 import { isoDate } from '../../lib/dates';
 import { useApp } from '../../context/AppContext';
 import { JobRole, DegreeLevel, EmploymentType, DocumentAttachment, DocumentType, EmployeeRecord } from '../../types';
-import { REQUIRED_DOCUMENTS } from '../../data/documentTypes';
+import { OTHER_DOCUMENT_ACCEPT, REQUIRED_DOCUMENTS } from '../../data/documentTypes';
 import { JOB_ROLES, EMPLOYMENT_TYPES, TEACHING_SUBJECTS, SHIFT_SCHEDULES, PAYMENT_METHODS } from '../../data/staffOptions';
 import { formatFileSize, removeStaffFiles, uploadStaffFile, validateFile } from '../../lib/storage';
 import { initialsAvatar, resizePhoto } from '../../lib/photo';
@@ -1033,7 +1033,7 @@ const RegisterForm: React.FC<{ onRegistered: (emp: EmployeeRecord) => void }> = 
                     <DocumentRow
                       key={doc.id}
                       label={doc.name}
-                      accept="*"
+                      accept={OTHER_DOCUMENT_ACCEPT}
                       fileName={doc.file.name}
                       meta={formatFileSize(doc.file.size)}
                       onPick={(f) => {

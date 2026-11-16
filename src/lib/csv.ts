@@ -2,9 +2,14 @@ type CsvValue = string | number | null | undefined;
 
 const BOM = String.fromCharCode(0xfeff); // byte-order mark
 
+// Text Excel would run as a formula (=, @, or +/- followed by more than a phone number)
+const looksLikeFormula = (text: string) =>
+  /^[=@\t\r]/.test(text) || (/^[+-]/.test(text) && !/^[+-][\d\s().-]*$/.test(text));
+
 // Quote a value when it holds a comma, quote or line break, so it stays in one column
 const csvCell = (value: CsvValue) => {
-  const text = value == null ? '' : String(value);
+  let text = value == null ? '' : String(value);
+  if (typeof value === 'string' && looksLikeFormula(text)) text = `'${text}`;
   return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 };
 
